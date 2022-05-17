@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>Three.JS: Geometry - Extrude</title>
+  <link rel="apple-touch-icon" sizes="180x180" href="../../images/favicon/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="../../images/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="../../images/favicon/favicon-16x16.png">
+  <link rel="manifest" href="../../site.webmanifest">
+  <style>
+    body{
+      padding: 0;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+<script type="importmap">
+  {
+    "imports": {
+      "three": "../../libs/three140/build/three.module.js"
+    }
+  }
+</script>
+<script  type="module"> 
+  import * as THREE from "three"
+  import { OrbitControls } from "../../libs/three140/examples/jsm/controls/OrbitControls.js"
+  import { GUI } from "../../libs/three140/examples/jsm/libs/lil-gui.module.min.js"
+
+  let scene, camera, cameras, cameraIndex, renderer, controls, clock, player, lightOffset, light, helper;
+
+init();
+
+function init(){
+  clock = new THREE.Clock();
+  
+  scene = new THREE.Scene();
+  let col = 0x605050;
+	scene = new THREE.Scene();
+	scene.background = new THREE.Color( col );
+	scene.fog = new THREE.Fog( col, 10, 100 );
+  
+  camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 0.1, 1000 );
+  camera.position.set(30, 22, 13);
+  
+  const ambient = new THREE.HemisphereLight(0xffffbb, 0x080820);
+  scene.add(ambient);
+  
+  light = new THREE.DirectionalLight(0xFFFFFF, 1);
+  light.position.set( 1, 10, 6);
+  lightOffset = light.position.clone();
+  light.castShadow = true;
+
+  helper = new THREE.CameraHelper( light.shadow.camera );
+  scene.add( helper );
+  scene.add(light);
+
+  updateShadow(3);
+
+  renderer = new THREE.WebGLRenderer({antialias: true});
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.setSize( window.innerWidth, window.innerHeight );
+  document.body.appendChild( renderer.domElement );
+  
+  const planeGeometry = new THREE.PlaneGeometry(200, 200);
+  const planeMaterial = new THREE.MeshStandardMaterial({color:0x444444});
+  const plane = new THREE.Mesh(planeGeometry, planeMaterial);
+  plane.receiveShadow = true;
+  plane.rotation.x = -Math.PI/2;
+  scene.add(plane);
+  
+  const grid = new THREE.GridHelper( 200, 80, 0x444444, 0xaaaaaa);
+  scene.add( grid );
+  
+  const controls = new OrbitControls(camera, renderer.domElement);
+  controls.target.z = -10;
+  controls.update();
+
+  const geometry = new THREE.CylinderGeometry(0.5, 0.5, 5);
+  const material = new THREE.MeshStandardMaterial({color: 0xFFFF00 });
+  const cylinder = new THREE.Mesh( geometry, material );
+  cylinder.castShadow = true;
+  //Add meshes here
+  for(let z=0; z>-20; z-=4){
+    const mesh = cylinder.clone();
+    mesh.position.z = z;
+    scene.add(mesh);
+  }
+  
+  const options = { 
+    shadowSize: 3
+  };
+  const gui = new GUI();
+  gui.add(options, 'shadowSize', 0, 6, 0.1).onChange(value=>updateShadow(value));
+ 
+  window.addEventListener( 'resize', resize, false);
+  
+  update();
+}
+
+function updateShadow(size){
+  light.shadow.camera.left = -size;
+  light.shadow.camera.bottom = -size;
+  light.shadow.camera.right = size;
+  light.shadow.camera.top = size*8;
+  light.shadow.camera.near = 1;
+  light.shadow.camera.far = 50;
+  light.shadow.camera.updateProjectionMatrix();
+  helper.update();
+}
+
+function update(){
+  requestAnimationFrame( update );
+	renderer.render( scene, camera );
+}
+
+function resize(){
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize( window.innerWidth, window.innerHeight );
+}
+
+</script>
+
+</body>
+</html>

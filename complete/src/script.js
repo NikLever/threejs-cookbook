@@ -1,158 +1,109 @@
-function plane(u, v, target){
-  const size = 80;
-  
-  u *= size;
-  v *= size;
-  
-  target.set(u-size*0.5, v-size*0.5, 0);
+const vshader = `
+varying vec2 v_uv;
+varying vec3 v_position;
+void main() {	
+  v_uv = uv;
+  v_position = position;
+  gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+}
+`
+const fshader = `
+#define PI 3.141592653589
+#define PI2 6.28318530718
+
+uniform vec2 u_mouse;
+uniform vec2 u_resolution;
+uniform float u_time;
+uniform float u_duration;
+uniform sampler2D u_tex;
+
+varying vec2 v_uv;
+varying vec3 v_position;
+
+void main (void)
+{
+  float len = length(v_position.xy);
+  vec2 ripple = v_uv + v_position.xy/len*0.03*cos(len*12.0-u_time*4.0);
+  float delta = (((sin(u_time)+1.0)/2.0)* u_duration)/u_duration;
+  vec2 uv = mix(ripple, v_uv, delta);
+  vec3 color = texture2D(u_tex, uv).rgb;
+  gl_FragColor = vec4(color, 1.0); 
+}
+`
+
+
+
+
+
+
+const scene = new THREE.Scene();
+const camera = new THREE.OrthographicCamera( -1, 1, 1, -1, 0.1, 10 );
+
+const renderer = new THREE.WebGLRenderer();
+renderer.setSize( window.innerWidth, window.innerHeight );
+document.body.appendChild( renderer.domElement );
+
+const clock = new THREE.Clock();
+
+const geometry = new THREE.PlaneGeometry( 2, 1.5 );
+const uniforms = {
+  u_tex: { value: new THREE.TextureLoader().load("https://s3-us-west-2.amazonaws.com/s.cdpn.io/2666677/sa1.jpg") },
+  u_duration: { value: 2.0 },
+  u_time: { value: 0.0 },
+  u_mouse: { value:{ x:0.0, y:0.0 }},
+  u_resolution: { value:{ x:0, y:0 }}
 }
 
-function klein ( v, u, target ) {
-  u *= Math.PI;
-  v *= 2 * Math.PI;
+const material = new THREE.ShaderMaterial( {
+  uniforms: uniforms,
+  vertexShader: vshader,
+  fragmentShader: fshader
+} );
 
-  u = u * 2;
-  var x, y, z;
-  
-  if ( u < Math.PI ) {
+const plane = new THREE.Mesh( geometry, material );
+scene.add( plane );
 
-    x = 3 * Math.cos( u ) * ( 1 + Math.sin( u ) ) + ( 2 * ( 1 - Math.cos( u ) / 2 ) ) * Math.cos( u ) * Math.cos( v );
-    z = - 8 * Math.sin( u ) - 2 * ( 1 - Math.cos( u ) / 2 ) * Math.sin( u ) * Math.cos( v );
+camera.position.z = 1;
 
-  } else {
+onWindowResize();
+if ('ontouchstart' in window){
+  document.addEventListener('touchmove', move);
+}else{
+  window.addEventListener( 'resize', onWindowResize, false );
+  document.addEventListener('mousemove', move);
+}
 
-    x = 3 * Math.cos( u ) * ( 1 + Math.sin( u ) ) + ( 2 * ( 1 - Math.cos( u ) / 2 ) ) * Math.cos( v + Math.PI );
-    z = - 8 * Math.sin( u );
+function move(evt){
+  uniforms.u_mouse.value.x = (evt.touches) ? evt.touches[0].clientX : evt.clientX;
+  uniforms.u_mouse.value.y = (evt.touches) ? evt.touches[0].clientY : evt.clientY;
+}
 
+animate();
+
+function onWindowResize( event ) {
+  const aspectRatio = window.innerWidth/window.innerHeight;
+  let width, height;
+  if (aspectRatio>=(2/1.5)){
+    console.log("resize: Use width");
+    width = 1;
+    height = (window.innerHeight/window.innerWidth) * width;
+  }else{
+    console.log("resize: Use height")
+    height = 1.5/2;
+    width = (window.innerWidth/window.innerHeight) * height;
   }
-
-  y = - 2 * ( 1 - Math.cos( u ) / 2 ) * Math.sin( v );
-
-  target.set( x, y, z ).multiplyScalar(5);
-
-}
-
-function sphere(u, v, target){
-  const radius = 30;
-  
-  u *= 2 * Math.PI;
-  v *= Math.PI;
-  
-  const x = Math.cos(u) * Math.sin(v) * radius;
-  const y = Math.cos(v) * radius;
-  const z = Math.sin(u) * Math.sin(v) * radius;
-  
-  target.set(x, y, z);
-}
-
-function mobius(u, t, target){
-  u *= Math.PI;
-		t *= 2 * Math.PI;
-
-		u = u * 2;
-		var phi = u / 2;
-		var major = 2.25, a = 0.125, b = 0.65;
-
-		var x, y, z;
-
-		x = a * Math.cos( t ) * Math.cos( phi ) - b * Math.sin( t ) * Math.sin( phi );
-		z = a * Math.cos( t ) * Math.sin( phi ) + b * Math.sin( t ) * Math.cos( phi );
-		y = ( major + x ) * Math.sin( u );
-		x = ( major + x ) * Math.cos( u );
-
-		target.set( x, y, z ).multiplyScalar(15);
-}
-
-function torus(u, t, target){
-  const R = 30;
-  const r = 10;
-  
-  u *= 2 * Math.PI;
-	t *= 2 * Math.PI;
-  
-  const n = R + Math.cos(u)*r;
-	const	x = Math.cos( t ) * n;
-	const	z = Math.sin( t ) * n;
-	const	y = r * Math.sin( u );
-
-	target.set( x, y, z );
-}
-
-function helix(u, t, target){
-//thanks to https://math.stackexchange.com/questions/461547/whats-the-equation-of-helix-surface
-  const R = 15;
-  const r = 4;
-  const turns = 4;
-  const h = 3;
-  const n = Math.sqrt(R*R + h*h);
-  
-  u *= 2 * Math.PI;
-  t *= 2 * Math.PI * turns;
-  
-  const ct = Math.cos(t);
-  const st = Math.sin(t);
-  const cu = Math.cos(u);
-  const su = Math.sin(u);
-  
-  const x = R*ct - r*ct*cu + h*r*st*su/n;
-  const y = h*t + R*r*su/n - turns*h*h;
-  const z = R*st - r*st*cu - h*r*ct*su/n;
-        
-  target.set( x, y, z );
-}
-
-var scene, camera, renderer, mesh;
-
-init();
-
-function init(){
-  scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x000000);
-  
-  camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 0.1, 1000 );
-  camera.position.set(0, 0, 100);
-  
-  const ambient = new THREE.HemisphereLight(0xffffbb, 0x080820);
-  scene.add(ambient);
-  
-  const light = new THREE.DirectionalLight(0xFFFFFF, 1);
-  light.position.set( 1, 10, 6);
-  scene.add(light);
-  
-  renderer = new THREE.WebGLRenderer({antialias: true});
-  renderer.setSize( window.innerWidth, window.innerHeight );
-  document.body.appendChild( renderer.domElement );
-  
-  const controls = new THREE.OrbitControls(camera, renderer.domElement);
-  
-  const options = {
-    func: 'helix'
-  }
-  
-  const gui = new dat.GUI();
-  gui.add(options, 'func', ['plane', 'sphere', 'klein', 'torus', 'mobius', 'helix']).onChange(value => createMesh(window[value]));
-  createMesh(window[options.func]);
-  
-  window.addEventListener( 'resize', resize, false);
-  
-  update();
-}
-
-function createMesh(func){
-  if (mesh!==undefined) scene.remove(mesh);
-  const geometry = new THREE.ParametricBufferGeometry( func, 25, 50 );
-  const material = new THREE.MeshStandardMaterial( { color: 0x00ffff, wireframe:true } );
-  mesh = new THREE.Mesh( geometry, material );
-  scene.add( mesh );
-}
-
-function update(){
-  requestAnimationFrame( update );
-	renderer.render( scene, camera );  
-}
-
-function resize(){
-  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.left = -width;
+  camera.right = width;
+  camera.top = height;
+  camera.bottom = -height;
   camera.updateProjectionMatrix();
   renderer.setSize( window.innerWidth, window.innerHeight );
+  uniforms.u_resolution.value.x = window.innerWidth;
+  uniforms.u_resolution.value.y = window.innerHeight;
+}
+
+function animate() {
+  requestAnimationFrame( animate );
+  uniforms.u_time.value += clock.getDelta();
+  renderer.render( scene, camera );
 }
