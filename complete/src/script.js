@@ -1,10 +1,26 @@
 const vshader = `
-varying vec2 v_uv;
-varying vec3 v_position;
+#include <noise>
+
+uniform float u_time;
+
+varying vec2 vUv;
+varying float vNoise;
+
 void main() {	
-  v_uv = uv;
-  v_position = position;
-  gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+  float time = u_time * 1.0;
+  float displacement;
+  float b;
+
+  vUv = uv;
+  
+  // add time to the noise parameters so it's animated
+  vNoise = 10.0 *  -.10 * turbulence( .5 * normal + time );
+  b = 5.0 * pnoise( 0.05 * position + vec3( 2.0 * time ), vec3( 100.0 ) );
+  displacement = - 10. * vNoise + b;
+
+  // move the position along the normal and transform it
+  vec3 newPosition = position + normal * displacement;
+  gl_Position = projectionMatrix * modelViewMatrix * vec4( newPosition, 1.0 );
 }
 `
 const fshader = `
@@ -14,20 +30,31 @@ const fshader = `
 uniform vec2 u_mouse;
 uniform vec2 u_resolution;
 uniform float u_time;
-uniform float u_duration;
 uniform sampler2D u_tex;
 
-varying vec2 v_uv;
-varying vec3 v_position;
+varying vec2 vUv;
+varying float vNoise;
 
-void main (void)
-{
-  float len = length(v_position.xy);
-  vec2 ripple = v_uv + v_position.xy/len*0.03*cos(len*12.0-u_time*4.0);
-  float delta = (((sin(u_time)+1.0)/2.0)* u_duration)/u_duration;
-  vec2 uv = mix(ripple, v_uv, delta);
-  vec3 color = texture2D(u_tex, uv).rgb;
-  gl_FragColor = vec4(color, 1.0); 
+//	<https://www.shadertoy.com/view/4dS3Wd>
+//	By Morgan McGuire @morgan3d, http://graphicscodex.com
+
+//https://www.clicktorelease.com/blog/vertex-displacement-noise-3d-webgl-glsl-three-js/
+
+float random( vec3 pt, float seed ){
+  vec3 scale = vec3( 12.9898, 78.233, 151.7182 );
+  return fract( sin( dot( pt + seed, scale ) ) * 43758.5453 + seed ) ;
+}
+
+void main() {
+
+  // get a random offset
+  float r = .01 * random( gl_FragCoord.xyz, 0.0 );
+  // lookup vertically in the texture, using noise and offset
+  // to get the right RGB colour
+  vec2 uv = vec2( 0, 1.3 * vNoise + r );
+  vec3 color = texture2D( u_tex, uv ).rgb;
+
+  gl_FragColor = vec4( color, 1.0 );
 }
 `
 
@@ -37,7 +64,13 @@ void main (void)
 
 
 const scene = new THREE.Scene();
-const camera = new THREE.OrthographicCamera( -1, 1, 1, -1, 0.1, 10 );
+const camera = new THREE.PerspectiveCamera(
+    45,
+    window.innerWidth / window.innerHeight,
+    1,
+    10000
+  );
+camera.position.z = 100;
 
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize( window.innerWidth, window.innerHeight );
@@ -45,13 +78,12 @@ document.body.appendChild( renderer.domElement );
 
 const clock = new THREE.Clock();
 
-const geometry = new THREE.PlaneGeometry( 2, 1.5 );
+const geometry = new THREE.IcosahedronGeometry( 20, 4 );
 const uniforms = {
-  u_tex: { value: new THREE.TextureLoader().load("https://s3-us-west-2.amazonaws.com/s.cdpn.io/2666677/sa1.jpg") },
-  u_duration: { value: 2.0 },
   u_time: { value: 0.0 },
   u_mouse: { value:{ x:0.0, y:0.0 }},
-  u_resolution: { value:{ x:0, y:0 }}
+  u_resolution: { value:{ x:0, y:0 }},
+  u_tex: { value: new THREE.TextureLoader().load("https://s3-us-west-2.amazonaws.com/s.cdpn.io/2666677/explosion.png")}
 }
 
 const material = new THREE.ShaderMaterial( {
@@ -60,10 +92,10 @@ const material = new THREE.ShaderMaterial( {
   fragmentShader: fshader
 } );
 
-const plane = new THREE.Mesh( geometry, material );
-scene.add( plane );
+const ball = new THREE.Mesh( geometry, material );
+scene.add( ball );
 
-camera.position.z = 1;
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
 
 onWindowResize();
 if ('ontouchstart' in window){
@@ -81,21 +113,7 @@ function move(evt){
 animate();
 
 function onWindowResize( event ) {
-  const aspectRatio = window.innerWidth/window.innerHeight;
-  let width, height;
-  if (aspectRatio>=(2/1.5)){
-    console.log("resize: Use width");
-    width = 1;
-    height = (window.innerHeight/window.innerWidth) * width;
-  }else{
-    console.log("resize: Use height")
-    height = 1.5/2;
-    width = (window.innerWidth/window.innerHeight) * height;
-  }
-  camera.left = -width;
-  camera.right = width;
-  camera.top = height;
-  camera.bottom = -height;
+  camera.aspect = window.innerWidth/window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize( window.innerWidth, window.innerHeight );
   uniforms.u_resolution.value.x = window.innerWidth;
