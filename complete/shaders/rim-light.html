@@ -1,4 +1,35 @@
-const vshader = `
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>Three.JS: Geometry - Extrude</title>
+  <link rel="apple-touch-icon" sizes="180x180" href="../../images/favicon/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="../../images/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="../../images/favicon/favicon-16x16.png">
+  <link rel="manifest" href="../../site.webmanifest">
+  <style>
+    body{
+      padding: 0;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+<script type="importmap">
+  {
+    "imports": {
+      "three": "../../libs/three140/build/three.module.js"
+    }
+  }
+</script>
+<script  type="module"> 
+  import * as THREE from "three"
+  import { OrbitControls } from "../../libs/three140/examples/jsm/controls/OrbitControls.js"
+  import { RectAreaLightHelper } from '../../libs/three140/examples/jsm/helpers/RectAreaLightHelper.js';
+  import { RectAreaLightUniformsLib } from '../../libs/three140/examples/jsm/lights/RectAreaLightUniformsLib.js';
+  import { GUI } from "../../libs/three140/examples/jsm/libs/lil-gui.module.min.js"
+ 
+  const vshader = `
 #include <common>
 #include <lights_pars_begin>
 
@@ -53,11 +84,6 @@ void main()
 }
 `
 
-
-
-
-
-
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( 60, window.innerWidth/window.innerHeight, 0.1, 1000 );
 
@@ -94,7 +120,7 @@ scene.add( knot );
 
 camera.position.z = 5;
 
-const controls = new THREE.OrbitControls(camera, renderer.domElement);
+const controls = new OrbitControls(camera, renderer.domElement);
 
 onWindowResize();
 if (!('ontouchstart' in window)) window.addEventListener( 'resize', onWindowResize, false );
@@ -111,3 +137,7 @@ function update() {
   requestAnimationFrame( update );
   renderer.render( scene, camera );
 }
+</script>
+
+</body>
+</html>
