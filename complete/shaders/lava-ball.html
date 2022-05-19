@@ -25,7 +25,7 @@
 <script  type="module"> 
   import * as THREE from "three"
   import noise from '../../libs/ShaderChunk/noise.glsl.js';
-  import { OrbitControls } from "../../libs/three140/examples/jsm/controls/OrbitControls.js"
+  import { OrbitControls } from "../../libs/three140/examples/jsm/controls/OrbitControls.js";
  
   const vshader = `
 #include <noise>
@@ -87,6 +87,8 @@ let scene, camera, renderer, clock, uniforms;
 init();
 
 function init(){
+    THREE.ShaderChunk.noise = noise;
+
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera(
         45,
