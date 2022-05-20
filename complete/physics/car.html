@@ -1,4 +1,35 @@
-var scene, camera, renderer, world, helper, vehicle, dt, light, lightOffset;
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>Three.JS: Physics - Car</title>
+  <link rel="apple-touch-icon" sizes="180x180" href="../../images/favicon/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="../../images/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="../../images/favicon/favicon-16x16.png">
+  <link rel="manifest" href="../../site.webmanifest">
+  <style>
+    body{
+      padding: 0;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+<script type="importmap">
+  {
+    "imports": {
+      "three": "../../libs/three140/build/three.module.js"
+    }
+  }
+</script>
+<script  type="module"> 
+  import * as THREE from "three";
+  import * as CANNON from '../../libs/cannon-es.js';
+  import { OrbitControls } from "../../libs/three140/examples/jsm/controls/OrbitControls.js"
+  import { CannonHelper } from '../../libs/CannonHelper.js';
+  import { JoyStick } from '../../libs/toon3d.js';
+ 
+  let scene, camera, renderer, world, helper, vehicle, dt, light, lightOffset;
 
 init();
 
@@ -180,7 +211,7 @@ function initPhysics(){
   hfBody.addShape(hfShape);
   hfBody.position.set(-sizeX * hfShape.elementSize / 2, -4, sizeY * hfShape.elementSize / 2);
   hfBody.quaternion.setFromAxisAngle( new CANNON.Vec3(1,0,0), -Math.PI/2);
-  world.add(hfBody);
+  world.addBody(hfBody);
   helper.addVisual(hfBody, 0x00aa00, 'landscape');
 }       
 
@@ -198,3 +229,8 @@ function update() {
   helper.update( );
   renderer.render( scene, camera );
 }
+   
+</script>
+
+</body>
+</html>
