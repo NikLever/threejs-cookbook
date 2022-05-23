@@ -1,5 +1,33 @@
-var camera, scene, renderer, particles, control;
-const assetPath = 'https://s3-us-west-2.amazonaws.com/s.cdpn.io/2666677/';
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>Three.JS: Geometry - Extrude</title>
+  <link rel="apple-touch-icon" sizes="180x180" href="../../images/favicon/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="../../images/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="../../images/favicon/favicon-16x16.png">
+  <link rel="manifest" href="../../site.webmanifest">
+  <style>
+    body{
+      padding: 0;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+<script type="importmap">
+  {
+    "imports": {
+      "three": "../../libs/three140/build/three.module.js"
+    }
+  }
+</script>
+<script  type="module"> 
+  import * as THREE from "three"
+  import { OrbitControls } from "../../libs/three140/examples/jsm/controls/OrbitControls.js"
+ 
+  let camera, scene, renderer, particles, control, clock, light;
+  const assetPath = '../../assets/';//'https://s3-us-west-2.amazonaws.com/s.cdpn.io/2666677/';
 
 init(); 
 
@@ -21,7 +49,7 @@ function init() {
     light.position.set(-1,0,1);
     scene.add(light);
   
-    control = new THREE.OrbitControls( camera, renderer.domElement );
+    control = new OrbitControls( camera, renderer.domElement );
   
     const tex = new THREE.TextureLoader()
       .setPath(assetPath)
@@ -61,4 +89,9 @@ function update() {
       });
     }
     renderer.render( scene, camera );
-}
+} 
+  
+</script>
+
+</body>
+</html>

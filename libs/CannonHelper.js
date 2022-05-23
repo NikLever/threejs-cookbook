@@ -7,6 +7,12 @@ class CannonHelper{
         this.world = world;
     }
     
+	createQuaternionFromAxisAngle(axis, angle) {
+		const q = new CANNON.Quaternion();
+		q.setFromAxisAngle(axis, angle);
+		return q;
+	}
+
     addLights(renderer){
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap; // default THREE.PCFShadowMap
@@ -112,12 +118,14 @@ class CannonHelper{
             mesh.receiveShadow = receiveShadow;
 			this.scene.add(mesh);
 		}
+
+		return mesh;
 	}
 	
 	shape2Mesh(body, castShadow, receiveShadow, material=this.defaultMaterial){
 		const obj = new THREE.Object3D();
 		const game = this;
-		let index = 0;
+		let index = 0, points;
 		
 		body.shapes.forEach (function(shape){
 			let mesh;
@@ -146,6 +154,12 @@ class CannonHelper{
 				submesh.add(ground);
 
 				mesh.add(submesh);
+				break;
+			
+			case CANNON.Shape.types.CYLINDER:
+				geometry = new THREE.CylinderGeometry(shape.radiusTop, shape.radiusBottom, shape.height, shape.numSegments);
+				geometry.rotateX(Math.PI/2);
+				mesh = new THREE.Mesh( geometry, material );
 				break;
 
 			case CANNON.Shape.types.BOX:
@@ -178,8 +192,10 @@ class CannonHelper{
 				break;
 
 			case CANNON.Shape.types.HEIGHTFIELD:
-				geometry = new THREE.Geometry();
-
+				geometry = new THREE.BufferGeometry();
+				
+				points = [];
+				
 				v0 = new CANNON.Vec3();
 				v1 = new CANNON.Vec3();
 				v2 = new CANNON.Vec3();
@@ -193,40 +209,44 @@ class CannonHelper{
 							v0.vadd(shape.pillarOffset, v0);
 							v1.vadd(shape.pillarOffset, v1);
 							v2.vadd(shape.pillarOffset, v2);
-							geometry.vertices.push(
+							points.push(
 								new THREE.Vector3(v0.x, v0.y, v0.z),
 								new THREE.Vector3(v1.x, v1.y, v1.z),
 								new THREE.Vector3(v2.x, v2.y, v2.z)
 							);
-							var i = geometry.vertices.length - 3;
-							geometry.faces.push(new THREE.Face3(i, i+1, i+2));
 						}
 					}
 				}
+				geometry.setFromPoints(points);
 				geometry.computeBoundingSphere();
-				geometry.computeFaceNormals();
+				geometry.computeVertexNormals();
+			
 				mesh = new THREE.Mesh(geometry, material);
 				break;
 
 			case CANNON.Shape.types.TRIMESH:
-				geometry = new THREE.Geometry();
-
+				points = [];
+				const normals = [];
+        
 				v0 = new CANNON.Vec3();
 				v1 = new CANNON.Vec3();
 				v2 = new CANNON.Vec3();
+
 				for (let i = 0; i < shape.indices.length / 3; i++) {
 					shape.getTriangleVertices(i, v0, v1, v2);
-					geometry.vertices.push(
+					
+					points.push(
 						new THREE.Vector3(v0.x, v0.y, v0.z),
 						new THREE.Vector3(v1.x, v1.y, v1.z),
 						new THREE.Vector3(v2.x, v2.y, v2.z)
 					);
-					var j = geometry.vertices.length - 3;
-					geometry.faces.push(new THREE.Face3(j, j+1, j+2));
 				}
+
+				geometry = new THREE.BufferGeometry().setFromPoints( points );
 				geometry.computeBoundingSphere();
-				geometry.computeFaceNormals();
-				mesh = new THREE.Mesh(geometry, MutationRecordaterial);
+				geometry.computeVertexNormals();
+				
+				mesh = new THREE.Mesh(geometry, material);
 				break;
 
 			default:

@@ -1,20 +1,34 @@
 <!DOCTYPE html>
-<html lang="en" >
-<head>
-  <meta charset="UTF-8">
-  <title>TTT - 4.5- complete</title>
-  <link rel="stylesheet" href="./style.css">
+<html lang="en">
+	<head>
+		<title>Lecture 3.1</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+        <!--favicon -->
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+        <link rel="apple-touch-icon" sizes="180x180" href="../../css/favicon/apple-touch-icon.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="../../css/favicon/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="../../css/favicon/favicon-16x16.png">
+        <link rel="manifest" href="../../css/favicon/site.webmanifest">
+        <link rel="mask-icon" href="../../css/favicon/safari-pinned-tab.svg" color="#5bbad5">
+        <meta name="msapplication-TileColor" content="#da532c">
+        <meta name="theme-color" content="#ffffff">
+        <!-- end favicon -->
+        <style>
+            body{
+                margin: 0;
+                padding: 0;
+            }
+        </style>
+	</head>
+	<body>
+        <script type="module">
+            import { App } from './app.js';
 
-</head>
-<body>
-<!-- partial:index.partial.html -->
-
-<!-- partial -->
-  <script src='https://cdnjs.cloudflare.com/ajax/libs/three.js/109/three.min.js'></script>
-<script src='https://s3-us-west-2.amazonaws.com/s.cdpn.io/2666677/OrbitControls.js'></script>
-<script src='https://cdnjs.cloudflare.com/ajax/libs/cannon.js/0.6.2/cannon.min.js'></script>
-<script src='https://s3-us-west-2.amazonaws.com/s.cdpn.io/2666677/CannonHelper.js'></script>
-<script src='https://s3-us-west-2.amazonaws.com/s.cdpn.io/2666677/toon3d.js'></script><script  src="./script.js"></script>
-
-</body>
+            document.addEventListener("DOMContentLoaded", function(){
+                const app = new App();
+                window.app = app;
+            });
+        </script>
+	</body>
 </html>
