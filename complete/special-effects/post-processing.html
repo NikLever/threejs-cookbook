@@ -28,11 +28,13 @@
   import { EffectComposer } from '../../libs/three140/examples/jsm/postprocessing/EffectComposer.js';
   import { RenderPass } from '../../libs/three140/examples/jsm/postprocessing/RenderPass.js';
   import { ShaderPass } from '../../libs/three140/examples/jsm/postprocessing/ShaderPass.js';
+  import { GlitchPass } from '../../libs/three140/examples/jsm/postprocessing/GlitchPass.js';
+  import { UnrealBloomPass } from '../../libs/three140/examples/jsm/postprocessing/UnrealBloomPass.js';
   import { RGBShiftShader } from '../../libs/three140/examples/jsm/shaders/RGBShiftShader.js';
   import { DotScreenShader } from '../../libs/three140/examples/jsm/shaders/DotScreenShader.js';
   import { GUI } from "../../libs/three140/examples/jsm/libs/lil-gui.module.min.js"
 
-let camera, renderer, composer, object;
+let camera, renderer, composer, object, dot, rgb, glitch, bloom;
 
 init();
 animate();
@@ -56,10 +58,10 @@ function init() {
     scene.add( object );
 
     const geometry = new THREE.SphereGeometry( 1, 4, 4 );
-    const material = new THREE.MeshPhongMaterial( { color: 0xffffff, flatShading: true } );
-
+    
     for ( let i = 0; i < 100; i ++ ) {
 
+        const material = new THREE.MeshPhongMaterial( { color:Math.random() * 0xffffff, flatShading: true } );
         const mesh = new THREE.Mesh( geometry, material );
         mesh.position.set( Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5 ).normalize();
         mesh.position.multiplyScalar( Math.random() * 400 );
@@ -80,14 +82,75 @@ function init() {
     composer = new EffectComposer( renderer );
     composer.addPass( new RenderPass( scene, camera ) );
 
-    const effect1 = new ShaderPass( DotScreenShader );
-    effect1.uniforms[ 'scale' ].value = 4;
-    composer.addPass( effect1 );
+    dot = new ShaderPass( DotScreenShader );
+    dot.uniforms[ 'scale' ].value = 4;
 
-    const effect2 = new ShaderPass( RGBShiftShader );
-    effect2.uniforms[ 'amount' ].value = 0.0015;
-    composer.addPass( effect2 );
+    rgb = new ShaderPass( RGBShiftShader );
+    rgb.uniforms[ 'amount' ].value = 0.0015;
+    
+    glitch = new GlitchPass();
+    bloom = new UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight ) );
+				
+    const params = {
+        dotPass: false,
+        dotScale: 4,
+        rgbPass: false,
+        rgbAmount: 0.0015,
+        glitchPass: false,
+        glitchWild: false,
+        bloomPass: false,
+        bloomStrength: 0.6,
+		bloomThreshold: 0,
+		bloomRadius: 0
+    }
 
+    bloom.threshold = params.bloomThreshold;
+	bloom.strength = params.bloomStrength;
+	bloom.radius = params.bloomRadius;
+
+    const gui = new GUI();
+
+    gui.add(params, 'dotPass').onChange( value => {
+        if (value){
+            composer.addPass(dot);
+        }else{
+            composer.removePass(dot);
+        }
+    });
+
+    gui.add( params, 'dotScale', 1.0, 10.0 ).onChange( ( value ) => { dot.uniforms['scale'].value = Number( value ); } );
+    
+    gui.add(params, 'rgbPass').onChange( value => {
+        if (value){
+            composer.addPass(rgb);
+        }else{
+            composer.removePass(rgb);
+        }
+    });
+
+    gui.add( params, 'rgbAmount', 0.0, 0.1 ).step(0.001).onChange( ( value ) => { rgb.uniforms['amount'].value = Number( value ); } );
+    
+    gui.add(params, 'glitchPass').onChange( value => {
+        if (value){
+            composer.addPass(glitch);
+        }else{
+            composer.removePass(glitch);
+        }
+    });
+
+    gui.add( params, 'glitchWild').onChange( ( value ) => { glitch.goWild = value; } );
+    
+    gui.add(params, 'bloomPass').onChange( value => {
+        if (value){
+            composer.addPass(bloom);
+        }else{
+            composer.removePass(bloom);
+        }
+    });
+
+    gui.add( params, 'bloomThreshold', 0.0, 1.0 ).onChange( ( value ) => { bloom.threshold = Number( value ); } );
+    gui.add( params, 'bloomStrength', 0.0, 3.0 ).onChange( ( value ) => { bloom.strength = Number( value );} );
+    gui.add( params, 'bloomRadius', 0.0, 1.0 ).step( 0.01 ).onChange( ( value ) => { bloom.radius = Number( value ); } );
     //
 
     window.addEventListener( 'resize', onWindowResize );
