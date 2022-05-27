@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>Three.JS: Geometry - Extrude</title>
+  <link rel="apple-touch-icon" sizes="180x180" href="../../images/favicon/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="../../images/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="../../images/favicon/favicon-16x16.png">
+  <link rel="manifest" href="../../site.webmanifest">
+  <style>
+    body{
+      padding: 0;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+<script type="importmap">
+  {
+    "imports": {
+      "three": "../../libs/three140/build/three.module.js"
+    }
+  }
+</script>
+<script  type="module"> 
+    import * as THREE from "three"
+    import { OrbitControls } from "../../libs/three140/examples/jsm/controls/OrbitControls.js"
+    import { GLTFLoader } from '../../libs/three140/examples/jsm/loaders/GLTFLoader.js';
+    import { DRACOLoader } from '../../libs/three140/examples/jsm/loaders/DRACOLoader.js';
+    import { RGBELoader } from '../../libs/three140/examples/jsm/loaders/RGBELoader.js';
+    import { GUI } from "../../libs/three140/examples/jsm/libs/lil-gui.module.min.js"
+
+    let camera, scene, renderer, gui, material;
+
+    const params = {
+        color: 0xffffff,
+        transmission: 1,
+        opacity: 1,
+        metalness: 0,
+        roughness: 0,
+        ior: 1.5,
+        thickness: 0.01,
+        specularIntensity: 1,
+        specularColor: 0xffffff,
+        envMapIntensity: 1,
+        lightIntensity: 1,
+        exposure: 1
+    };
+
+    init();
+    render();
+
+    function init() {
+
+        const container = document.createElement( 'div' );
+        document.body.appendChild( container );
+
+        camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 0.25, 20 );
+        camera.position.set( 2.5, 1.5, 3.0 );
+
+        scene = new THREE.Scene();
+
+        new RGBELoader()
+            .setPath( '../../assets/hdr/' )
+            .load( 'venice_sunset_1k.hdr', texture => {
+
+                texture.mapping = THREE.EquirectangularReflectionMapping;
+
+                scene.background = texture;
+                scene.environment = texture;
+
+                render();
+
+                // model
+
+                const loader = new GLTFLoader().setPath( '../../libs/three140/examples/models/gltf/Nefertiti/' );
+                loader.load( 'Nefertiti.glb',  gltf => {
+
+                    gltf.scene.scale.set( 0.1, 0.1, 0.1 );
+
+                    const material = new THREE.MeshPhysicalMaterial( {
+                        color: params.color,
+                        metalness: params.metalness,
+                        roughness: params.roughness,
+                        ior: params.ior,
+                        envMap: texture,
+                        envMapIntensity: params.envMapIntensity,
+                        transmission: params.transmission, // use material.transmission for glass materials
+                        specularIntensity: params.specularIntensity,
+                        specularColor: params.specularColor,
+                        opacity: params.opacity,
+                        side: THREE.DoubleSide,
+                        transparent: true
+                    } );
+
+                    gltf.scene.traverse( child => {
+                        if (child.isMesh) child.material = material;
+                    });
+                    
+                    scene.add( gltf.scene );
+
+                    // GUI
+                    gui = new GUI();
+                    gui.addColor( params, 'color' )
+                        .onChange( function () {
+
+                            material.color.set( params.color );
+                            render();
+
+                        } );
+
+                    gui.add( params, 'transmission', 0, 1, 0.01 )
+                        .onChange( function () {
+
+                            material.transmission = params.transmission;
+                            render();
+
+                        } );
+
+                    gui.add( params, 'opacity', 0, 1, 0.01 )
+                        .onChange( function () {
+
+                            material.opacity = params.opacity;
+                            render();
+
+                        } );
+
+                    gui.add( params, 'metalness', 0, 1, 0.01 )
+                        .onChange( function () {
+
+                            material.metalness = params.metalness;
+                            render();
+
+                        } );
+
+                    gui.add( params, 'roughness', 0, 1, 0.01 )
+                        .onChange( function () {
+
+                            material.roughness = params.roughness;
+                            render();
+
+                        } );
+
+                    gui.add( params, 'ior', 1, 2, 0.01 )
+                        .onChange( function () {
+
+                            material.ior = params.ior;
+                            render();
+
+                        } );
+
+                    gui.add( params, 'thickness', 0, 5, 0.01 )
+                        .onChange( function () {
+
+                            material.thickness = params.thickness;
+                            render();
+
+                        } );
+
+                    gui.add( params, 'specularIntensity', 0, 1, 0.01 )
+                        .onChange( function () {
+
+                            material.specularIntensity = params.specularIntensity;
+                            render();
+
+                        } );
+
+                    gui.addColor( params, 'specularColor' )
+                        .onChange( function () {
+
+                            material.specularColor.set( params.specularColor );
+                            render();
+
+                        } );
+
+                    gui.add( params, 'envMapIntensity', 0, 1, 0.01 )
+                        .name( 'envMap intensity' )
+                        .onChange( function () {
+
+                            material.envMapIntensity = params.envMapIntensity;
+                            render();
+
+                        } );
+
+                    gui.add( params, 'exposure', 0, 1, 0.01 )
+                        .onChange( function () {
+
+                            renderer.toneMappingExposure = params.exposure;
+                            render();
+
+                        } );
+
+                    render();
+
+                } );
+
+            } );
+
+        renderer = new THREE.WebGLRenderer( { antialias: true } );
+        renderer.setPixelRatio( window.devicePixelRatio );
+        renderer.setSize( window.innerWidth, window.innerHeight );
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1;
+        renderer.outputEncoding = THREE.sRGBEncoding;
+        container.appendChild( renderer.domElement );
+
+        const controls = new OrbitControls( camera, renderer.domElement );
+        controls.addEventListener( 'change', render ); // use if there is no animation loop
+        controls.minDistance = 2;
+        controls.maxDistance = 10;
+        controls.target.set( 0, 1.2, 0 );
+        controls.update();
+
+        window.addEventListener( 'resize', onWindowResize );
+
+    }
+
+    function onWindowResize() {
+
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+
+        renderer.setSize( window.innerWidth, window.innerHeight );
+
+        render();
+
+    }
+
+    //
+
+    function render() {
+
+        renderer.render( scene, camera );
+
+    } 
+</script>
+
+</body>
+</html>
