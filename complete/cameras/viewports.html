@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Three.JS: Geometry - Extrude</title>
+    <link rel="apple-touch-icon" sizes="180x180" href="../../images/favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../images/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../images/favicon/favicon-16x16.png">
+    <link rel="manifest" href="../../site.webmanifest">
+    <style>
+        body {
+            padding: 0;
+            margin: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <script type="importmap">
+  {
+    "imports": {
+      "three": "../../libs/three140/build/three.module.js"
+    }
+  }
+</script>
+    <script type="module">
+        import * as THREE from "three"
+        import { OrbitControls } from "../../libs/three140/examples/jsm/controls/OrbitControls.js";
+        import { RGBELoader } from '../../libs/three140/examples/jsm/loaders/RGBELoader.js';
+
+        let cameras, camera, scene, renderer, mesh;
+
+        init();
+
+        function init() {
+
+            const container = document.createElement('div');
+            document.body.appendChild(container);
+
+            let camera1, camera2, camera3, camera4;
+
+            const target = new THREE.Vector3(0, 0, 0);
+            const dist = 8;
+
+            camera1 = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.25, 20);
+            camera1.position.set(0, 0, dist);
+
+            camera2 = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.25, 20);
+            camera2.position.set(0, dist, 0);
+            camera2.lookAt(target);
+
+            camera3 = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.25, 20);
+            camera3.position.set(dist, 0, 0);
+            camera3.lookAt(target);
+
+            camera4 = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.25, 20);
+            camera4.position.set(0, 0, -dist);
+            camera4.lookAt(target);
+
+            camera = new THREE.ArrayCamera([camera1, camera2, camera3, camera4]);
+            camera.cameras.forEach(camera => { 
+                camera.viewport = new THREE.Vector4();
+                camera.updateMatrixWorld();
+            });
+
+            scene = new THREE.Scene();
+
+            new RGBELoader()
+                .setPath('../../assets/hdr/')
+                .load('venice_sunset_1k.hdr', texture => {
+
+                    texture.mapping = THREE.EquirectangularReflectionMapping;
+
+                    scene.background = texture;
+                    scene.environment = texture;
+
+                    // model
+                    const material = new THREE.MeshStandardMaterial({ color: 0x049ef4 });
+                    const geometry = new THREE.TorusKnotGeometry();
+                    mesh = new THREE.Mesh(geometry, material);
+
+                    scene.add(mesh);
+
+                    render();
+                });
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1;
+            renderer.outputEncoding = THREE.sRGBEncoding;
+            container.appendChild(renderer.domElement);
+            renderer.autoClear = false;
+
+            const controls = new OrbitControls(camera1, renderer.domElement);
+            //controls.addEventListener('change', render); // use if there is no animation loop
+            controls.minDistance = 2;
+            controls.maxDistance = 10;
+            controls.target.set(0, 0, 0);
+            controls.update();
+
+            window.addEventListener('resize', onWindowResize);
+
+            onWindowResize();
+        }
+
+        function onWindowResize() {
+
+            const AMOUNT = 2;
+            const ASPECT_RATIO = window.innerWidth / window.innerHeight;
+            const WIDTH = (window.innerWidth / AMOUNT) * window.devicePixelRatio;
+            const HEIGHT = (window.innerHeight / AMOUNT) * window.devicePixelRatio;
+            
+            camera.aspect = ASPECT_RATIO;
+            camera.updateProjectionMatrix();
+           
+            for (let y = 0; y < AMOUNT; y++) {
+
+                for (let x = 0; x < AMOUNT; x++) {
+
+                    const subcamera = camera.cameras[AMOUNT * y + x];
+
+                    subcamera.viewport.set(
+                        Math.floor(x * WIDTH),
+                        Math.floor(y * HEIGHT),
+                        Math.ceil(WIDTH),
+                        Math.ceil(HEIGHT));
+
+                    subcamera.aspect = ASPECT_RATIO;
+
+                    subcamera.updateProjectionMatrix();
+
+                }
+
+            }
+
+            renderer.setSize(window.innerWidth, window.innerHeight);
+
+        }
+
+        //
+
+        function render() {
+            mesh.rotation.x += 0.005;
+            mesh.rotation.y += 0.005;
+
+            renderer.render(scene, camera);
+
+            requestAnimationFrame(render);
+        } 
+    </script>
+
+</body>
+
+</html>
