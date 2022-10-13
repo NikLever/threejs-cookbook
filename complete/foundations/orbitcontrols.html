@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>Three.JS: Geometry - Extrude</title>
+  <link rel="apple-touch-icon" sizes="180x180" href="../../images/favicon/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="../../images/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="../../images/favicon/favicon-16x16.png">
+  <link rel="manifest" href="../../site.webmanifest">
+  <style>
+    body{
+      padding: 0;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+<!--
+  "three": "https://unpkg.com/three@0.145.0/build/three.module.js",             
+  "three/addons/":"https://unpkg.com/three@0.145.0/examples/jsm/"
+-->
+<script async src="https://unpkg.com/es-module-shims@1.3.6/dist/es-module-shims.js"></script>
+<script type="importmap">
+{
+  "imports": {
+    "three": "../../libs/three/build/three.module.js",
+    "three/addons/": "../../libs/three/examples/jsm/"
+  }
+}
+</script>
+<script  type="module"> 
+  import * as THREE from "three"
+  import { OrbitControls } from "three/addons/controls/OrbitControls.js"
+  import { GUI } from "three/addons/libs/lil-gui.module.min.js"
+
+  let scene, camera, renderer, controls, cube;
+
+  init();
+
+  function init(){
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color( 0xaaaaaa );
+    
+    camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 0.1, 100 );
+    camera.position.set(0, 0, 4);
+    
+    const ambient = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 0.3);
+    scene.add(ambient);
+    
+    const light = new THREE.DirectionalLight(0xFFFFFF, 1);
+    light.position.set( 0.2, 1, 1);
+    scene.add(light);
+    
+    renderer = new THREE.WebGLRenderer({antialias: true});
+    renderer.setSize( window.innerWidth, window.innerHeight );
+    document.body.appendChild( renderer.domElement );
+    
+    controls = new OrbitControls(camera, renderer.domElement);
+
+    const geometry = new THREE.BoxGeometry();
+    const material = new THREE.MeshStandardMaterial( { color: 0xFF0000 });
+
+    cube = new THREE.Mesh( geometry, material );
+      
+    window.addEventListener( 'resize', resize, false);
+    
+    update();
+  }
+
+  function update(){
+    requestAnimationFrame( update );
+    renderer.render( scene, camera );  
+  }
+
+  function resize(){
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize( window.innerWidth, window.innerHeight );
+  }
+</script>
+</body>
+</html>
