@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Three.JS: Geometry - Extrude</title>
+  <link rel="apple-touch-icon" sizes="180x180" href="../../images/favicon/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="../../images/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="../../images/favicon/favicon-16x16.png">
+  <link rel="manifest" href="../../site.webmanifest">
+  <style>
+    body{
+      padding: 0;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+<!--
+  "three": "https://unpkg.com/three@0.145.0/build/three.module.js",             
+  "three/addons/":"https://unpkg.com/three@0.145.0/examples/jsm/"
+-->
+<script async src="https://unpkg.com/es-module-shims@1.3.6/dist/es-module-shims.js"></script>
+<script type="importmap">
+{
+  "imports": {
+    "three": "../../libs/three/build/three.module.js",
+    "three/addons/": "../../libs/three/examples/jsm/",
+    "libs/": "../../libs/"
+  }
+}
+</script>
+<script  type="module"> 
+  import * as THREE from "three"
+  import { OrbitControls } from "three/addons/controls/OrbitControls.js"
+  import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+  import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+  import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
+  import { LoadingBar } from 'libs/LoadingBar.js';
+  import { GUI } from "three/addons/libs/lil-gui.module.min.js"
+
+  let scene, camera, renderer, loadingBar, controls, motorcycle;
+
+  init();
+
+  function init(){
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color( 0xaaaaaa );
+    
+    camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 0.1, 100 );
+    camera.position.set(0, 0.05, 0.22);
+    
+    const ambient = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 0.5);
+    scene.add(ambient);
+    
+    const light = new THREE.DirectionalLight(0xFFFFFF, 1.5);
+    light.position.set( 0.2, 1, 1 );
+    scene.add(light);
+    
+    renderer = new THREE.WebGLRenderer({antialias: true});
+    renderer.setPixelRatio( Math.max(window.devicePixelRatio, 2) );
+		renderer.outputEncoding = THREE.sRGBEncoding;
+    renderer.physicallyCorrectLights = true;
+    renderer.setSize( window.innerWidth, window.innerHeight );
+    document.body.appendChild( renderer.domElement );
+    
+    setEnvironment();
+
+    loadingBar = new LoadingBar();
+        
+    loadGLTF();
+        
+    //ADD CODE HERE
+      
+    window.addEventListener( 'resize', resize, false);
+  }
+
+  function setEnvironment(){
+    const loader = new RGBELoader();
+    const pmremGenerator = new THREE.PMREMGenerator( renderer );
+    pmremGenerator.compileEquirectangularShader();
+    
+    loader.load( '../../assets/hdr/venice_sunset_1k.hdr', ( texture ) => {
+      const envMap = pmremGenerator.fromEquirectangular( texture ).texture;
+      pmremGenerator.dispose();
+
+      scene.environment = envMap;
+
+    }, undefined, (err)=>{
+        console.error( 'An error occurred setting the environment.' + err.message );
+    } );
+  }
+    
+  function loadGLTF(){
+    const loader = new GLTFLoader( ).setPath('../../assets/');
+    const dracoLoader = new DRACOLoader();
+    dracoLoader.setDecoderPath( '../../libs/three/examples/js/libs/draco/' );
+    loader.setDRACOLoader( dracoLoader );
+
+    // Load a glTF resource
+    loader.load(
+      // resource URL
+      'motorcycle.glb',
+      // called when the resource is loaded
+      gltf => {
+        const bbox = new THREE.Box3().setFromObject( gltf.scene );
+        console.log(`min:${bbox.min.x.toFixed(2)},${bbox.min.y.toFixed(2)},${bbox.min.z.toFixed(2)} -  max:${bbox.max.x.toFixed(2)},${bbox.max.y.toFixed(2)},${bbox.max.z.toFixed(2)}`);
+                
+        motorcycle = gltf.scene;
+                
+        scene.add( gltf.scene );
+                
+          loadingBar.visible = false;
+        
+          update();
+      },
+      // called while loading is progressing
+      xhr => {
+
+        loadingBar.progress = (xhr.loaded / xhr.total);
+        
+      },
+      // called when loading has errors
+      err => {
+
+        console.error( err.message );
+
+      }  
+    );
+  }
+
+  function update(){
+    requestAnimationFrame( update );
+    renderer.render( scene, camera );  
+  }
+
+  function resize(){
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize( window.innerWidth, window.innerHeight );
+  }
+</script>
+</body>
+</html>
