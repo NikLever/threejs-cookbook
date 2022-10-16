@@ -55,15 +55,7 @@
     renderer.setSize( window.innerWidth, window.innerHeight );
     document.body.appendChild( renderer.domElement );
     
-    const options = {
-      geometry: "Box"
-    }
-    const gui = new GUI();
-    gui.add( options, 'geometry', ['Box', 'Sphere', 'Cone']).onChange( value => {
-      createMesh( value );
-    });
-
-    createMesh( options.geometry );
+    //ADD CODE HERE
       
     window.addEventListener( 'resize', resize, false);
     
@@ -71,37 +63,13 @@
   }
 
   function createMesh( type ){
-    let material, geometry;
-
-    if (object){
-      scene.remove(object);
-      material = object.material;
-      object.geometry.dispose();
-    }else{
-      material = new THREE.MeshStandardMaterial( { color: 0xFF0000 });
-    }
-
-    switch( type ){
-      case 'Box':
-        geometry = new THREE.BoxGeometry();
-        break;
-      case 'Sphere':
-        geometry = new THREE.SphereGeometry();
-        break;
-      case 'Cone':
-        geometry = new THREE.ConeGeometry( 0.5, 2, 20 );
-        break;
-    }
-
-    object = new THREE.Mesh( geometry, material );
-    
-    scene.add( object );
+    //ADD CODE HERE
   }
 
   function update(){
     requestAnimationFrame( update );
 
-    object.rotateY( 0.01 );
+    if (object) object.rotateY( 0.01 );
 
     renderer.render( scene, camera );  
   }
