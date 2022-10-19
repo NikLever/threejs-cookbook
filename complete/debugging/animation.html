@@ -29,14 +29,15 @@
 <script type="importmap">
   {
     "imports": {
-      "three": "../../libs/three140/build/three.module.js"
+      "three": "../../libs/three/build/three.module.js",
+    "three/addons/": "../../libs/three/examples/jsm/"
     }
   }
 </script>
 <script  type="module"> 
   import * as THREE from "three"
-  import { OrbitControls } from "../../libs/three140/examples/jsm/controls/OrbitControls.js"
-  import { GLTFLoader } from "../../libs/three140/examples/jsm/loaders/GLTFLoader.js"
+  import { OrbitControls } from "three/addons/controls/OrbitControls.js"
+  import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js"
   
   let scene, camera, renderer, clock, mixers, actions, mode;
 

@@ -18,16 +18,17 @@
 <script type="importmap">
   {
     "imports": {
-      "three": "../../libs/three140/build/three.module.js"
+      "three": "../../libs/three/build/three.module.js",
+    "three/addons/": "../../libs/three/examples/jsm/"
     }
   }
 </script>
 <script src="../../libs/fas.js"></script>
 <script  type="module"> 
   import * as THREE from "three"
-  import { OrbitControls } from "../../libs/three140/examples/jsm/controls/OrbitControls.js"
+  import { OrbitControls } from "three/addons/controls/OrbitControls.js"
   import { ARButton } from '../../libs/ARButton.js';
-  import Stats from '../../libs/three140/examples/jsm/libs/stats.module.js';
+  import Stats from 'three/addons/libs/stats.module.js';
   
   class App{
     constructor(){

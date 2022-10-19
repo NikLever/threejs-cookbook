@@ -18,13 +18,14 @@
 <script type="importmap">
   {
     "imports": {
-      "three": "../../libs/three140/build/three.module.js"
+      "three": "../../libs/three/build/three.module.js",
+    "three/addons/": "../../libs/three/examples/jsm/"
     }
   }
 </script>
 <script  type="module"> 
   import * as THREE from "three"
-  import { OrbitControls } from "../../libs/three140/examples/jsm/controls/OrbitControls.js"
+  import { OrbitControls } from "three/addons/controls/OrbitControls.js"
  
   let camera, scene, renderer, particles, control, clock, light;
   const assetPath = '../../assets/';//'https://s3-us-west-2.amazonaws.com/s.cdpn.io/2666677/';

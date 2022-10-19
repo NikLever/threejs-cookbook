@@ -26,9 +26,9 @@
 </script>
 <script  type="module"> 
   import * as THREE from "three"
-  import { OrbitControls } from "../../libs/three140/examples/jsm/controls/OrbitControls.js"
-  import { ParametricGeometry } from "../../libs/three140/examples/jsm/geometries/ParametricGeometry.js"
-  import { GUI } from "../../libs/three140/examples/jsm/libs/lil-gui.module.min.js"
+  import { OrbitControls } from "three/addons/controls/OrbitControls.js"
+  import { ParametricGeometry } from "three/addons/geometries/ParametricGeometry.js"
+  import { GUI } from "three/addons/libs/lil-gui.module.min.js"
 
   const ParametricGeometries = {
     plane: function(u, v, target){

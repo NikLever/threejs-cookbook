@@ -18,14 +18,15 @@
 <script type="importmap">
   {
     "imports": {
-      "three": "../../libs/three140/build/three.module.js"
+      "three": "../../libs/three/build/three.module.js",
+    "three/addons/": "../../libs/three/examples/jsm/"
     }
   }
 </script>
 <script  type="module"> 
   import * as THREE from "three";
   import * as CANNON from '../../libs/cannon-es.js';
-  import { OrbitControls } from "../../libs/three140/examples/jsm/controls/OrbitControls.js"
+  import { OrbitControls } from "three/addons/controls/OrbitControls.js"
   import { CannonHelper } from '../../libs/CannonHelper.js';
   
   let scene, camera, renderer, world, helper, dt, damping, marker, jointBody, raycaster, mouse, box, gplane, groundMaterial;

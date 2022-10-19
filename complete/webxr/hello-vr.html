@@ -18,18 +18,19 @@
 <script type="importmap">
   {
     "imports": {
-      "three": "../../libs/three140/build/three.module.js"
+      "three": "../../libs/three/build/three.module.js",
+    "three/addons/": "../../libs/three/examples/jsm/"
     }
   }
 </script>
 <script  type="module"> 
   import * as THREE from "three"
-  import { OrbitControls } from "../../libs/three140/examples/jsm/controls/OrbitControls.js"
-  import { BoxLineGeometry } from '../../libs/three140/examples/jsm/geometries/BoxLineGeometry.js';
-  import { VRButton } from '../../libs/three140/examples/jsm/webxr/VRButton.js';
-  import { FontLoader } from '../../libs/three140/examples/jsm/loaders/FontLoader.js';
-  import { TextGeometry } from '../../libs/three140/examples/jsm/geometries/TextGeometry.js';
-  import Stats from "../../libs/three140/examples/jsm/libs/stats.module.js";
+  import { OrbitControls } from "three/addons/controls/OrbitControls.js"
+  import { BoxLineGeometry } from 'three/addons/geometries/BoxLineGeometry.js';
+  import { VRButton } from 'three/addons/webxr/VRButton.js';
+  import { FontLoader } from 'three/addons/loaders/FontLoader.js';
+  import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
+  import Stats from "three/addons/libs/stats.module.js";
 
   class App{
 	constructor(){

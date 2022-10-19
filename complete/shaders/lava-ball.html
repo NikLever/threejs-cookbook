@@ -18,14 +18,15 @@
 <script type="importmap">
   {
     "imports": {
-      "three": "../../libs/three140/build/three.module.js"
+      "three": "../../libs/three/build/three.module.js",
+    "three/addons/": "../../libs/three/examples/jsm/"
     }
   }
 </script>
 <script  type="module"> 
   import * as THREE from "three"
   import noise from '../../libs/noise.glsl.js';
-  import { OrbitControls } from "../../libs/three140/examples/jsm/controls/OrbitControls.js";
+  import { OrbitControls } from "three/addons/controls/OrbitControls.js";
  
   const vshader = `
 #include <noise>
