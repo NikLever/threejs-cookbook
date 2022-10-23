@@ -29,11 +29,10 @@
     import { OrbitControls } from "three/addons/controls/OrbitControls.js";
     import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
     import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
-    import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
-    import { GUI } from "three/addons/libs/lil-gui.module.min.js";
+    import { OutlineEffect } from 'three/addons/effects/OutlineEffect.js';
     import { LoadingBar } from "../../libs/LoadingBar.js";
 
-    let camera, scene, renderer, gui, baked;
+    let camera, scene, renderer, clock, light, knight, mixer, outline;
 
     init();
     
@@ -45,19 +44,27 @@
         renderer.outputEncoding = THREE.sRGBEncoding;
         
         camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 0.1, 50 );
-        camera.position.set( -3.2, 3.3, 5.3 );
+        camera.position.set( 1, 0.8, 2.5 );
+        camera.lookAt(0,0.8,0);
         
-        const col = 0x201510;
+        const col = 0xAAAAAA;
         scene = new THREE.Scene();
         scene.background = new THREE.Color( col );
+
+        clock = new THREE.Clock();
+
+        const ambient = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 0.2);
+		scene.add(ambient);
+
+        light = new THREE.DirectionalLight( 0xFFFFFF, 1 );
+        light.position.set( 4, 20, 20);
+        scene.add( light );
 
         window.addEventListener( 'resize', onWindowResize, false );
         
         const controls = new OrbitControls( camera, renderer.domElement );
-        
-        controls.addEventListener( 'change', () => {
-            renderer.render( scene, camera );
-        });
+        controls.target.set( 0, 0.8, 0 );
+        controls.update();
         
         loadModel();
     }
@@ -74,28 +81,48 @@
         // Load a glTF resource
         loader.load(
             // resource URL
-            'baked.glb',
+            'knight3.glb',
             // called when the resource is loaded
             gltf => {
-            baked = gltf.scene;
+                let material;
+
+                knight = gltf.scene;
+                knight.children[1].visible = false;
+
+                mixer = new THREE.AnimationMixer( knight );
+                const action = mixer.clipAction( gltf.animations[2] );
+                if ( action ) action.play();
             
-            baked.traverse( child => {
-                if (child.isMesh){
-                    const material = new THREE.MeshBasicMaterial( { map: child.material.map });
-                    child.material = material;
-                }
-            });
-        
-        loadingBar.visible = false;
-        
-        scene.add( baked );
-        
-        renderer.render(scene, camera); 
+                knight.traverse( child => {
+                    if (child.isMesh){
+                        if (material == null && child.material.map != null){
+                            const threeTone = new THREE.TextureLoader().load( '../../assets/threeTone.jpg' );
+				            threeTone.minFilter = THREE.NearestFilter;
+				            threeTone.magFilter = THREE.NearestFilter;
+
+                            //const map = new THREE.TextureLoader().load( '../../assets/human_knight.tga' );
+                            //map.encoding = THREE.sRGBEncoding;
+                            const map = child.material.map;
+
+                            material = new THREE.MeshToonMaterial( { map, gradientMap: threeTone } );
+                            //material = new THREE.MeshToonMaterial( { gradientMap: threeTone } );
+                            //material = new THREE.MeshToonMaterial(  );
+                        }
+                        child.material = material;
+                    }
+                });
+            
+                loadingBar.visible = false;
+
+                outline = new OutlineEffect( renderer );
+            
+                scene.add( knight );
+            
+                render(); 
             },
             // called while loading is progressing
             xhr => {
-                loadingBar.update(name, xhr.loaded, xhr.total);
-                
+                loadingBar.update(name, xhr.loaded, xhr.total);        
             },
             // called when loading has errors
             err => {
@@ -113,12 +140,18 @@
 
         renderer.setSize( window.innerWidth, window.innerHeight );
 
-        render();
-
     }
 
     function render() {
-        renderer.render( scene, camera );
+        requestAnimationFrame( render );
+        const dt = clock.getDelta();
+        if (mixer) mixer.update(dt);
+
+        if ( outline ){
+            outline.render( scene, camera );
+        }else{
+            renderer.render( scene, camera );
+        }
     } 
 </script>
 
