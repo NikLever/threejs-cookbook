@@ -33,12 +33,13 @@
 <script  type="module"> 
   import * as THREE from "three"
   import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-  import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+  import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
   import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
+  import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
   import { LoadingBar } from 'libs/LoadingBar.js';
   import { GUI } from "three/addons/libs/lil-gui.module.min.js"
 
-  let scene, camera, renderer, loadingBar, controls, motorcycle;
+  let scene, camera, renderer, clock, loadingBar, mixer, controls, ghoul;
 
   init();
 
@@ -47,8 +48,10 @@
     scene.background = new THREE.Color( 0xaaaaaa );
     
     camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 0.1, 100 );
-    camera.position.set(0, 0.05, 0.22);
+    camera.position.set(0, 0.5, 3);
     
+    clock = new THREE.Clock();
+
     const ambient = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 0.5);
     scene.add(ambient);
     
@@ -63,11 +66,15 @@
     renderer.setSize( window.innerWidth, window.innerHeight );
     document.body.appendChild( renderer.domElement );
     
+    controls = new OrbitControls( camera, renderer.domElement );
+    controls.target.y = 1;
+    controls.update();
+
     setEnvironment();
 
     loadingBar = new LoadingBar(); 
         
-    loadGLTF();
+    loadGhoul();
       
     window.addEventListener( 'resize', resize, false);
   }
@@ -88,47 +95,133 @@
     } );
   }
     
-  function loadGLTF(){
-    const loader = new GLTFLoader( ).setPath('../../assets/');
-    const dracoLoader = new DRACOLoader();
-    dracoLoader.setDecoderPath( '../../libs/three/examples/js/libs/draco/' );
-    loader.setDRACOLoader( dracoLoader );
-
-    // Load a glTF resource
+  function loadGhoul(){
+        
+    const loader = new GLTFLoader().setPath('../../assets/');
+    
+    const anims = [
+          {start:81, end:161, name:"idle", loop:true},
+          {start:250, end:290, name:"block", loop:false},
+          {start:300, end:320, name:"gethit", loop:false},
+          {start:340, end:375, name:"die", loop:false},
+          {start:380, end:430, name:"attack", loop:false},
+          {start:470, end:500, name:"walk", loop:true},
+          {start:540, end:560, name:"run", loop:true}
+        ];
+    
+    // Load a GLTF resource
     loader.load(
       // resource URL
-      'motorcycle.glb',
+      `ghoul.glb`,
       // called when the resource is loaded
-      gltf => {
-        const bbox = new THREE.Box3().setFromObject( gltf.scene );
-        console.log(`min:${bbox.min.x.toFixed(2)},${bbox.min.y.toFixed(2)},${bbox.min.z.toFixed(2)} -  max:${bbox.max.x.toFixed(2)},${bbox.max.y.toFixed(2)},${bbox.max.z.toFixed(2)}`);
-                
-        motorcycle = gltf.scene;
-                
-        scene.add( gltf.scene );
-                
-        loadingBar.visible = false;
+      ( gltf ) => {
+        const clip = gltf.animations[0];
+        const animations = [];
         
+        anims.forEach((anim)=>{
+            animations.push( THREE.AnimationUtils.subclip(clip, anim.name, anim.start, anim.end) );
+        });
+
+        gltf.animations = animations;
+
+        mixer = new THREE.AnimationMixer( gltf.scene );
+
+        ghoul = gltf.scene;
+        ghoul.rotateX( -Math.PI/2 );
+
+        scene.add( ghoul );
+
+        exportGLTF( ghoul, animations );
+
+        const action = mixer.clipAction( animations[0] );
+        action.play();
+
+        loadingBar.visible = false;
+
         update();
       },
       // called while loading is progressing
-      xhr => {
+      ( xhr ) => {
 
-        loadingBar.progress = (xhr.loaded / xhr.total);
-        
+        loadingBar.progress = (xhr.loaded / xhr.total) * 0.33 + 0.33;
+
       },
       // called when loading has errors
-      err => {
+      ( error ) => {
 
-        console.error( err.message );
+        console.error( error.message );
 
-      }  
+      }
     );
+  }
+
+  function exportGLTF( input, animations ) {
+
+    const gltfExporter = new GLTFExporter();
+
+    const options = {
+      trs: true,
+      onlyVisible: true,
+      binary: true,
+      maxTextureSize: 1024,
+      animations
+    };
+
+    gltfExporter.parse(
+      input,
+      ( result ) => {
+
+        if ( result instanceof ArrayBuffer ) {
+
+          saveArrayBuffer( result, 'scene.glb' );
+
+        } else {
+
+          const output = JSON.stringify( result, null, 2 );
+          console.log( output );
+          saveString( output, 'scene.gltf' );
+        }
+
+      },
+      ( error ) => {
+
+        console.log( 'An error happened during parsing', error );
+
+      },
+      options
+    );
+  }
+
+  const link = document.createElement( 'a' );
+  link.style.display = 'none';
+  document.body.appendChild( link ); // Firefox workaround, see #6594
+
+  function save( blob, filename ) {
+
+    link.href = URL.createObjectURL( blob );
+    link.download = filename;
+    link.click();
+
+    // URL.revokeObjectURL( url ); breaks Firefox...
+  }
+
+  function saveString( text, filename ) {
+
+    save( new Blob( [ text ], { type: 'text/plain' } ), filename );
+
+  }
+
+
+  function saveArrayBuffer( buffer, filename ) {
+
+    save( new Blob( [ buffer ], { type: 'application/octet-stream' } ), filename );
+
   }
 
   function update(){
     requestAnimationFrame( update );
-    motorcycle.rotateY( 0.01 );
+    const dt = clock.getDelta();
+    mixer.update(dt);
     renderer.render( scene, camera );  
   }
 
