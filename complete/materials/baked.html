@@ -65,7 +65,7 @@
     function loadModel(){
         const loader = new GLTFLoader( ).setPath('../../assets/');
         const dracoLoader = new DRACOLoader();
-        dracoLoader.setDecoderPath( '../../libs/three/examples/js/libs/draco/' );
+        dracoLoader.setDecoderPath( '../../libs/three/examples/jsm/libs/draco/' );
         loader.setDRACOLoader( dracoLoader );
                 
         const loadingBar = new LoadingBar();
