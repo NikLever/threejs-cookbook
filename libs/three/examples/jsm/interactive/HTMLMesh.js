@@ -37,6 +37,8 @@ class HTMLMesh extends Mesh {
 
 			material.map.dispose();
 
+			canvases.delete( dom );
+
 			this.removeEventListener( 'mousedown', onEvent );
 			this.removeEventListener( 'mousemove', onEvent );
 			this.removeEventListener( 'mouseup', onEvent );
