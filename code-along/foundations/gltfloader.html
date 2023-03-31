@@ -32,11 +32,11 @@
 </script>
 <script  type="module"> 
   import * as THREE from "three"
+  import { OrbitControls } from "three/addons/controls/OrbitControls.js"
+  import { GUI } from "three/addons/libs/lil-gui.module.min.js"
   import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
   import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
-  import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
   import { LoadingBar } from 'libs/LoadingBar.js';
-  import { GUI } from "three/addons/libs/lil-gui.module.min.js"
 
   let scene, camera, renderer, loadingBar, controls, motorcycle;
 
@@ -47,7 +47,7 @@
     scene.background = new THREE.Color( 0xaaaaaa );
     
     camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 0.1, 100 );
-    camera.position.set(0, 0.05, 0.22);
+    camera.position.set(0, 0, 4);
     
     const ambient = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 0.5);
     scene.add(ambient);
@@ -57,50 +57,24 @@
     scene.add(light);
     
     renderer = new THREE.WebGLRenderer({antialias: true});
-    renderer.setPixelRatio( Math.max(window.devicePixelRatio, 2) );
-		renderer.outputEncoding = THREE.sRGBEncoding;
-    renderer.physicallyCorrectLights = true;
     renderer.setSize( window.innerWidth, window.innerHeight );
     document.body.appendChild( renderer.domElement );
     
-    setEnvironment();
+    controls = new OrbitControls(camera, renderer.domElement);
 
-    loadingBar = new LoadingBar();
-        
-    loadGLTF();
-      
     window.addEventListener( 'resize', resize, false);
-  }
 
-  function setEnvironment(){
-    const loader = new RGBELoader();
-    const pmremGenerator = new THREE.PMREMGenerator( renderer );
-    pmremGenerator.compileEquirectangularShader();
-    
-    loader.load( '../../assets/hdr/venice_sunset_1k.hdr', ( texture ) => {
-      const envMap = pmremGenerator.fromEquirectangular( texture ).texture;
-      pmremGenerator.dispose();
-
-      scene.environment = envMap;
-
-    }, undefined, (err)=>{
-        console.error( 'An error occurred setting the environment.' + err.message );
-    } );
+    //ADD CODE HERE
   }
     
   function loadGLTF(){
-    const loader = new GLTFLoader( ).setPath('../../assets/');
-    const dracoLoader = new DRACOLoader();
-    dracoLoader.setDecoderPath( '../../libs/three/examples/jsm/libs/draco/' );
-    loader.setDRACOLoader( dracoLoader );
-
-    // Load a glTF resource
+    // ADD CODE HERE
     
   }
 
   function update(){
     requestAnimationFrame( update );
-    motorcycle.rotateY( 0.01 );
+    if (motorcycle) motorcycle.rotateY( 0.01 );
     renderer.render( scene, camera );  
   }
 

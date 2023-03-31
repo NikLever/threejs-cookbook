@@ -31,6 +31,7 @@
 </script>
 <script  type="module"> 
   import * as THREE from "three"
+  import { OrbitControls } from "three/addons/controls/OrbitControls.js"
   import { GUI } from "three/addons/libs/lil-gui.module.min.js"
 
   let scene, camera, renderer, controls, object;
@@ -55,6 +56,10 @@
     renderer.setSize( window.innerWidth, window.innerHeight );
     document.body.appendChild( renderer.domElement );
     
+    controls = new OrbitControls(camera, renderer.domElement);
+
+    window.addEventListener( 'resize', resize, false);
+ 
     //AMENDS HERE
     const options = {
       geometry: "Box"
@@ -65,9 +70,7 @@
     });
 
     createMesh( options.geometry );
-      
-    window.addEventListener( 'resize', resize, false);
-    
+         
     update();
   }
 
@@ -77,7 +80,10 @@
 
     if (object){
       scene.remove(object);
+      material = object.material;
       object.geometry.dispose();
+    }else{
+      material = new THREE.MeshStandardMaterial( { color: 0xFF0000 });
     }
 
     switch( type ){
@@ -85,10 +91,10 @@
         geometry = new THREE.BoxGeometry();
         break;
       case 'Sphere':
-        geometry = new THREE.SphereGeometry();
+        geometry = new THREE.SphereGeometry( 0.7 );
         break;
       case 'Cone':
-        geometry = new THREE.ConeGeometry( 0.5, 2, 20 );
+        geometry = new THREE.ConeGeometry( 0.7, 1.5 );
         break;
     }
 
