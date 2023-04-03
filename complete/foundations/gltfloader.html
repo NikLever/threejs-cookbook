@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Three.JS: Geometry - Extrude</title>
+  <title>Three.JS: Foundations - GLTFLoader</title>
   <link rel="apple-touch-icon" sizes="180x180" href="../../images/favicon/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="../../images/favicon/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="../../images/favicon/favicon-16x16.png">
@@ -47,6 +47,7 @@
     scene.background = new THREE.Color( 0xaaaaaa );
     
     camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 0.1, 100 );
+    //camera.position.set(0, 0.05, 0.22);
     camera.position.set(0, 1, 4);
     
     const ambient = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 0.5);
@@ -61,7 +62,8 @@
     document.body.appendChild( renderer.domElement );
     
     controls = new OrbitControls(camera, renderer.domElement);
-    controls.target.y = 0.6;
+    controls.target.y = 0.8;
+    //controls.target.y = 0.06;
     controls.update();
 
     window.addEventListener( 'resize', resize, false);
