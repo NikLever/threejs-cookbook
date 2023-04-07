@@ -35,11 +35,10 @@
   import { OrbitControls } from "three/addons/controls/OrbitControls.js"
   import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
   import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
-  import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
   import { LoadingBar } from 'libs/LoadingBar.js';
   import { GUI } from "three/addons/libs/lil-gui.module.min.js"
 
-  let scene, camera, renderer, loadingBar, controls, motorcycle;
+  let scene, camera, renderer, loadingBar, controls, motorcycle, gui;
 
   init();
 
@@ -64,31 +63,35 @@
     renderer.setSize( window.innerWidth, window.innerHeight );
     document.body.appendChild( renderer.domElement );
     
-    setEnvironment();
+    controls = new OrbitControls( camera, renderer.domElement );
+    controls.target.y = 0.04;
+    controls.update();
+
+    const options = {
+      outputEncoding: 'Linear',
+      physicallyCorrectLights: false
+    }
+
+    gui = new GUI();
+    gui.add( options, 'outputEncoding', [ 'Linear', 'RGB' ]).onChange( value => {
+      switch(value){
+        case 'Linear':
+          renderer.outputEncoding = THREE.linearEncoding;
+          break;
+        case 'RGB':
+          renderer.outputEncoding = THREE.sRGBEncoding;
+          break
+      }
+    });
+    gui.add( options, 'physicallyCorrectLights').onChange( value => {
+      renderer.physicallyCorrectLights = value;
+    });
+
+    window.addEventListener( 'resize', resize, false);
 
     loadingBar = new LoadingBar();
         
     loadGLTF();
-        
-    //ADD CODE HERE
-      
-    window.addEventListener( 'resize', resize, false);
-  }
-
-  function setEnvironment(){
-    const loader = new RGBELoader();
-    const pmremGenerator = new THREE.PMREMGenerator( renderer );
-    pmremGenerator.compileEquirectangularShader();
-    
-    loader.load( '../../assets/hdr/venice_sunset_1k.hdr', ( texture ) => {
-      const envMap = pmremGenerator.fromEquirectangular( texture ).texture;
-      pmremGenerator.dispose();
-
-      scene.environment = envMap;
-
-    }, undefined, (err)=>{
-        console.error( 'An error occurred setting the environment.' + err.message );
-    } );
   }
     
   function loadGLTF(){
@@ -110,9 +113,9 @@
                 
         scene.add( gltf.scene );
                 
-          loadingBar.visible = false;
+        loadingBar.visible = false;
         
-          update();
+        update();
       },
       // called while loading is progressing
       xhr => {

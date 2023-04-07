@@ -39,7 +39,7 @@
   import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
   import { LoadingBar } from 'libs/LoadingBar.js';
 
-  let scene, camera, renderer, loadingBar, controls, motorcycle;
+  let scene, camera, renderer, loadingBar, controls, motorcycle, gui;
 
   init();
 
@@ -59,8 +59,6 @@
     
     renderer = new THREE.WebGLRenderer({antialias: true});
     renderer.setPixelRatio( Math.max(window.devicePixelRatio, 2) );
-		renderer.outputEncoding = THREE.sRGBEncoding;
-    //renderer.physicallyCorrectLights = true;
     renderer.setSize( window.innerWidth, window.innerHeight );
     document.body.appendChild( renderer.domElement );
         
@@ -69,6 +67,26 @@
     controls.update();
       
     window.addEventListener( 'resize', resize, false);
+
+    const options = {
+      outputEncoding: 'Linear',
+      physicallyCorrectLights: false
+    }
+
+    gui = new GUI();
+    gui.add( options, 'outputEncoding', [ 'Linear', 'RGB' ]).onChange( value => {
+      switch(value){
+        case 'Linear':
+          renderer.outputEncoding = THREE.linearEncoding;
+          break;
+        case 'RGB':
+          renderer.outputEncoding = THREE.sRGBEncoding;
+          break
+      }
+    });
+    gui.add( options, 'physicallyCorrectLights').onChange( value => {
+      renderer.physicallyCorrectLights = value;
+    });
 
     setEnvironment();
 
