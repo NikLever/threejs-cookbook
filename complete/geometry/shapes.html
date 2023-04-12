@@ -71,7 +71,11 @@ function init(){
 
 function createMesh(name, type){
   let pts = [];
-  if (mesh!==undefined) scene.remove(mesh);
+  if (mesh!==undefined){
+    scene.remove(mesh);
+    mesh.geometry.dispose();s
+    if ( mesh.material != material ) mesh.material.dispose();
+  }
   let shape = new THREE.Shape();
   let width, height, x, y, radius;
   const pos = new THREE.Vector3();

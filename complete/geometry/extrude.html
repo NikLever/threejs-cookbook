@@ -157,17 +157,17 @@ function init(){
   document.body.appendChild( renderer.domElement );
   
   controls = new OrbitControls(camera, renderer.domElement);
+
+  window.addEventListener( 'resize', resize, false);
+
   material = new THREE.MeshStandardMaterial();
   
   const extrudeSettings1 = {
-    depth: 10,
-    steps: 1,
-    bevelEnabled: false,
+    depth: 10
   };
   
   const extrudeSettings2 = {
     depth: 10,
-    steps: 1,
     bevelEnabled: true,
     bevelThickness: 2,
     bevelSize: 2,
@@ -194,17 +194,17 @@ function init(){
   };
   
   const extrudeSettings = [extrudeSettings1, extrudeSettings2, extrudeSettings3, extrudeSettings4, extrudeSettings5];
+  
   const options = {
     extrudeIndex: 0,
-    lines: false
+    lines: true
   }
   
-  createMesh(extrudeSettings[options.extrudeIndex], false);
-  
   const gui = new GUI();
-  gui.add(options, 'extrudeIndex', 0, 5, 1).onChange(value => createMesh(extrudeSettings[value], options.lines, 0, 4));
+  gui.add(options, 'extrudeIndex', 0, 4, 1).onChange(value => createMesh(extrudeSettings[value], options.lines));
   gui.add(options, 'lines').onChange(value => createMesh(extrudeSettings[options.extrudeIndex], value) );
-  window.addEventListener( 'resize', resize, false);
+
+  createMesh(extrudeSettings[options.extrudeIndex], options.lines);
   
   update();
 }
@@ -221,9 +221,6 @@ function createMesh(extrudeSettings, lines){
       outline.material.dispose();
   }
   const shape = new StarShape(5, 6, 15);
-  
-  //const geometry = new THREE.ShapeGeometry(shape);
-  //material.side = THREE.DoubleSide;
   
   const geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
   mesh = new THREE.Mesh(geometry, material);
