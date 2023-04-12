@@ -237,12 +237,7 @@ function createMesh(name, type){
   }
   
   const extrudeSettings = { 
-    depth: 8, 
-    bevelEnabled: true, 
-    bevelSegments: 2, 
-    steps: 2, 
-    bevelSize: 1, 
-    bevelThickness: 1
+    depth: 8
   };
   
   let geometry;
@@ -250,11 +245,11 @@ function createMesh(name, type){
   
   switch(type){
     case 'extrude':
-      geometry = new THREE.ExtrudeBufferGeometry( shape, extrudeSettings );
+      geometry = new THREE.ExtrudeGeometry( shape, extrudeSettings );
       mesh = new THREE.Mesh( geometry, material );
       break;
     case 'shape':
-      geometry = new THREE.ShapeBufferGeometry( shape );
+      geometry = new THREE.ShapeGeometry( shape );
       material.side = THREE.DoubleSide;
       mesh = new THREE.Mesh( geometry, material );
       break;

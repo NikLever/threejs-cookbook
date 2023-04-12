@@ -29,6 +29,7 @@
   import * as THREE from "three"
   import { OrbitControls } from "three/addons/controls/OrbitControls.js"
   import * as Curves from "three/addons/curves/CurveExtras.js"
+  import { Lemniscate } from "./lemniscate.js"
   import { GUI } from "three/addons/libs/lil-gui.module.min.js"
 
 let scene, camera, renderer, controls, tube;
@@ -59,11 +60,19 @@ function init(){
   
   const gui = new GUI();
   const options = {
-    type: 'GrannyKnot'
+    type: 'GrannyKnot',
+    custom: false
   };
   
   gui.add(options, 'type', Object.keys(Curves)).onChange(value => createTube(value)
   );
+  gui.add(options, 'custom').onChange( value => {
+    if (value){
+      createTube( 'Lemniscate' );
+    }else{
+      createTube( options.type );
+    }
+  })
     
   window.addEventListener( 'resize', resize, false);
   
@@ -76,10 +85,12 @@ function createTube(type){
     tube.geometry.dispose();
     tube.material.dispose();
   }
-  const curve = new Curves[type]();
+  const curve = (type=='Lemniscate') ? new Lemniscate(25) : new Curves[type]();
   const geometry = new THREE.TubeGeometry( curve, 200, 3, 8, true );
   const material = new THREE.MeshStandardMaterial({ wireframe:false, color: 0xffffff });
+
   tube = new THREE.Mesh( geometry, material );
+
   scene.add(tube);
 }
 

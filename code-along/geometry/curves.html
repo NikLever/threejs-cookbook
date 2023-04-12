@@ -28,10 +28,9 @@
 <script  type="module">
   import * as THREE from "three"
   import { OrbitControls } from "three/addons/controls/OrbitControls.js"
-  import * as Curves from "three/addons/curves/CurveExtras.js"
   import { GUI } from "three/addons/libs/lil-gui.module.min.js"
 
-let scene, camera, renderer, controls, tube;
+let scene, camera, renderer, controls;
 
 init();
 
@@ -52,35 +51,19 @@ function init(){
   renderer.setSize( window.innerWidth, window.innerHeight );
   document.body.appendChild( renderer.domElement );
   
-  //Add meshes here
-  createTube('GrannyKnot');
-  
   controls = new OrbitControls(camera, renderer.domElement);
   
+  window.addEventListener( 'resize', resize, false);
+ 
   const gui = new GUI();
   const options = {
-    type: 'GrannyKnot'
   };
-  
-  gui.add(options, 'type', Object.keys(Curves)).onChange(value => createTube(value)
-  );
-    
-  window.addEventListener( 'resize', resize, false);
-  
+     
   update();
 }
 
 function createTube(type){
-  if (tube!==undefined){
-    scene.remove(tube);
-    tube.geometry.dispose();
-    tube.material.dispose();
-  }
-  const curve = new Curves[type]();
-  const geometry = new THREE.TubeGeometry( curve, 200, 3, 8, true );
-  const material = new THREE.MeshStandardMaterial({ wireframe:false, color: 0xffffff });
-  tube = new THREE.Mesh( geometry, material );
-  scene.add(tube);
+  //Add code here
 }
 
 function update(){
