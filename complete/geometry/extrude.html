@@ -222,6 +222,8 @@ function createMesh(extrudeSettings, lines){
   }
   const shape = new StarShape(5, 6, 15);
   
+  //material.side = THREE.BackSide;
+
   const geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
   mesh = new THREE.Mesh(geometry, material);
   
