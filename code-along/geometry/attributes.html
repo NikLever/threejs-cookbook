@@ -74,61 +74,18 @@ function init(){
   
   const controls = new OrbitControls(camera, renderer.domElement);
   
-  createMesh();
-  
   window.addEventListener( 'resize', resize, false);
+
+  createMesh();
   
   update();
 }
 
 function createMesh(){
-  const extrudeSettings = {
-    depth: 6,
-    bevelEnabled: false
-  };
-  const shape = new StarShape(5, 5, 12);
-  const heartGeometry = new THREE.ExtrudeBufferGeometry( shape, extrudeSettings );
-  group = new THREE.Group();
-  scene.add(group);
-  const geometry = new THREE.IcosahedronBufferGeometry( 60, 1 );
-  const mat = new THREE.MeshBasicMaterial({wireframe:true});
-  mesh = new THREE.Mesh(geometry, mat);
-  scene.add(mesh);
-  const position = geometry.getAttribute('position');
-  const normal = geometry.getAttribute('normal');
-  for(let i=0; i<position.array.length; i+=3){
-    const color = new THREE.Color().setHSL(i/position.count, 1.0, 0.7);
-    const material = new THREE.MeshStandardMaterial({ color: color });
-    const heart = new THREE.Mesh(heartGeometry, material);
-    const pos = new THREE.Vector3(position.array[i], position.array[i+1], position.array[i+2]);
-    const norm = new THREE.Vector3(normal.array[i], normal.array[i+1], normal.array[i+2]);
-    heart.position.copy(pos);
-    const target = pos.clone().add(norm.multiplyScalar(10.0));
-    heart.lookAt(target);
-    group.add(heart);
-  }
-}
-
-function updateMesh(){
-  const time = clock.getElapsedTime();
-  const geometry = mesh.geometry;
-  const position = geometry.getAttribute('position');
-  const normal = geometry.getAttribute('normal');
-  const radius = 40 + Math.sin(time) * 20;
-  console.log(radius);
-  for(let i=0; i<position.array.length; i+=3){
-    const norm = new THREE.Vector3(normal.array[i], normal.array[i+1], normal.array[i+2]);
-    const pos = norm.multiplyScalar(radius);
-    position.array[i] = pos.x;
-    position.array[i+1] = pos.y;
-    position.array[i+2] = pos.z;
-  }
-  position.needsUpdate = true;
 }
 
 function update(){
   requestAnimationFrame( update );
-  updateMesh();
 	renderer.render( scene, camera );  
 }
 

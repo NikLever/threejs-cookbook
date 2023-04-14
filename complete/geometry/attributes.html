@@ -83,14 +83,13 @@ function init(){
 
 function createMesh(){
   const extrudeSettings = {
-    depth: 6,
-    bevelEnabled: false
+    depth: 6
   };
   const shape = new StarShape(5, 5, 12);
-  const heartGeometry = new THREE.ExtrudeBufferGeometry( shape, extrudeSettings );
+  const starGeometry = new THREE.ExtrudeGeometry( shape, extrudeSettings );
   group = new THREE.Group();
   scene.add(group);
-  const geometry = new THREE.IcosahedronBufferGeometry( 60, 1 );
+  const geometry = new THREE.IcosahedronGeometry( 60, 1 );
   const mat = new THREE.MeshBasicMaterial({wireframe:true});
   mesh = new THREE.Mesh(geometry, mat);
   scene.add(mesh);
@@ -99,13 +98,13 @@ function createMesh(){
   for(let i=0; i<position.array.length; i+=3){
     const color = new THREE.Color().setHSL(i/position.count, 1.0, 0.7);
     const material = new THREE.MeshStandardMaterial({ color: color });
-    const heart = new THREE.Mesh(heartGeometry, material);
+    const star = new THREE.Mesh(starGeometry, material);
     const pos = new THREE.Vector3(position.array[i], position.array[i+1], position.array[i+2]);
     const norm = new THREE.Vector3(normal.array[i], normal.array[i+1], normal.array[i+2]);
-    heart.position.copy(pos);
+    star.position.copy(pos);
     const target = pos.clone().add(norm.multiplyScalar(10.0));
-    heart.lookAt(target);
-    group.add(heart);
+    star.lookAt(target);
+    group.add(star);
   }
 }
 
