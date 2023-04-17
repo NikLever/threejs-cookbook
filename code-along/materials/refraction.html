@@ -37,33 +37,7 @@
   import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
   import { GUI } from "three/addons/libs/lil-gui.module.min.js"
 
-  const vShader = `
-  varying vec4 vPosition;
-
-  void main(){
-    vPosition = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
-    gl_Position = vPosition;
-  }
-  `;
-
-  const fShader = `
-  uniform sampler2D tDiffuse;
-
-  varying vec4 vPosition;
-
-  void main(){
-    vec2 uv = vPosition.xy;
-	uv /= vPosition.w;
-	uv = uv * 0.5 + 0.5;
-
-    vec3 col = texture2D( tDiffuse, uv ).rgb;
-
-    //gl_FragColor = vec4( col, 1.0 );
-    gl_FragColor = vec4( uv, 0.0, 1.0 );
-  }
-  `;
-
-  let scene, camera, renderer, controls, envMap, cubeCam, material, diamond;
+  let scene, camera, renderer, renderTarget, controls, envMap, material, diamond;
 
   init();
 
@@ -72,9 +46,6 @@
     
     camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 0.1, 100 );
     camera.position.set(0, 0, -4);
-
-    cubeCam = new THREE.CubeCamera( 1, 100000, cubeRenderTarget );
-    scene.add( cubeCam );
     
     const ambient = new THREE.HemisphereLight(0xffffbb, 0x080820);
     scene.add(ambient);
@@ -83,7 +54,7 @@
     light.position.set( 1, 10, 6);
     scene.add(light);
     
-    renderer = new THREE.WebGLRenderer({antialias: true});
+    renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize( window.innerWidth, window.innerHeight );
     document.body.appendChild( renderer.domElement );
     
@@ -93,8 +64,8 @@
     loadDiamond();
       
     window.addEventListener( 'resize', resize, false);
-    
-    update();
+
+    resize();
   }
 
   function setEnvironment(){
@@ -104,8 +75,8 @@
 		texture.mapping = THREE.EquirectangularReflectionMapping;
 		envMap = texture;
 		
-        scene.environment = envMap;
-        scene.background = envMap;
+    scene.environment = envMap;
+    scene.background = envMap;
 
 	} );
   }
@@ -122,13 +93,11 @@
         'diamond.glb',
         // called when the resource is loaded
         gltf => {
-            material = new THREE.MeshPhongMaterial( { 
-                color: 0xccddff, 
-                envMap, 
-                refractionRatio: 0.98, 
-                reflectivity: 0.9,
-                transparent: true
-            } );
+            const material = new THREE.MeshPhysicalMaterial({
+                roughness: 0,
+                transmission: 1,
+                thickness: 2
+            });
 
             diamond = gltf.scene;
         
@@ -159,6 +128,14 @@
     requestAnimationFrame( update );
 
     if (diamond) diamond.rotateY( 0.001 );
+
+    diamond.visible = false;
+
+    renderer.setRenderTarget( renderTarget );
+    renderer.render( scene, camera );
+    renderer.setRenderTarget(null);
+
+    diamond.visible = true;
     
     renderer.render( scene, camera );  
   }
@@ -167,6 +144,9 @@
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize( window.innerWidth, window.innerHeight );
+    if (renderTarget) renderTarget.dispose();
+    renderTarget = new THREE.WebGLRenderTarget( window.innerWidth/2, window.innerWidth/2 );
+    if (material && material.uniforms) material.uniforms.tDiffuse.value = renderTarget.texture;
   }
 </script>
 </body>

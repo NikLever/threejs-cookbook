@@ -37,31 +37,6 @@
   import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
   import { GUI } from "three/addons/libs/lil-gui.module.min.js"
 
-  const vShader = `
-  varying vec4 vPosition;
-
-  void main(){
-    vPosition = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
-    gl_Position = vPosition;
-  }
-  `;
-
-  const fShader = `
-  uniform sampler2D tDiffuse;
-
-  varying vec4 vPosition;
-
-  void main(){
-    vec2 uv = vPosition.xy;
-	uv /= vPosition.w;
-	uv = uv * 0.5 + 0.25;
-
-    vec3 col = texture2D( tDiffuse, uv ).rgb;
-
-    gl_FragColor = vec4( col, 1.0 );
-  }
-  `;
-
   let scene, camera, renderer, renderTarget, controls, envMap, material, diamond;
 
   init();
@@ -100,8 +75,8 @@
 		texture.mapping = THREE.EquirectangularReflectionMapping;
 		envMap = texture;
 		
-        scene.environment = envMap;
-        scene.background = envMap;
+    scene.environment = envMap;
+    scene.background = envMap;
 
 	} );
   }
@@ -118,16 +93,11 @@
         'diamond.glb',
         // called when the resource is loaded
         gltf => {
-            const uniforms = {
-                tDiffuse: { value: renderTarget.texture },
-                IOR: { value: 2 }
-            }
-            
-            material = new THREE.ShaderMaterial({
-                vertexShader: vShader,
-                fragmentShader: fShader,
-                uniforms
-            })
+            const material = new THREE.MeshPhysicalMaterial({
+                roughness: 0,
+                transmission: 1,
+                thickness: 2
+            });
 
             diamond = gltf.scene;
         

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Three.JS: Geometry - Extrude</title>
+  <link rel="apple-touch-icon" sizes="180x180" href="../../images/favicon/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="../../images/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="../../images/favicon/favicon-16x16.png">
+  <link rel="manifest" href="../../site.webmanifest">
+  <style>
+    body{
+      padding: 0;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+<script type="importmap">
+  {
+    "imports": {
+        "three": "../../libs/three/build/three.module.js",
+        "three/addons/": "../../libs/three/examples/jsm/"
+    }
+  }
+</script>
+<script  type="module"> 
+    import * as THREE from "three";
+    import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+    import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+    import { OutlineEffect } from 'three/addons/effects/OutlineEffect.js';
+    import { LoadingBar } from "../../libs/LoadingBar.js";
+
+    let camera, scene, renderer, clock, light, knight, mixer, outline;
+
+    init();
+    
+    function init() {
+        renderer = new THREE.WebGLRenderer({antialias: true, stencil: false});
+        renderer.setPixelRatio( Math.min(2, window.devicePixelRatio ));
+        renderer.setSize( window.innerWidth, window.innerHeight );
+        document.body.appendChild( renderer.domElement );
+        renderer.outputEncoding = THREE.sRGBEncoding;
+        
+        camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 0.1, 50 );
+        camera.position.set( 1, 0.8, 2.5 );
+        camera.lookAt(0,0.8,0);
+        
+        const col = 0xAAAAAA;
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color( col );
+
+        clock = new THREE.Clock();
+
+        const ambient = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 0.2);
+		scene.add(ambient);
+
+        light = new THREE.DirectionalLight( 0xFFFFFF, 1 );
+        light.position.set( 4, 20, 20);
+        scene.add( light );
+
+        window.addEventListener( 'resize', onWindowResize, false );
+        
+        const controls = new OrbitControls( camera, renderer.domElement );
+        controls.target.set( 0, 0.8, 0 );
+        controls.update();
+        
+        loadModel();
+    }
+
+    function loadModel(){
+        const loader = new GLTFLoader( ).setPath('../../assets/');
+        const dracoLoader = new DRACOLoader();
+        dracoLoader.setDecoderPath( '../../libs/three/examples/jsm/libs/draco/' );
+        loader.setDRACOLoader( dracoLoader );
+                
+        const loadingBar = new LoadingBar();
+        loadingBar.visible = true;
+            
+        // Load a glTF resource
+        loader.load(
+            // resource URL
+            'knight3.glb',
+            // called when the resource is loaded
+            gltf => {
+                let material;
+
+                knight = gltf.scene;
+                knight.children[1].visible = false;
+
+                mixer = new THREE.AnimationMixer( knight );
+                const action = mixer.clipAction( gltf.animations[2] );
+                if ( action ) action.play();
+            
+                knight.traverse( child => {
+                    if (child.isMesh){
+                        if (material == null && child.material.map != null){
+                            const threeTone = new THREE.TextureLoader().load( '../../assets/threeTone.jpg' );
+				            threeTone.minFilter = THREE.NearestFilter;
+				            threeTone.magFilter = THREE.NearestFilter;
+
+                            //const map = new THREE.TextureLoader().load( '../../assets/human_knight.tga' );
+                            //map.encoding = THREE.sRGBEncoding;
+                            const map = child.material.map;
+
+                            material = new THREE.MeshToonMaterial( { map, gradientMap: threeTone } );
+                            //material = new THREE.MeshToonMaterial( { gradientMap: threeTone } );
+                            //material = new THREE.MeshToonMaterial(  );
+                        }
+                        child.material = material;
+                    }
+                });
+            
+                loadingBar.visible = false;
+
+                outline = new OutlineEffect( renderer );
+            
+                scene.add( knight );
+            
+                render(); 
+            },
+            // called while loading is progressing
+            xhr => {
+                loadingBar.update(name, xhr.loaded, xhr.total);        
+            },
+            // called when loading has errors
+            err => {
+
+                console.error( err );
+
+            }
+        );
+    }
+
+    function onWindowResize() {
+
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+
+        renderer.setSize( window.innerWidth, window.innerHeight );
+
+    }
+
+    function render() {
+        requestAnimationFrame( render );
+        const dt = clock.getDelta();
+        if (mixer) mixer.update(dt);
+
+        if ( outline ){
+            outline.render( scene, camera );
+        }else{
+            renderer.render( scene, camera );
+        }
+    } 
+</script>
+
+</body>
+</html>
