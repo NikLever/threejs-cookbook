@@ -158,22 +158,26 @@ function init(){
   document.body.appendChild( renderer.domElement );
   
   const controls = new OrbitControls(camera, renderer.domElement);
+
+  window.addEventListener( 'resize', resize, false);
   
   const options = {
     func: 'helix'
   }
   
   const gui = new GUI();
-  gui.add(options, 'func', ['plane', 'sphere', 'klein', 'torus', 'mobius', 'helix']).onChange(value => createMesh(ParametricGeometries[value]));
+  gui.add(options, 'func', Object.keys(ParametricGeometries)).onChange(value => createMesh(ParametricGeometries[value]));
   createMesh(ParametricGeometries[options.func]);
-  
-  window.addEventListener( 'resize', resize, false);
   
   update();
 }
 
 function createMesh(func){
-  if (mesh!==undefined) scene.remove(mesh);
+  if (mesh!==undefined){
+    scene.remove(mesh);
+    mesh.geometry.dispose();
+    mesh.material.dispose();
+  }
   const geometry = new ParametricGeometry( func, 25, 50 );
   const material = new THREE.MeshStandardMaterial( { color: 0x00ffff, wireframe:true } );
   mesh = new THREE.Mesh( geometry, material );
