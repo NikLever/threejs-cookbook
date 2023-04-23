@@ -2,6 +2,7 @@
 <html lang="en" >
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Three.JS: Geometry - Extrude</title>
   <link rel="apple-touch-icon" sizes="180x180" href="../../images/favicon/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="../../images/favicon/favicon-32x32.png">
@@ -74,7 +75,7 @@
 
                 // model
 
-                const loader = new GLTFLoader().setPath( '../../libs/three140/examples/models/gltf/Nefertiti/' );
+                const loader = new GLTFLoader().setPath( '../../libs/three/examples/models/gltf/Nefertiti/' );
                 loader.load( 'Nefertiti.glb',  gltf => {
 
                     gltf.scene.scale.set( 0.1, 0.1, 0.1 );

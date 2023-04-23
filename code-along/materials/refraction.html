@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Three.JS: Foundations - Template</title>
+  <title>Three.JS: Materials - Refraction</title>
   <link rel="apple-touch-icon" sizes="180x180" href="../../images/favicon/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="../../images/favicon/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="../../images/favicon/favicon-16x16.png">
@@ -37,7 +37,7 @@
   import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
   import { GUI } from "three/addons/libs/lil-gui.module.min.js"
 
-  let scene, camera, renderer, renderTarget, controls, envMap, material, diamond;
+  let scene, camera, renderer, renderTarget, controls, envMap, material, diamond, options;
 
   init();
 
@@ -60,12 +60,10 @@
     
     controls = new OrbitControls(camera, renderer.domElement);
 
-    setEnvironment();
-    loadDiamond();
-      
     window.addEventListener( 'resize', resize, false);
 
-    resize();
+    setEnvironment();
+    loadDiamond();
   }
 
   function setEnvironment(){
@@ -93,19 +91,7 @@
         'diamond.glb',
         // called when the resource is loaded
         gltf => {
-            const material = new THREE.MeshPhysicalMaterial({
-                roughness: 0,
-                transmission: 1,
-                thickness: 2
-            });
-
             diamond = gltf.scene;
-        
-            diamond.traverse( child => {
-                if (child.isMesh){
-                    child.material = material;
-                }
-            });
         
             scene.add( diamond );
         
@@ -128,14 +114,6 @@
     requestAnimationFrame( update );
 
     if (diamond) diamond.rotateY( 0.001 );
-
-    diamond.visible = false;
-
-    renderer.setRenderTarget( renderTarget );
-    renderer.render( scene, camera );
-    renderer.setRenderTarget(null);
-
-    diamond.visible = true;
     
     renderer.render( scene, camera );  
   }
@@ -144,9 +122,6 @@
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize( window.innerWidth, window.innerHeight );
-    if (renderTarget) renderTarget.dispose();
-    renderTarget = new THREE.WebGLRenderTarget( window.innerWidth/2, window.innerWidth/2 );
-    if (material && material.uniforms) material.uniforms.tDiffuse.value = renderTarget.texture;
   }
 </script>
 </body>
