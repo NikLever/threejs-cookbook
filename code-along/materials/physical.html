@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Three.JS: Materials - Variants</title>
+  <title>Three.JS: Materials - MeshPhysicalMaterial</title>
   <link rel="apple-touch-icon" sizes="180x180" href="../../images/favicon/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="../../images/favicon/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="../../images/favicon/favicon-16x16.png">
@@ -16,12 +16,11 @@
   </style>
 </head>
 <body>
-<script async src="https://unpkg.com/es-module-shims@1.3.6/dist/es-module-shims.js"></script>
 <script type="importmap">
   {
     "imports": {
-      "three": "../../libs/three/build/three.module.js",
-      "three/addons/": "../../libs/three/examples/jsm/"
+        "three": "../../libs/three/build/three.module.js",
+        "three/addons/": "../../libs/three/examples/jsm/"
     }
   }
 </script>
@@ -33,12 +32,9 @@
     import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
     import { GUI } from "three/addons/libs/lil-gui.module.min.js"
 
-    let camera, scene, renderer, gui;
-
-    const state = { variant: 'Default' };
+    let camera, scene, renderer, gui, envMap, params, material;
 
     init();
-    render();
 
     function init() {
 
@@ -50,11 +46,16 @@
 
         scene = new THREE.Scene();
 
+        const ambient = new THREE.HemisphereLight(0xffffbb, 0x080820);
+        scene.add(ambient);
+    
+        const light = new THREE.DirectionalLight(0xFFFFFF, 1);
+        light.position.set( 1, 10, 6);
+        scene.add(light);
+
         renderer = new THREE.WebGLRenderer( { antialias: true } );
         renderer.setPixelRatio( window.devicePixelRatio );
         renderer.setSize( window.innerWidth, window.innerHeight );
-        renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.toneMappingExposure = 1;
         renderer.outputEncoding = THREE.sRGBEncoding;
         container.appendChild( renderer.domElement );
 
@@ -62,18 +63,31 @@
         controls.addEventListener( 'change', render ); // use if there is no animation loop
         controls.minDistance = 2;
         controls.maxDistance = 10;
-        controls.target.set( 0, 0.8, 0 );
+        controls.target.set( 0, 1.2, 0 );
         controls.update();
 
         window.addEventListener( 'resize', onWindowResize );
 
         setEnvironment();
+        
+        createGUI();
+
         loadModel();
 
     }
 
-    function setEnvironment(){
+    function onWindowResize() {
 
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+
+        renderer.setSize( window.innerWidth, window.innerHeight );
+
+        render();
+
+    }
+
+    function setEnvironment(){
         new RGBELoader()
             .setPath( '../../assets/hdr/' )
             .load( 'venice_sunset_1k.hdr', texture => {
@@ -87,30 +101,65 @@
             });
     }
 
-    function loadModel(){
+    function createGUI(){
+        params = {
+            color: 0xffffff,
+            roughness: 0,
+            transmission: 1,
+            thickness: 2,
+        };
+        gui = new GUI();
 
-        const loader = new GLTFLoader().setPath( '../../assets/' );
-        loader.load( 'chair.glb',  gltf => {
-
-            gltf.scene.scale.set( 3.0, 3.0, 3.0 );
-
-            scene.add( gltf.scene );
-
+        gui.addColor( params, 'color' ).onChange( value => {
+            material.color.set( value );
             render();
-
         } );
 
-    }
+        gui.add( params, 'roughness', 0, 1 ).onChange( value => {
+            material.roughness = value;
+            render();
+        } );
 
-    function onWindowResize() {
+        gui.add( params, 'transmission', 0, 1 ).onChange( value => {
+            material.transmission = value;
+            render();
+        } );
 
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-
-        renderer.setSize( window.innerWidth, window.innerHeight );
+        gui.add( params, 'thickness', 0, 5 ).onChange( value => {
+            material.thickness = value;
+            render();
+        } );
 
         render();
 
+    }
+
+    function loadModel(){
+        const loader = new GLTFLoader()
+            .setPath( '../../libs/three/examples/models/gltf/Nefertiti/' )
+            .load( 'Nefertiti.glb',  gltf => {
+
+                gltf.scene.scale.set( 0.1, 0.1, 0.1 );
+
+                material = new THREE.MeshPhysicalMaterial( {
+                    color: params.color,
+                    roughness: params.roughness,
+                    transmission: params.transmission,
+                    thickness: params.thickness,
+                } );
+
+                gltf.scene.traverse( child => {
+                    if (child.isMesh){
+                        child.material.dispose();
+                        child.material = material;
+                    }
+                });
+                    
+                scene.add( gltf.scene );    
+                
+                render();
+
+            } );
     }
 
     function render() {

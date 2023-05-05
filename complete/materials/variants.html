@@ -50,46 +50,6 @@
 
         scene = new THREE.Scene();
 
-        new RGBELoader()
-            .setPath( '../../assets/hdr/' )
-            .load( 'venice_sunset_1k.hdr', texture => {
-
-                texture.mapping = THREE.EquirectangularReflectionMapping;
-
-                scene.background = texture;
-                scene.environment = texture;
-
-                render();
-
-                // model
-
-                const loader = new GLTFLoader().setPath( '../../assets/' );
-                loader.load( 'chair.glb',  gltf => {
-
-                    gltf.scene.scale.set( 3.0, 3.0, 3.0 );
-
-                    scene.add( gltf.scene );
-
-                    // GUI
-                    gui = new GUI();
-
-                    // Details of the KHR_materials_variants extension used here can be found below
-                    // https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_variants
-                    const parser = gltf.parser;
-                    const variantsExtension = gltf.userData.gltfExtensions[ 'KHR_materials_variants' ];
-                    const variants = variantsExtension.variants.map( ( variant ) => variant.name );
-                    const variantsCtrl = gui.add( state, 'variant', variants ).name( 'Variant' );
-
-                    selectVariant( scene, parser, variantsExtension, state.variant );
-
-                    variantsCtrl.onChange( ( value ) => selectVariant( scene, parser, variantsExtension, value ) );
-
-                    render();
-
-                } );
-
-            } );
-
         renderer = new THREE.WebGLRenderer( { antialias: true } );
         renderer.setPixelRatio( window.devicePixelRatio );
         renderer.setSize( window.innerWidth, window.innerHeight );
@@ -106,6 +66,78 @@
         controls.update();
 
         window.addEventListener( 'resize', onWindowResize );
+
+        setEnvironment();
+        setBg();
+        loadModel();
+
+    }
+
+    function setBg(){
+
+        new THREE.TextureLoader()
+            .setPath('../../assets/')
+            .load( 'radial.jpg', 
+                    texture => {
+                        texture.encoding = THREE.sRGBEncoding;
+                        scene.background = texture;
+                        render();
+                    }, null, 
+                    err => {
+                        console.error( err );
+                        console.log( err.message );
+                    });
+
+    }
+
+    function setEnvironment(){
+
+        new RGBELoader()
+            .setPath( '../../assets/hdr/' )
+            .load( 'venice_sunset_1k.hdr', texture => {
+
+                texture.mapping = THREE.EquirectangularReflectionMapping;
+
+                scene.environment = texture;
+
+                render();
+            });
+    }
+
+    function loadModel(){
+
+        const loader = new GLTFLoader().setPath( '../../assets/' );
+        loader.load( 'chair.glb',  gltf => {
+
+            gltf.scene.scale.set( 3.0, 3.0, 3.0 );
+
+            scene.add( gltf.scene );
+
+            // GUI
+            gui = new GUI();
+
+            // Details of the KHR_materials_variants extension used here can be found below
+            // https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_variants
+            const parser = gltf.parser;
+
+            let variantsExtension;
+
+            if ( 'gltfExtensions' in gltf.userData ){
+                variantsExtension = gltf.userData.gltfExtensions[ 'KHR_materials_variants' ];
+            }
+        
+            if (variantsExtension != null){
+                const variants = variantsExtension.variants.map( ( variant ) => variant.name );
+                const variantsCtrl = gui.add( state, 'variant', variants ).name( 'Variant' );
+
+                selectVariant( scene, parser, variantsExtension, state.variant );
+
+                variantsCtrl.onChange( ( value ) => selectVariant( scene, parser, variantsExtension, value ) );
+            }
+
+            render();
+
+        } );
 
     }
 
