@@ -92,29 +92,10 @@
                 mixer = new THREE.AnimationMixer( knight );
                 const action = mixer.clipAction( gltf.animations[2] );
                 if ( action ) action.play();
-            
-                knight.traverse( child => {
-                    if (child.isMesh){
-                        if (material == null && child.material.map != null){
-                            const threeTone = new THREE.TextureLoader().load( '../../assets/threeTone.jpg' );
-				            threeTone.minFilter = THREE.NearestFilter;
-				            threeTone.magFilter = THREE.NearestFilter;
 
-                            //const map = new THREE.TextureLoader().load( '../../assets/human_knight.tga' );
-                            //map.encoding = THREE.sRGBEncoding;
-                            const map = child.material.map;
-
-                            material = new THREE.MeshToonMaterial( { map, gradientMap: threeTone } );
-                            //material = new THREE.MeshToonMaterial( { gradientMap: threeTone } );
-                            //material = new THREE.MeshToonMaterial(  );
-                        }
-                        child.material = material;
-                    }
-                });
+                //Add material replacement code here
             
                 loadingBar.visible = false;
-
-                outline = new OutlineEffect( renderer );
             
                 scene.add( knight );
             
@@ -147,11 +128,7 @@
         const dt = clock.getDelta();
         if (mixer) mixer.update(dt);
 
-        if ( outline ){
-            outline.render( scene, camera );
-        }else{
-            renderer.render( scene, camera );
-        }
+        renderer.render( scene, camera );
     } 
 </script>
 

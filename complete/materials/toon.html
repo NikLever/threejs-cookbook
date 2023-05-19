@@ -32,7 +32,35 @@
     import { OutlineEffect } from 'three/addons/effects/OutlineEffect.js';
     import { LoadingBar } from "../../libs/LoadingBar.js";
 
-    let camera, scene, renderer, clock, light, knight, mixer, outline;
+    class OutlineEffect2 extends OutlineEffect{
+        constructor( renderer, parameters = {}, outlineGroup ){
+            super( renderer, parameters );
+
+            this.outlineGroup = outlineGroup | new THREE.Group();
+
+            this.render = function ( scene, camera ) {
+
+                if ( this.enabled === false ) {
+
+                    renderer.render( scene, camera );
+                    return;
+
+                }
+
+                const currentAutoClear = renderer.autoClear;
+                renderer.autoClear = this.autoClear;
+
+                renderer.render( scene, camera );
+
+                renderer.autoClear = currentAutoClear;
+
+                this.renderOutline( outlineGroup, camera );
+
+            };
+        }
+    }
+
+    let camera, scene, renderer, clock, light, knight, mixer, outline, outlineGroup;
 
     init();
     
@@ -100,13 +128,9 @@
 				            threeTone.minFilter = THREE.NearestFilter;
 				            threeTone.magFilter = THREE.NearestFilter;
 
-                            //const map = new THREE.TextureLoader().load( '../../assets/human_knight.tga' );
-                            //map.encoding = THREE.sRGBEncoding;
                             const map = child.material.map;
 
                             material = new THREE.MeshToonMaterial( { map, gradientMap: threeTone } );
-                            //material = new THREE.MeshToonMaterial( { gradientMap: threeTone } );
-                            //material = new THREE.MeshToonMaterial(  );
                         }
                         child.material = material;
                     }
@@ -114,7 +138,12 @@
             
                 loadingBar.visible = false;
 
-                outline = new OutlineEffect( renderer );
+                const params = {
+                    defaultColor: [0,0,0],
+                    defaultThickness: 0.003
+                }
+
+                outline = new OutlineEffect2( renderer, params, knight );
             
                 scene.add( knight );
             
@@ -153,6 +182,46 @@
             renderer.render( scene, camera );
         }
     } 
+
+    function selectedOutlineRender( outlineGroup ){
+        
+        if ( !outline || outline.enabled === false || !outlineGroup ) {
+
+            renderer.render( scene, camera );
+            return;
+
+        }
+
+        const currentAutoClear = renderer.autoClear;
+        renderer.autoClear = this.autoClear;
+
+        renderer.render( scene, camera );
+
+        renderer.autoClear = currentAutoClear;
+
+        const currentSceneAutoUpdate = scene.matrixWorldAutoUpdate;
+        const currentSceneBackground = scene.background;
+        const currentShadowMapEnabled = renderer.shadowMap.enabled;
+
+        scene.matrixWorldAutoUpdate = false;
+        scene.background = null;
+        renderer.autoClear = false;
+        renderer.shadowMap.enabled = false;
+
+        outlineGroup.traverse( setOutlineMaterial );
+
+        renderer.render( scene, camera );
+
+        outlineGroup.traverse( restoreOriginalMaterial );
+
+        cleanupCache();
+
+        scene.matrixWorldAutoUpdate = currentSceneAutoUpdate;
+        scene.background = currentSceneBackground;
+        renderer.autoClear = currentAutoClear;
+        renderer.shadowMap.enabled = currentShadowMapEnabled;
+
+    }
 </script>
 
 </body>
