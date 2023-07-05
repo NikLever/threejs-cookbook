@@ -48,7 +48,7 @@
     document.body.appendChild( renderer.domElement );
     renderer.outputEncoding = THREE.sRGBEncoding;
     renderer.physicallyCorrectLights = true;
-		renderer.toneMapping = THREE.ACESFilmicToneMapping;
+		//renderer.toneMapping = THREE.ACESFilmicToneMapping;
 
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.target.y = 0.03;
@@ -90,7 +90,7 @@
     const loader = new GLTFLoader().setPath('../../assets/');
 
     const dracoLoader = new DRACOLoader();
-    dracoLoader.setDecoderPath( '../../libs/three/examples/jsm/libs/draco/' );
+    dracoLoader.setDecoderPath( '../../libs/three/examples/jsm/libs/draco/' ); 
     loader.setDRACOLoader( dracoLoader );
 
     loader.load(
@@ -108,33 +108,7 @@
   }
 
   function  setEnvironment(name, bg=false){
-    if (name=='none'){
-      if (bg){
-        if (scene.background) scene.background.dispose();
-        scene.background = null;
-      }else{
-        if (scene.environment) scene.environment.dispose();
-        scene.environment = null;
-      }
-      return;
-    }
-    const loader = new RGBELoader();
-    const pmremGenerator = new THREE.PMREMGenerator( renderer );
-    pmremGenerator.compileEquirectangularShader();
-    
-    loader.setPath('../../assets/hdr/').load( `${name}.hdr`, ( texture ) => {
-        const envMap = pmremGenerator.fromEquirectangular( texture ).texture;
-        pmremGenerator.dispose();
-
-        if (bg){
-          scene.background = envMap;
-        }else{
-          scene.environment = envMap;
-        }
-
-    }, undefined, (err)=>{
-        console.error( `An error occurred setting the environment ${err.message}`);
-    } );
+    //TO DO
   }
 
   function update(){
