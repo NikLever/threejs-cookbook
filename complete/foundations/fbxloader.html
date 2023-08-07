@@ -144,7 +144,7 @@
 
   function update(){
     requestAnimationFrame( update );
-    if (stove) stove.rotateY( 0.005 );
+    //if (stove) stove.rotateY( 0.005 );
     const dt = clock.getDelta();
     if (mixer) mixer.update( dt );
     renderer.render( scene, camera );  
