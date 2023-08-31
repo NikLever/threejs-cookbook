@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Three.JS: Foundations - Environment Map</title>
+  <title>Three.JS: Foundations - FBXFLoader</title>
   <link rel="apple-touch-icon" sizes="180x180" href="../../images/favicon/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="../../images/favicon/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="../../images/favicon/favicon-16x16.png">
@@ -33,104 +33,95 @@
 <script  type="module"> 
   import * as THREE from "three"
   import { OrbitControls } from "three/addons/controls/OrbitControls.js"
-  import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-  import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+  import { GUI } from "three/addons/libs/lil-gui.module.min.js"
+  import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
   import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
   import { LoadingBar } from 'libs/LoadingBar.js';
-  import { GUI } from "three/addons/libs/lil-gui.module.min.js"
 
-  let scene, camera, renderer, loadingBar, controls, motorcycle, gui;
+  let scene, camera, renderer, loadingBar, controls, clock, stove, mixer;
 
   init();
 
   function init(){
     scene = new THREE.Scene();
-    scene.background = new THREE.Color( 0xaaaaaa );
+    scene.background = new THREE.Color( 0x111100 );
+
+    clock = new THREE.Clock();
     
     camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 0.1, 100 );
-    camera.position.set(0, 0.05, 0.22);
+    //camera.position.set(0, 0.05, 0.22);
+    camera.position.set(0, 2.5, 3.0);
     
-    const ambient = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 0.5);
+    const ambient = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 0.5);8
     scene.add(ambient);
     
-    const light = new THREE.DirectionalLight(0xFFFFFF, 1.5);
+    const light = new THREE.DirectionalLight(0xFFFFFF, 2.5);
     light.position.set( 0.2, 1, 1 );
     scene.add(light);
     
     renderer = new THREE.WebGLRenderer({antialias: true});
-    renderer.setPixelRatio( Math.max(window.devicePixelRatio, 2) );
-		renderer.outputEncoding = THREE.sRGBEncoding;
-    renderer.physicallyCorrectLights = true;
     renderer.setSize( window.innerWidth, window.innerHeight );
     document.body.appendChild( renderer.domElement );
     
-    controls = new OrbitControls( camera, renderer.domElement );
-    controls.target.y = 0.04;
+    controls = new OrbitControls(camera, renderer.domElement);
+    controls.target.y = 0.8;
+    //controls.target.y = 0.06;
     controls.update();
 
-    const options = {
-      outputEncoding: 'Linear',
-      physicallyCorrectLights: false
-    }
-
-    gui = new GUI();
-    gui.add( options, 'outputEncoding', [ 'Linear', 'RGB' ]).onChange( value => {
-      switch(value){
-        case 'Linear':
-          renderer.outputEncoding = THREE.linearEncoding;
-          break;
-        case 'RGB':
-          renderer.outputEncoding = THREE.sRGBEncoding;
-          break
-      }
-    });
-    gui.add( options, 'physicallyCorrectLights').onChange( value => {
-      renderer.physicallyCorrectLights = value;
-    });
+   // setEnvironment();
 
     window.addEventListener( 'resize', resize, false);
 
-    setEnvironment();
-
-    loadingBar = new LoadingBar();
+    loadingBar = new LoadingBar(); 
         
-    loadGLTF();
+    loadFBX();
   }
-
+    
   function setEnvironment(){
     const loader = new RGBELoader();
     const pmremGenerator = new THREE.PMREMGenerator( renderer );
     pmremGenerator.compileEquirectangularShader();
-
-    loader.load('../../assets/hdr/venice_sunset_1k.hdr',
-        (texture) => {
-          const envmap = pmremGenerator.fromEquirectangular( texture ).texture;
-          pmremGenerator.dispose();
-
-          scene.environment = envmap;
-        }, undefined, (err) => {
-          console.error(err.message);
-        })
-  }
     
-  function loadGLTF(){
-    const loader = new GLTFLoader( ).setPath('../../assets/');
-    const dracoLoader = new DRACOLoader();
-    dracoLoader.setDecoderPath( '../../libs/three/examples/jsm/libs/draco/' );
-    loader.setDRACOLoader( dracoLoader );
+    loader.load( '../../assets/hdr/venice_sunset_1k.hdr', ( texture ) => {
+      const envMap = pmremGenerator.fromEquirectangular( texture ).texture;
+      pmremGenerator.dispose();
 
+      scene.environment = envMap;
+
+    }, undefined, (err)=>{
+        console.error( 'An error occurred setting the environment.' + err.message );
+    } );
+  }
+
+  function loadFBX(){
+    const loader = new FBXLoader( ).setPath('../../assets/');
+    
     // Load a glTF resource
     loader.load(
       // resource URL
-      'motorcycle.glb',
+      'stove.fbx',
       // called when the resource is loaded
-      gltf => {
-        const bbox = new THREE.Box3().setFromObject( gltf.scene );
-        console.log(`min:${bbox.min.x.toFixed(2)},${bbox.min.y.toFixed(2)},${bbox.min.z.toFixed(2)} -  max:${bbox.max.x.toFixed(2)},${bbox.max.y.toFixed(2)},${bbox.max.z.toFixed(2)}`);
-                
-        motorcycle = gltf.scene;
-                
-        scene.add( gltf.scene );
+      object => {        
+        mixer = new THREE.AnimationMixer( object );
+        stove = object;
+
+				const action = mixer.clipAction( object.animations[ 0 ] );
+				action.play();
+
+        const scale = 0.02;
+        object.scale.set( scale, scale, scale );
+
+				object.traverse( ( child ) => {
+
+					if ( child.isMesh ) {
+
+						child.castShadow = true;
+						child.receiveShadow = true;
+					}
+
+				} );
+
+				scene.add( object );
                 
         loadingBar.visible = false;
         
@@ -153,6 +144,9 @@
 
   function update(){
     requestAnimationFrame( update );
+    //if (stove) stove.rotateY( 0.005 );
+    const dt = clock.getDelta();
+    if (mixer) mixer.update( dt );
     renderer.render( scene, camera );  
   }
 

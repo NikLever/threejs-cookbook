@@ -110,8 +110,10 @@
   function  setEnvironment(name, bg=false){
     if (name=='none'){
       if (bg){
+        if (scene.background) scene.background.dispose();
         scene.background = null;
       }else{
+        if (scene.environment) scene.environment.dispose();
         scene.environment = null;
       }
       return;
