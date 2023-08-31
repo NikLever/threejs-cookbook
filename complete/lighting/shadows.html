@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <meta property="og:image" content="images/course-image.jpg" />
+  <meta property="og:description" content="A recipe from The ThreeJS Cookbook. See https://niklever.com/courses for more information" />
+  <title>Three.JS: Lighting - Shadows</title>
+  <link rel="apple-touch-icon" sizes="180x180" href="../../images/favicon/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="../../images/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="../../images/favicon/favicon-16x16.png">
+  <link rel="manifest" href="../../site.webmanifest">
+  <style>
+    body{
+      padding: 0;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+<script type="importmap">
+  {
+    "imports": {
+      "three": "../../libs/three/build/three.module.js",
+      "three/addons/": "../../libs/three/examples/jsm/"
+    }
+  }
+</script>
+<script  type="module"> 
+  import * as THREE from "three"
+  import { OrbitControls } from "three/addons/controls/OrbitControls.js"
+  import { GUI } from "three/addons/libs/lil-gui.module.min.js"
+ 
+  let scene, camera, renderer, light, helper;
+
+  init();
+
+  function init(){
+  const assetPath = "../../assets/";
+  
+  scene = new THREE.Scene();
+ 	scene.background = new THREE.Color( 0x999999 );
+	
+  camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 0.1, 1000 );
+  camera.position.set(0, 10, 20);//wide position
+  camera.lookAt(0,0,0);
+   
+  renderer = new THREE.WebGLRenderer({antialias: true});
+  renderer.setSize( window.innerWidth, window.innerHeight );
+  renderer.shadowMap.enabled = true;
+  //renderer.shadowMap.type = THREE.PCFSoftShadowMap; 
+  renderer.shadowMap.type = THREE.VSMShadowMap; 
+  document.body.appendChild( renderer.domElement );
+  
+  const controls = new OrbitControls(camera, renderer.domElement);
+  
+  const geometry = new THREE.SphereGeometry(1, 20, 15);
+  const material = new THREE.MeshPhongMaterial( { color: 0xFFFF00 });
+  const sphere = new THREE.Mesh(geometry, material);
+  
+  let ball;
+  
+  for(let x=-5; x<=5; x+=2.5){
+      for(let z=-5; z<=5; z+=2.5){
+        ball = sphere.clone();
+        ball.position.set(x,2,z);
+        ball.castShadow = true;
+        ball.receiveShadow = true;
+        scene.add(ball);
+      }
+  }
+
+  const geometry1 = new THREE.PlaneGeometry( 100, 100 );
+  const material1 = new THREE.MeshStandardMaterial({
+    color: 0xAAAAAA
+  });
+  const floor = new THREE.Mesh( geometry1, material1 );
+  floor.rotateX( -Math.PI/2 );
+  floor.receiveShadow = true;
+  floor.castShadow = false;
+  scene.add( floor );
+  
+  const ambient = new THREE.AmbientLight(0xffffff, 0.2);
+  scene.add(ambient);
+
+  const hemi = new THREE.HemisphereLight(0xffffff, 0xaaaa66, 0.2);
+  hemi.visible = false;
+  scene.add(hemi);
+  
+  light = new THREE.DirectionalLight();
+  light.position.set(1,15,1);
+  light.castShadow = true;
+  light.shadow.mapSize.width = 256;
+  light.shadow.mapSize.height = 256;
+  light.shadow.camera.near = 0.5;
+  light.shadow.camera.far = 25;
+  light.shadow.radius = 7;
+  light.shadow.blurSamples = 8;
+  light.shadow.bias = -0.001;
+  
+  helper = new THREE.CameraHelper( light.shadow.camera );
+
+  scene.add( helper );
+  scene.add(light);
+  
+  const options = {
+    width: 1,
+    depth: 1
+  }
+  
+  const gui = new GUI();
+  gui.add( options, 'width', 0, 25).onChange( value => {
+    light.shadow.camera.left = -value;
+    light.shadow.camera.right = value;
+    light.shadow.camera.updateProjectionMatrix();
+    helper.update();
+  });
+  gui.add( options, 'depth', 0, 25).onChange( value => {
+    light.shadow.camera.top = value;
+    light.shadow.camera.bottom = -value;
+    light.shadow.camera.updateProjectionMatrix();
+    helper.update();
+  });
+  gui.add(light.shadow, 'radius', 7, 25, 1)
+  gui.add(light.shadow, 'blurSamples', 1, 25, 1) 
+  
+  window.addEventListener( 'resize', resize, false);
+  
+  update();
+}
+
+function update(){
+  requestAnimationFrame( update );
+	renderer.render( scene, camera ); 
+}
+
+function resize(){
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize( window.innerWidth, window.innerHeight );
+}
+
+</script>
+
+</body>
+</html>

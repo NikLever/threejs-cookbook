@@ -2,7 +2,7 @@
 <html lang="en" >
 <head>
   <meta charset="UTF-8">
-  <title>Three.JS: Geometry - Extrude</title>
+  <title>Three.JS: Lighting - Basic</title>
   <link rel="apple-touch-icon" sizes="180x180" href="../../images/favicon/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="../../images/favicon/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="../../images/favicon/favicon-16x16.png">
@@ -19,7 +19,7 @@
   {
     "imports": {
       "three": "../../libs/three/build/three.module.js",
-    "three/addons/": "../../libs/three/examples/jsm/"
+      "three/addons/": "../../libs/three/examples/jsm/"
     }
   }
 </script>
@@ -71,8 +71,12 @@
     }
   }
   
-  const ambient = new THREE.HemisphereLight(0xffffff, 0xaaaa66, 0.1);
+  const ambient = new THREE.AmbientLight(0xffffff, 0.2);
   scene.add(ambient);
+
+  const hemi = new THREE.HemisphereLight(0xffffff, 0xaaaa66, 0.2);
+  hemi.visible = false;
+  scene.add(hemi);
   
   //Add lights here
   lights = {};
@@ -117,10 +121,16 @@
   lights.areaParent.add(lights.area);
   
   params = {
+    ambient: {
+      enable: true,
+      hemisphere: false,
+      envMap: true
+    },
     spot: { 
       enable: false,
       color: 0xffffff,
       distance: 0,
+      decay: 2,
       angle: Math.PI/3,
       penumbra: 0,
       helper: false,
@@ -144,12 +154,27 @@
       enable: false,
       color: 0xffff00,
       distance: 0,
+      decay: 2,
       helper: false,
       moving: false
     }
   }
   
   const gui = new GUI();
+  const global = gui.addFolder( 'Global illumination');
+  global.add( params.ambient, 'enable').onChange( value => { 
+    ambient.visible = value && !params.ambient.hemisphere;
+    hemi.visible = value && params.ambient.hemisphere;
+  } );
+  global.add( params.ambient, 'hemisphere').onChange( value => { 
+    if (params.ambient.enable){
+      hemi.visible = value;
+      ambient.visible = !value;
+    }
+  });
+  global.add( params.ambient, 'envMap').onChange( value => { 
+    material.envMap = ( value ) ? envMap : null 
+  });
   const spot = gui.addFolder('Spot');
   spot.close();
   spot.add(params.spot, 'enable').onChange(value => { lights.spot.visible = value });
@@ -157,6 +182,9 @@
   spot.add(params.spot, 'distance').min(0).max(20).onChange( value =>{
     lights.spot.distance = value;
     lights.spotHelper.update();
+  });
+  spot.add(params.spot, 'decay').min(0).max(20).onChange( value =>{
+    lights.spot.decay = value;
   });
   spot.add(params.spot, 'angle').min(0.1).max(1.57).step(0.1).onChange( value =>{
     lights.spot.angle = value;
@@ -199,8 +227,12 @@
       lights.pointHelper.geometry.dispose();
       lights.pointHelper.geometry = new THREE.SphereBufferGeometry(value,6,4);
       scene.add(lights.pointHelper);
+      lights.pointHelper.visible = params.point.helper;
     }  
   );
+  point.add(params.point, 'decay').min(0).max(10).onChange( value => {
+    lights.point.decay = value;
+  });
   point.add(params.point, 'helper').onChange(value => lights.pointHelper.visible = value);
   point.add(params.point, 'moving');
   
