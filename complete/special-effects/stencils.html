@@ -39,7 +39,14 @@
   import { LoadingBar } from 'libs/LoadingBar.js';
   import { GUI } from "three/addons/libs/lil-gui.module.min.js"
 
-  let scene, camera, renderer, loadingBar, controls, magnifyingGlass;
+  let scene, camera, renderer, loadingBar, controls, magnifyingGlass, mouse, raycaster;
+  let plane = new THREE.Plane();
+  let pNormal = new THREE.Vector3(); // plane's normal
+  let planeIntersect = new THREE.Vector3(); // point of intersection with the plane
+  let pIntersect = new THREE.Vector3(); // point of intersection with an object (plane's point)
+  let shift = new THREE.Vector3(); // distance between position of an object and points of intersection with the object
+  let isDragging = false;
+  let dragObject;
 
   init();
 
@@ -47,19 +54,60 @@
     scene = new THREE.Scene();
     
     camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 0.1, 1000 );
-    camera.position.set(-3.28, 2.96, 4.33);
+    camera.position.set(-0.08, 2.81, 4.18);
     camera.lookAt( new THREE.Vector3() );
     
-    const ambient = new THREE.HemisphereLight(0xffffbb, 0x080820);
+    const ambient = new THREE.AmbientLight(0xbbbbff, 0.6);
     scene.add(ambient);
+
+    const light = new THREE.DirectionalLight();
+    scene.add(light);
     
     renderer = new THREE.WebGLRenderer({antialias: true});
     renderer.setSize( window.innerWidth, window.innerHeight );
+    renderer.outputColorSpace = THREE.LinearSRGBColorSpace;
     document.body.appendChild( renderer.domElement );
     
-    //controls = new OrbitControls(camera, renderer.domElement);
+    controls = new OrbitControls(camera, renderer.domElement);
       
+    mouse = {};
+    raycaster = new THREE.Raycaster();
+
     window.addEventListener( 'resize', resize, false);
+
+    // events
+    document.addEventListener("pointermove", event => {
+
+        mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+        mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+
+        raycaster.setFromCamera(mouse, camera);
+
+        if (isDragging) {
+            raycaster.ray.intersectPlane(plane, planeIntersect);
+            dragObject.position.addVectors(planeIntersect, shift);
+        }
+    });
+
+    document.addEventListener("pointerdown", () => {
+        let intersects = raycaster.intersectObjects([magnifyingGlass]);
+        if (intersects.length > 0) {
+            controls.enabled = false;
+            pIntersect.copy(intersects[0].point);
+            //pNormal.copy(camera.position).sub(pIntersect).normalize();
+            pNormal.set(0,0,1).applyMatrix4( magnifyingGlass.matrixWorld );
+            plane.setFromNormalAndCoplanarPoint(pNormal, pIntersect);
+            shift.subVectors(magnifyingGlass.position, intersects[0].point);
+            isDragging = true;
+            dragObject = magnifyingGlass;
+        }
+    } );
+
+    document.addEventListener("pointerup", () => {
+        isDragging = false;
+        dragObject = null;
+        controls.enabled = true;
+    } );
 
     loadingBar = new LoadingBar(); 
 
@@ -96,21 +144,40 @@
       'small-room.glb',
       // called when the resource is loaded
       gltf => {
-        const bbox = new THREE.Box3().setFromObject( gltf.scene );
-        console.log(`min:${bbox.min.x.toFixed(2)},${bbox.min.y.toFixed(2)},${bbox.min.z.toFixed(2)} -  max:${bbox.max.x.toFixed(2)},${bbox.max.y.toFixed(2)},${bbox.max.z.toFixed(2)}`);
+        //const bbox = new THREE.Box3().setFromObject( gltf.scene );
+        //console.log(`min:${bbox.min.x.toFixed(2)},${bbox.min.y.toFixed(2)},${bbox.min.z.toFixed(2)} -  max:${bbox.max.x.toFixed(2)},${bbox.max.y.toFixed(2)},${bbox.max.z.toFixed(2)}`);
 
-        const scale = 1;
-        //motorcycle.scale.set( scale, scale, scale );
         const halo = gltf.scene.getObjectByName('Sphere');
         if (halo){
             gltf.scene.remove(halo);
             halo.visible = false;
-            const light = new THREE.PointLight( 0xFFFFFF, 3, 20 );
+            const light = new THREE.PointLight( 0xFFFFFF, 3, 50 );
             const pos = new THREE.Vector3();
             light.position.copy(halo.getWorldPosition(pos));
             light.position.y
             scene.add(light);
         }
+
+        const stencilRef = 1;
+
+        const desk = gltf.scene.getObjectByName('desk');
+        desk.material = desk.material.clone();
+        desk.material.renderOrder = 2;
+        desk.material.stencilWrite = true;
+        desk.material.stencilRef = stencilRef;
+        desk.material.stencilFunc = THREE.NotEqualStencilFunc;
+
+        magnifyingGlass = gltf.scene.getObjectByName('magnifying_glass');
+        scene.attach( magnifyingGlass );
+
+        const lens = magnifyingGlass.children[1];
+        lens.material.depthWrite = false;
+        lens.material.renderOrder = 1;
+        lens.material.stencilWrite = true;
+        lens.material.stencilRef = stencilRef;
+        lens.material.stencilFunc = THREE.AlwaysStencilFunc;
+        lens.material.stencilZPass = THREE.ReplaceStencilOp;
+        //lens.material.visible = false;
                 
         scene.add( gltf.scene );
                 
