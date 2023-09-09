@@ -47,8 +47,7 @@
     renderer.setSize( window.innerWidth, window.innerHeight );
     document.body.appendChild( renderer.domElement );
     renderer.outputColorSpace = THREE.SRGBColorSpace;
-    renderer.physicallyCorrectLights = true;
-		//renderer.toneMapping = THREE.ACESFilmicToneMapping;
+		renderer.toneMapping = THREE.ACESFilmicToneMapping;
 
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.target.y = 0.03;

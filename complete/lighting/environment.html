@@ -47,7 +47,6 @@
     renderer.setSize( window.innerWidth, window.innerHeight );
     document.body.appendChild( renderer.domElement );
     renderer.outputColorSpace = THREE.SRGBColorSpace;
-    renderer.physicallyCorrectLights = true;
 		renderer.toneMapping = THREE.ACESFilmicToneMapping;
 
     const controls = new OrbitControls(camera, renderer.domElement);
@@ -66,11 +65,12 @@
 
     loadModel('camera');
     
-    const params = {
+    params = {
       environment: "none",
       background: "none",
       light: false,
-      exposure: 2
+      exposure: 2,
+      equirectangularMapping: true
     }
     
     renderer.toneMappingExposure = params.exposure;
@@ -80,6 +80,11 @@
     gui.add(params, 'background', ['none', 'apartment', 'factory', 'field_sky', 'living_room', 'venice_sunset_1k']).onChange( value => { setEnvironment(value, true); });
     gui.add(params, 'light').onChange( value => { light.visible = value; } );
     gui.add(params, 'exposure', 0, 5, 0.1).onChange( value => { renderer.toneMappingExposure = value; });
+    gui.add(params, 'equirectangularMapping').onChange( value => {
+      const mapping = value ? THREE.EquirectangularReflectionMapping : THREE.UVMapping;
+      if (scene.background) scene.background.mapping = mapping;
+      if (scene.environment) scene.environment.mapping = mapping;
+    })
 
     window.addEventListener( 'resize', resize, false);
     
@@ -118,18 +123,17 @@
       }
       return;
     }
+
     const loader = new RGBELoader();
-    const pmremGenerator = new THREE.PMREMGenerator( renderer );
-    pmremGenerator.compileEquirectangularShader();
     
-    loader.setPath('../../assets/hdr/').load( `${name}.hdr`, ( texture ) => {
-        const envMap = pmremGenerator.fromEquirectangular( texture ).texture;
-        pmremGenerator.dispose();
+    loader.setPath('../../assets/hdr/')
+      .load( `${name}.hdr`, ( texture ) => {
+        if (params.equirectangularMapping) texture.mapping = THREE.EquirectangularReflectionMapping;
 
         if (bg){
-          scene.background = envMap;
+          scene.background = texture;
         }else{
-          scene.environment = envMap;
+          scene.environment = texture;
         }
 
     }, undefined, (err)=>{
