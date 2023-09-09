@@ -59,7 +59,7 @@
     
     renderer = new THREE.WebGLRenderer({antialias: true});
     renderer.setPixelRatio( Math.max(window.devicePixelRatio, 2) );
-		renderer.outputEncoding = THREE.sRGBEncoding;
+		renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.physicallyCorrectLights = true;
     renderer.setSize( window.innerWidth, window.innerHeight );
     document.body.appendChild( renderer.domElement );
@@ -69,18 +69,18 @@
     controls.update();
 
     const options = {
-      outputEncoding: 'Linear',
+      outputColorSpace: 'Linear',
       physicallyCorrectLights: false
     }
 
     gui = new GUI();
-    gui.add( options, 'outputEncoding', [ 'Linear', 'RGB' ]).onChange( value => {
+    gui.add( options, 'outputColorSpace', [ 'Linear', 'SRGB' ]).onChange( value => {
       switch(value){
         case 'Linear':
-          renderer.outputEncoding = THREE.linearEncoding;
+          renderer.outputColorSpace = THREE.linearColorSpace;
           break;
         case 'RGB':
-          renderer.outputEncoding = THREE.sRGBEncoding;
+          renderer.outputColorSpace = THREE.SRGBColorSpace;
           break
       }
     });

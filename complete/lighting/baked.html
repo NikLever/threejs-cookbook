@@ -42,7 +42,6 @@
         renderer.setPixelRatio( Math.min(2, window.devicePixelRatio ));
         renderer.setSize( window.innerWidth, window.innerHeight );
         document.body.appendChild( renderer.domElement );
-        //renderer.outputEncoding = THREE.sRGBEncoding;
         renderer.outputColorSpace = THREE.SRGBColorSpace;
         
         camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 0.1, 50 );

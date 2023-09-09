@@ -50,7 +50,7 @@ function init() {
   renderer.setPixelRatio( Math.min(2, window.devicePixelRatio ));
   renderer.setSize( window.innerWidth, window.innerHeight );
   document.body.appendChild( renderer.domElement );
-  renderer.outputEncoding = THREE.sRGBEncoding;
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.physicallyCorrectLights = true;
 
   //
