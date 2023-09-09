@@ -21,7 +21,7 @@
 
 		<!-- Import maps polyfill -->
 		<!-- Remove this when import maps will be widely supported -->
-		<script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
+		<script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
 
 		<script type="importmap">
 			{
@@ -59,7 +59,6 @@
 				renderer = new THREE.WebGLRenderer( { antialias: true } );
 				renderer.setPixelRatio( window.devicePixelRatio );
 				renderer.setSize( window.innerWidth, window.innerHeight );
-				renderer.outputEncoding = THREE.sRGBEncoding;
 				container.appendChild( renderer.domElement );
 
 				//
@@ -95,7 +94,6 @@
 				gui.add( guiData, 'currentURL', {
 
 					'Tiger': 'models/svg/tiger.svg',
-					'Three.js': 'models/svg/threejs.svg',
 					'Joins and caps': 'models/svg/lineJoinsAndCaps.svg',
 					'Hexagon': 'models/svg/hexagon.svg',
 					'Energy': 'models/svg/energy.svg',
@@ -153,7 +151,7 @@
 
 				//
 
-				const helper = new THREE.GridHelper( 160, 10 );
+				const helper = new THREE.GridHelper( 160, 10, 0x8d8d8d, 0xc1c1c1 );
 				helper.rotation.x = Math.PI / 2;
 				scene.add( helper );
 
@@ -163,23 +161,22 @@
 
 				loader.load( url, function ( data ) {
 
-					const paths = data.paths;
-
 					const group = new THREE.Group();
 					group.scale.multiplyScalar( 0.25 );
 					group.position.x = - 70;
 					group.position.y = 70;
 					group.scale.y *= - 1;
+			
+					let renderOrder = 0;
 
-					for ( let i = 0; i < paths.length; i ++ ) {
-
-						const path = paths[ i ];
+					for ( const path of data.paths ) {
 
 						const fillColor = path.userData.style.fill;
+
 						if ( guiData.drawFillShapes && fillColor !== undefined && fillColor !== 'none' ) {
 
 							const material = new THREE.MeshBasicMaterial( {
-								color: new THREE.Color().setStyle( fillColor ).convertSRGBToLinear(),
+								color: new THREE.Color().setStyle( fillColor ),
 								opacity: path.userData.style.fillOpacity,
 								transparent: true,
 								side: THREE.DoubleSide,
@@ -189,12 +186,11 @@
 
 							const shapes = SVGLoader.createShapes( path );
 
-							for ( let j = 0; j < shapes.length; j ++ ) {
-
-								const shape = shapes[ j ];
+							for ( const shape of shapes ) {
 
 								const geometry = new THREE.ShapeGeometry( shape );
 								const mesh = new THREE.Mesh( geometry, material );
+								mesh.renderOrder = renderOrder ++;
 
 								group.add( mesh );
 
@@ -207,7 +203,7 @@
 						if ( guiData.drawStrokes && strokeColor !== undefined && strokeColor !== 'none' ) {
 
 							const material = new THREE.MeshBasicMaterial( {
-								color: new THREE.Color().setStyle( strokeColor ).convertSRGBToLinear(),
+								color: new THREE.Color().setStyle( strokeColor ),
 								opacity: path.userData.style.strokeOpacity,
 								transparent: true,
 								side: THREE.DoubleSide,
@@ -215,15 +211,14 @@
 								wireframe: guiData.strokesWireframe
 							} );
 
-							for ( let j = 0, jl = path.subPaths.length; j < jl; j ++ ) {
-
-								const subPath = path.subPaths[ j ];
+							for ( const subPath of path.subPaths ) {
 
 								const geometry = SVGLoader.pointsToStroke( subPath.getPoints(), path.userData.style );
 
 								if ( geometry ) {
 
 									const mesh = new THREE.Mesh( geometry, material );
+									mesh.renderOrder = renderOrder ++;
 
 									group.add( mesh );
 
@@ -249,6 +244,7 @@
 				camera.updateProjectionMatrix();
 
 				renderer.setSize( window.innerWidth, window.innerHeight );
+				render();
 
 			}
 

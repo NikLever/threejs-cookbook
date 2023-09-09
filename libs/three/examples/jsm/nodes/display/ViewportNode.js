@@ -3,9 +3,9 @@ import { NodeUpdateType } from '../core/constants.js';
 import { uniform } from '../core/UniformNode.js';
 import { nodeImmutable, vec2 } from '../shadernode/ShaderNode.js';
 
-import { Vector2 } from 'three';
+import { Vector2, Vector4 } from 'three';
 
-let resolution;
+let resolution, viewportResult;
 
 class ViewportNode extends Node {
 
@@ -21,7 +21,7 @@ class ViewportNode extends Node {
 
 	getNodeType() {
 
-		return this.scope === ViewportNode.COORDINATE ? 'vec4' : 'vec2';
+		return this.scope === ViewportNode.COORDINATE || this.scope === ViewportNode.VIEWPORT ? 'vec4' : 'vec2';
 
 	}
 
@@ -29,7 +29,7 @@ class ViewportNode extends Node {
 
 		let updateType = NodeUpdateType.NONE;
 
-		if ( this.scope === ViewportNode.RESOLUTION ) {
+		if ( this.scope === ViewportNode.RESOLUTION || this.scope === ViewportNode.VIEWPORT ) {
 
 			updateType = NodeUpdateType.FRAME;
 
@@ -43,7 +43,15 @@ class ViewportNode extends Node {
 
 	update( { renderer } ) {
 
-		renderer.getSize( resolution );
+		if ( this.scope === ViewportNode.VIEWPORT ) {
+
+			renderer.getViewport( viewportResult );
+
+		} else {
+
+			renderer.getDrawingBufferSize( resolution );
+
+		}
 
 	}
 
@@ -59,6 +67,10 @@ class ViewportNode extends Node {
 
 			output = uniform( resolution || ( resolution = new Vector2() ) );
 
+		} else if ( scope === ViewportNode.VIEWPORT ) {
+
+			output = uniform( viewportResult || ( viewportResult = new Vector4() ) );
+
 		} else {
 
 			const coordinateNode = vec2( new ViewportNode( ViewportNode.COORDINATE ) );
@@ -69,10 +81,10 @@ class ViewportNode extends Node {
 			let outX = output.x;
 			let outY = output.y;
 
-			if ( /top/i.test( scope ) && builder.isFlipY() ) outY = outY.invert();
-			else if ( /bottom/i.test( scope ) && builder.isFlipY() === false ) outY = outY.invert();
+			if ( /top/i.test( scope ) && builder.isFlipY() ) outY = outY.oneMinus();
+			else if ( /bottom/i.test( scope ) && builder.isFlipY() === false ) outY = outY.oneMinus();
 
-			if ( /right/i.test( scope ) ) outX = outX.invert();
+			if ( /right/i.test( scope ) ) outX = outX.oneMinus();
 
 			output = vec2( outX, outY );
 
@@ -98,6 +110,7 @@ class ViewportNode extends Node {
 
 ViewportNode.COORDINATE = 'coordinate';
 ViewportNode.RESOLUTION = 'resolution';
+ViewportNode.VIEWPORT = 'viewport';
 ViewportNode.TOP_LEFT = 'topLeft';
 ViewportNode.BOTTOM_LEFT = 'bottomLeft';
 ViewportNode.TOP_RIGHT = 'topRight';
@@ -107,6 +120,7 @@ export default ViewportNode;
 
 export const viewportCoordinate = nodeImmutable( ViewportNode, ViewportNode.COORDINATE );
 export const viewportResolution = nodeImmutable( ViewportNode, ViewportNode.RESOLUTION );
+export const viewport = nodeImmutable( ViewportNode, ViewportNode.VIEWPORT );
 export const viewportTopLeft = nodeImmutable( ViewportNode, ViewportNode.TOP_LEFT );
 export const viewportBottomLeft = nodeImmutable( ViewportNode, ViewportNode.BOTTOM_LEFT );
 export const viewportTopRight = nodeImmutable( ViewportNode, ViewportNode.TOP_RIGHT );

@@ -42,10 +42,11 @@
         renderer.setPixelRatio( Math.min(2, window.devicePixelRatio ));
         renderer.setSize( window.innerWidth, window.innerHeight );
         document.body.appendChild( renderer.domElement );
-        renderer.outputEncoding = THREE.sRGBEncoding;
+        //renderer.outputEncoding = THREE.sRGBEncoding;
+        renderer.outputColorSpace = THREE.SRGBColorSpace;
         
         camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 0.1, 50 );
-        camera.position.set( -3.2, 3.3, 5.3 );
+        camera.position.set( -3.0, 6.2, 7.3 );
         
         const col = 0x201510;
         scene = new THREE.Scene();
@@ -74,14 +75,14 @@
         // Load a glTF resource
         loader.load(
             // resource URL
-            'baked.glb',
+            'small-room-baked.glb',
             // called when the resource is loaded
             gltf => {
             baked = gltf.scene;
             
             baked.traverse( child => {
                 if (child.isMesh){
-                    const material = new THREE.MeshBasicMaterial( { map: child.material.map });
+                    const material = new THREE.MeshBasicMaterial( { map: child.material.emissiveMap });
                     child.material = material;
                 }
             });

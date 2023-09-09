@@ -9,7 +9,7 @@
 	<body>
 		<!-- Import maps polyfill -->
 		<!-- Remove this when import maps will be widely supported -->
-		<script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
+		<script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
 
 		<script type="importmap">
 			{
@@ -75,7 +75,7 @@
 
 				const torusGeometry = new THREE.TorusKnotGeometry( ...Object.values( parameters ) );
 				const torusMaterial = new THREE.MeshPhysicalMaterial( {
-					transmission: 1.0, roughness: 0, metalness: 0.25, thickness: 0.5
+					transmission: 1.0, roughness: 0, metalness: 0.25, thickness: 0.5, side: THREE.DoubleSide
 				} );
 				const torus = new THREE.Mesh( torusGeometry, torusMaterial );
 				torus.name = 'torus';
@@ -129,6 +129,8 @@
 				renderer.setPixelRatio( window.devicePixelRatio );
 				renderer.setSize( window.innerWidth, window.innerHeight );
 				renderer.xr.enabled = true;
+				renderer.toneMapping = THREE.ACESFilmicToneMapping;
+				renderer.toneMappingExposure = 1;
 				document.body.appendChild( renderer.domElement );
 
 				document.body.appendChild( VRButton.createButton( renderer ) );
@@ -232,8 +234,8 @@
 
 				const time = performance.now() * 0.0002;
 				const torus = scene.getObjectByName( 'torus' );
-				torus.rotation.x = time * 2;
-				torus.rotation.y = time * 5;
+				torus.rotation.x = time * 0.4;
+				torus.rotation.y = time;
 
 				renderer.render( scene, camera );
 				stats.update();

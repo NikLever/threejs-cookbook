@@ -15,7 +15,7 @@
 
 		<!-- Import maps polyfill -->
 		<!-- Remove this when import maps will be widely supported -->
-		<script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
+		<script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
 
 		<script type="importmap">
 			{
@@ -58,11 +58,17 @@
 
 				const textureLoader = new THREE.TextureLoader();
 
-				const sprite1 = textureLoader.load( 'textures/sprites/snowflake1.png' );
-				const sprite2 = textureLoader.load( 'textures/sprites/snowflake2.png' );
-				const sprite3 = textureLoader.load( 'textures/sprites/snowflake3.png' );
-				const sprite4 = textureLoader.load( 'textures/sprites/snowflake4.png' );
-				const sprite5 = textureLoader.load( 'textures/sprites/snowflake5.png' );
+				const assignSRGB = ( texture ) => {
+
+					texture.colorSpace = THREE.SRGBColorSpace;
+
+				};
+
+				const sprite1 = textureLoader.load( 'textures/sprites/snowflake1.png', assignSRGB );
+				const sprite2 = textureLoader.load( 'textures/sprites/snowflake2.png', assignSRGB );
+				const sprite3 = textureLoader.load( 'textures/sprites/snowflake3.png', assignSRGB );
+				const sprite4 = textureLoader.load( 'textures/sprites/snowflake4.png', assignSRGB );
+				const sprite5 = textureLoader.load( 'textures/sprites/snowflake5.png', assignSRGB );
 
 				for ( let i = 0; i < 10000; i ++ ) {
 
@@ -91,7 +97,7 @@
 					const size = parameters[ i ][ 2 ];
 
 					materials[ i ] = new THREE.PointsMaterial( { size: size, map: sprite, blending: THREE.AdditiveBlending, depthTest: false, transparent: true } );
-					materials[ i ].color.setHSL( color[ 0 ], color[ 1 ], color[ 2 ] );
+					materials[ i ].color.setHSL( color[ 0 ], color[ 1 ], color[ 2 ], THREE.SRGBColorSpace );
 
 					const particles = new THREE.Points( geometry, materials[ i ] );
 
@@ -203,7 +209,7 @@
 					const color = parameters[ i ][ 0 ];
 
 					const h = ( 360 * ( color[ 0 ] + time ) % 360 ) / 360;
-					materials[ i ].color.setHSL( h, color[ 1 ], color[ 2 ] );
+					materials[ i ].color.setHSL( h, color[ 1 ], color[ 2 ], THREE.SRGBColorSpace );
 
 				}
 

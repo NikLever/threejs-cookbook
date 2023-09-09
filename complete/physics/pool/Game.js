@@ -5,7 +5,7 @@ import { StrengthBar } from './StrengthBar.js';
 import { Table } from './Table.js';
 import { WhiteBall } from './WhiteBall.js';
 import { Ball } from './Ball.js';
-import { OrbitControls } from '../three/addons/controls/OrbitControls.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
  class Game{
    constructor(){

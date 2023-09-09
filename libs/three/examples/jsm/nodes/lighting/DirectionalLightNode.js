@@ -1,10 +1,9 @@
 import AnalyticLightNode from './AnalyticLightNode.js';
+import { lightTargetDirection } from './LightNode.js';
 import { addLightNode } from './LightsNode.js';
-import getDirectionVector from '../functions/light/getDirectionVector.js';
-import { uniform } from '../core/UniformNode.js';
 import { addNodeClass } from '../core/Node.js';
 
-import { Vector3, DirectionalLight } from 'three';
+import { DirectionalLight } from 'three';
 
 class DirectionalLightNode extends AnalyticLightNode {
 
@@ -12,35 +11,23 @@ class DirectionalLightNode extends AnalyticLightNode {
 
 		super( light );
 
-		this.directionNode = uniform( new Vector3() );
-
-	}
-
-	update( frame ) {
-
-		getDirectionVector( this.light, frame.camera, this.directionNode.value );
-
-		super.update( frame );
-
 	}
 
 	construct( builder ) {
 
-		const lightDirection = this.directionNode.normalize();
-		const lightColor = this.colorNode;
+		super.construct( builder );
 
-		const lightingModelFunctionNode = builder.context.lightingModelNode;
+		const lightingModel = builder.context.lightingModel;
+
+		const lightColor = this.colorNode;
+		const lightDirection = lightTargetDirection( this.light );
 		const reflectedLight = builder.context.reflectedLight;
 
-		if ( lightingModelFunctionNode && lightingModelFunctionNode.direct ) {
-
-			lightingModelFunctionNode.direct.call( {
-				lightDirection,
-				lightColor,
-				reflectedLight
-			}, builder );
-
-		}
+		lightingModel.direct( {
+			lightDirection,
+			lightColor,
+			reflectedLight
+		} );
 
 	}
 

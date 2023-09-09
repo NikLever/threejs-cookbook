@@ -95,7 +95,7 @@
   lights.point.position.set(-2,2,2);
   lights.pointHelper = new THREE.PointLightHelper(lights.point);
   lights.pointHelper.geometry.dispose();
-  lights.pointHelper.geometry = new THREE.SphereBufferGeometry(1,6,4);
+  lights.pointHelper.geometry = new THREE.SphereGeometry(1,6,4);
   lights.pointHelper.visible = false;
   scene.add(lights.pointHelper);
   scene.add(lights.point);

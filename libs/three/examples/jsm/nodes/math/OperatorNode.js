@@ -120,7 +120,7 @@ class OperatorNode extends TempNode {
 
 				typeB = typeA;
 
-			} else if ( op === '<' || op === '>' || op === '<=' || op === '>=' ) {
+			} else if ( op === '<' || op === '>' || op === '<=' || op === '>=' || op === '==' ) {
 
 				if ( builder.isVector( typeA ) ) {
 
@@ -172,7 +172,7 @@ class OperatorNode extends TempNode {
 
 			if ( op === '=' ) {
 
-				builder.addFlowCode( `${a} ${this.op} ${b}` );
+				builder.addLineFlowCode( `${a} ${this.op} ${b}` );
 
 				return a;
 

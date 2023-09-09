@@ -46,7 +46,7 @@
 
 		<!-- Import maps polyfill -->
 		<!-- Remove this when import maps will be widely supported -->
-		<script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
+		<script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
 
 		<script type="importmap">
 			{
@@ -135,7 +135,8 @@
 
 				geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( positions, 3 ) );
 				geometry.setAttribute( 'uv', new THREE.Float32BufferAttribute( uvs, 2 ) );
-				geometry.setAttribute( 'textureIndex', new THREE.Int32BufferAttribute( textureIndices, 1 ) );
+				geometry.setAttribute( 'textureIndex', new THREE.Int16BufferAttribute( textureIndices, 1 ) );
+				geometry.attributes.textureIndex.gpuType = THREE.IntType;
 
 				geometry.computeBoundingSphere();
 
