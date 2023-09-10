@@ -138,12 +138,6 @@
 
           gltf.scene.scale.set( scale, scale, scale );
 
-          gltf.scene.traverse( child => {
-            if (child.isMesh){
-              child.material = material;
-            }
-          })
-
           scene.add( gltf.scene );
 
           mesh = gltf.scene;
