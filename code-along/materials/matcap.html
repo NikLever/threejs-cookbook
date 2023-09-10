@@ -76,27 +76,18 @@
 
     const gui = new GUI();
       gui.add( options, 'matcap', ['none', 'matcap1', 'matcap2', 'matcap3', 'matcap4']).onChange( value => {
-      if (material.matcap){
-        material.matcap.dispose();
-      }
-
-      if (value=='none') return;
-
-      updateMatcap( value );
+      //TO DO: update matcap
     })
 
     render();
   }
 
-  function updateMatcap( name ){
-    const texture = new THREE.TextureLoader()
-                            .setPath('../../assets/')
-                            .load(`${name}.jpg`, (tex)=>{
-                              material.matcap = tex;
-                              tex.needsUpdate = true;
-				                      material.needsUpdate = true;
-                              render()
-                            });
+  function loadMatcap( name ){
+    //TO DO: load matcap 
+  }
+
+  function clearMatcap(){
+    //TO DO: clear matcap
   }
 
   function setBg(){
@@ -138,6 +129,8 @@
 
           gltf.scene.scale.set( scale, scale, scale );
 
+          //TO DO: Apply material
+
           scene.add( gltf.scene );
 
           mesh = gltf.scene;
@@ -146,12 +139,6 @@
 
       } );
 
-  }
-
-  function update(){
-    requestAnimationFrame(update);
-    mesh.rotateY(0.001);
-    render();
   }
 
   function render(){
