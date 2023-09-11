@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Three.JS: Foundations - Template</title>
+  <title>Three.JS: Materials - Matcap</title>
   <link rel="apple-touch-icon" sizes="180x180" href="../../images/favicon/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="../../images/favicon/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="../../images/favicon/favicon-16x16.png">
@@ -64,53 +64,36 @@
       
     window.addEventListener( 'resize', resize, false);
     
-    setEnvironment();
     setBg();
     loadModel();
 
-    material = new THREE.MeshMatcapMaterial( { color: 0xFFFFFF } );
+    material = new THREE.MeshMatcapMaterial();
 
     options = {
-      matcap: 'none',
-      useTimeout: true
+      matcap: 'none'
     }
 
     const gui = new GUI();
       gui.add( options, 'matcap', ['none', 'matcap1', 'matcap2', 'matcap3', 'matcap4']).onChange( value => {
       if (material.matcap){
         material.matcap.dispose();
-        if ( !options.useTimeout ) clearMatcap();
+        material.matcap = null;
+        material.needsUpdate = true;
+        render();
       }
 
-      if (value=="none"){
-        if (options.useTimeout) (clearMatcap, 200);
-        return;
-      }
+      if (value=="none") return;
 
-      loadMatcap( value );
-    });
-    gui.add( options, 'useTimeout' );
-
-    render();
-  }
-
-  function clearMatcap(){
-    material.matcap = null;
-    material.needsUpdate = true;
-    render();
-  }
-
-  function loadMatcap( name ){
-    const texture = new THREE.TextureLoader()
+      const texture = new THREE.TextureLoader()
                             .setPath('../../assets/')
-                            .load(`${name}.jpg`, (tex)=>{
+                            .load(`${value}.jpg`, (tex)=>{
                               material.matcap = tex;
-                              tex.needsUpdate = true;
 				                      material.needsUpdate = true;
                               render();
-                            }, null, err => {
-                              console.error( err );
                             });
+    });
+
+    render();
   }
 
   function setBg(){
@@ -128,20 +111,6 @@
                       console.log( err.message );
                   });
 
-  }
-
-  function setEnvironment(){
-
-      new RGBELoader()
-          .setPath( '../../assets/hdr/' )
-          .load( 'venice_sunset_1k.hdr', texture => {
-
-              texture.mapping = THREE.EquirectangularReflectionMapping;
-
-              scene.environment = texture;
-
-              render();
-          });
   }
 
   function loadModel(){

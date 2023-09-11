@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Three.JS: Foundations - Template</title>
+  <title>Three.JS: Materials - Matcap</title>
   <link rel="apple-touch-icon" sizes="180x180" href="../../images/favicon/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="../../images/favicon/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="../../images/favicon/favicon-16x16.png">
@@ -64,7 +64,6 @@
       
     window.addEventListener( 'resize', resize, false);
     
-    setEnvironment();
     setBg();
     loadModel();
 
@@ -72,22 +71,14 @@
       matcap: 'none'
     }
 
-    material = new THREE.MeshMatcapMaterial( { color: 0xFFFFFF } );
+   //TO DO - 1: create matcap material
 
     const gui = new GUI();
       gui.add( options, 'matcap', ['none', 'matcap1', 'matcap2', 'matcap3', 'matcap4']).onChange( value => {
-      //TO DO: update matcap
+      //TO DO - 3: update matcap
     })
 
     render();
-  }
-
-  function loadMatcap( name ){
-    //TO DO: load matcap 
-  }
-
-  function clearMatcap(){
-    //TO DO: clear matcap
   }
 
   function setBg(){
@@ -96,7 +87,7 @@
           .setPath('../../assets/')
           .load( 'radial.jpg', 
                   texture => {
-                      texture.encoding = THREE.sRGBEncoding;
+                      texture.colorSpace = THREE.SRGBColorSpace;
                       scene.background = texture;
                       render();
                   }, null, 
@@ -107,20 +98,6 @@
 
   }
 
-  function setEnvironment(){
-
-      new RGBELoader()
-          .setPath( '../../assets/hdr/' )
-          .load( 'venice_sunset_1k.hdr', texture => {
-
-              texture.mapping = THREE.EquirectangularReflectionMapping;
-
-              scene.environment = texture;
-
-              render();
-          });
-  }
-
   function loadModel(){
 
       const loader = new GLTFLoader().setPath( '../../libs/three/examples/models/gltf/' );
@@ -129,7 +106,7 @@
 
           gltf.scene.scale.set( scale, scale, scale );
 
-          //TO DO: Apply material
+          //TO DO - 2: Apply material
 
           scene.add( gltf.scene );
 
