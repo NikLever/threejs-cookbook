@@ -36,7 +36,7 @@
   import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
   import { GUI } from "three/addons/libs/lil-gui.module.min.js"
 
-  let scene, camera, renderer, controls, mesh, material;
+  let scene, camera, renderer, controls, mesh, material, options;
 
   init();
 
@@ -70,23 +70,26 @@
 
     material = new THREE.MeshMatcapMaterial( { color: 0xFFFFFF } );
 
-    const options = {
-      matcap: 'none'
+    options = {
+      matcap: 'none',
+      useTimeout: true
     }
 
     const gui = new GUI();
       gui.add( options, 'matcap', ['none', 'matcap1', 'matcap2', 'matcap3', 'matcap4']).onChange( value => {
       if (material.matcap){
         material.matcap.dispose();
+        if ( !options.useTimeout ) clearMatcap();
       }
 
       if (value=="none"){
-        setTimeout(clearMatcap, 200);
+        if (options.useTimeout) (clearMatcap, 200);
         return;
       }
 
       loadMatcap( value );
-    })
+    });
+    gui.add( options, 'useTimeout' );
 
     render();
   }
