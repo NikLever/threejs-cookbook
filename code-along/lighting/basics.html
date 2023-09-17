@@ -85,28 +85,17 @@
   lights.directional.visible = false;
   lights.directional.position.set(1,5,1);
   lights.directional.target = ball;
-  lights.directionalHelper = new THREE.DirectionalLightHelper(lights.directional);
-  lights.directionalHelper.visible = false;
-  scene.add(lights.directionalHelper);
   scene.add(lights.directional);
   
   lights.point = new THREE.PointLight(0xffff00, 1);
   lights.point.visible = false;
   lights.point.position.set(-2,2,2);
-  lights.pointHelper = new THREE.PointLightHelper(lights.point);
-  lights.pointHelper.geometry.dispose();
-  lights.pointHelper.geometry = new THREE.SphereGeometry(1,6,4);
-  lights.pointHelper.visible = false;
-  scene.add(lights.pointHelper);
   scene.add(lights.point);
   
   lights.spot = new THREE.SpotLight(0xFFFFFF, 3);
   lights.spot.decay = 0;
   lights.spot.visible = false;
   lights.spot.position.set(1,10,1);
-  lights.spotHelper = new THREE.SpotLightHelper(lights.spot);
-  lights.spotHelper.visible = false;
-  scene.add(lights.spotHelper);
   scene.add(lights.spot);
   
   RectAreaLightUniformsLib.init();
@@ -115,9 +104,6 @@
   lights.area.visible = false;
   lights.area.position.set(0,8,0);
   lights.area.lookAt(0,0,0);
-  lights.areaHelper = new RectAreaLightHelper(lights.area);
-  lights.areaHelper.visible = false;
-  lights.area.add(lights.areaHelper);
   scene.add(lights.areaParent);
   lights.areaParent.add(lights.area);
   
@@ -182,17 +168,19 @@
   spot.addColor(params.spot, 'color').onChange( value => lights.spot.color = new THREE.Color(value));
   spot.add(params.spot, 'distance').min(0).max(20).onChange( value =>{
     lights.spot.distance = value;
-    lights.spotHelper.update();
+    if (lights.spotHelper) lights.spotHelper.update();
   });
   spot.add(params.spot, 'decay').min(0).max(20).onChange( value =>{
     lights.spot.decay = value;
   });
   spot.add(params.spot, 'angle').min(0.1).max(1.57).step(0.1).onChange( value =>{
     lights.spot.angle = value;
-    lights.spotHelper.update();
+    if (lights.spotHelper) lights.spotHelper.update();
   });
   spot.add(params.spot, 'penumbra').min(0).max(1).step(0.05).onChange( value => lights.spot.penumbra = value );
-  spot.add(params.spot, 'helper').onChange(value => lights.spotHelper.visible = value);
+  spot.add(params.spot, 'helper').onChange(value =>{
+    if (lights.spotHelper) lights.spotHelper.visible = value;
+  });
   spot.add(params.spot, 'moving');
   
   const area = gui.addFolder('RectArea');
@@ -205,14 +193,18 @@
   area.add(params.area, 'height').min(1).max(15).onChange( value => { 
     lights.area.height = value;
   });
-  area.add(params.area, 'helper').onChange(value => lights.areaHelper.visible = value);
+  area.add(params.area, 'helper').onChange(value => {
+    if ( lights.areaHelper) lights.areaHelper.visible = value;
+  });
   area.add(params.area, 'moving');
   
   const directional = gui.addFolder('Directional');
   directional.close();
   directional.add(params.directional, 'enable').onChange(value => { lights.directional.visible = value });
   directional.addColor(params.directional, 'color').onChange( value => lights.directional.color = new THREE.Color(value));
-  directional.add(params.directional, 'helper').onChange(value => lights.directionalHelper.visible = value);
+  directional.add(params.directional, 'helper').onChange(value => {
+    if (lights.directionalHelper) lights.directionalHelper.visible = value;
+  });
   directional.add(params.directional, 'moving');
   
   const point = gui.addFolder('Point');
@@ -221,20 +213,24 @@
   point.addColor(params.point, 'color').onChange( value => lights.point.color = new THREE.Color(value));
   point.add(params.point, 'distance').min(0).max(10).onChange( value => {
       lights.point.distance = value;
-      lights.pointHelper.dispose();
-      scene.remove(lights.pointHelper);
-      const sphereSize = (value) ? value * 0.8 : 1;  
-      lights.pointHelper = new THREE.PointLightHelper( lights.point, sphereSize );
-      lights.pointHelper.geometry.dispose();
-      lights.pointHelper.geometry = new THREE.SphereGeometry(value,6,4);
-      scene.add(lights.pointHelper);
-      lights.pointHelper.visible = params.point.helper;
+      if (lights.pointHelper){
+        lights.pointHelper.dispose();
+        scene.remove(lights.pointHelper);
+        const sphereSize = (value) ? value * 0.8 : 1;  
+        lights.pointHelper = new THREE.PointLightHelper( lights.point, sphereSize );
+        lights.pointHelper.geometry.dispose();
+        lights.pointHelper.geometry = new THREE.SphereGeometry(value,6,4);
+        scene.add(lights.pointHelper);
+        lights.pointHelper.visible = params.point.helper;
+      }
     }  
   );
   point.add(params.point, 'decay').min(0).max(10).onChange( value => {
     lights.point.decay = value;
   });
-  point.add(params.point, 'helper').onChange(value => lights.pointHelper.visible = value);
+  point.add(params.point, 'helper').onChange(value => {
+    if (lights.pointHelper) lights.pointHelper.visible = value;
+  });
   point.add(params.point, 'moving');
   
   window.addEventListener( 'resize', resize, false);
@@ -252,12 +248,12 @@ function update(){
   }
   if (params.spot.moving){ 
     lights.spot.position.x = delta;
-    lights.spotHelper.update();
+    if (lights.spotHelper) lights.spotHelper.update();
   }  
   if (params.point.moving) lights.point.position.z = delta;
   if (params.directional.moving){ 
     lights.directional.position.x = delta;
-    lights.directionalHelper.update();
+    if (lights.directionalHelper) lights.directionalHelper.update();
   }   
 }
 
