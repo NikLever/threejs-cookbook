@@ -58,68 +58,20 @@ function init(){
 
   scene.add(light);
 
-  //helper = new THREE.CameraHelper(light.shadow.camera);
-  //scene.add(helper);
-
   renderer = new THREE.WebGLRenderer();
   renderer.setSize( window.innerWidth, window.innerHeight );
   renderer.shadowMap.enabled = true;
-  //renderer.shadowMap.type = THREE.VSMShadowMap; 
   document.body.appendChild( renderer.domElement );
-
 
   controls = new OrbitControls(camera, renderer.domElement);
   controls.target = new THREE.Vector3(0, 2, 0);
   controls.update();
-  
-  initPhysics();
   
   onWindowResize();
 
   window.addEventListener( 'resize', onWindowResize, false );
 
   update();
-}
-
-function initPhysics(){
-	world = new CANNON.World();
-		
-  dt = 1.0/60.0;
-	damping = 0.01;
-		
-	world.broadphase = new CANNON.NaiveBroadphase();
-	world.gravity.set(0, -10, 0);
-  
-  helper = new CannonHelper( scene, world );
-		
-	const groundShape = new CANNON.Plane();
-  groundMaterial = new CANNON.Material();
-	const groundBody = new CANNON.Body({ mass: 0, material: groundMaterial });
-	groundBody.quaternion.setFromAxisAngle( new CANNON.Vec3(1,0,0), -Math.PI/2);
-	groundBody.addShape(groundShape);
-	world.addBody(groundBody);
-  helper.addVisual(groundBody, 0xffaa00);
-  
-  setInterval(addBody, 1000);
-}
-
-function addBody(){
-  let shape;
-  if (Math.random()>0.5){
-	  shape = new CANNON.Sphere(0.5);
-  }else{
-	  shape = new CANNON.Box(new CANNON.Vec3(0.5,0.5,0.5));
-  }
-  const material = new CANNON.Material();
-	const body = new CANNON.Body({ mass: 5, material: material });
-  body.addShape(shape);
-  const x = Math.random()*0.3 + 1;
-		
-  body.position.set(x, 5, 0);
-	body.linearDamping = damping;
-	world.addBody(body);
-        
-  helper.addVisual(body);
 }
 
 function onWindowResize( event ) {
@@ -130,8 +82,8 @@ function onWindowResize( event ) {
 
 function update() {
   requestAnimationFrame( update );
-  world.step(dt);
-  helper.update( );
+  if (world) world.step(dt);
+  if (helper) helper.update( );
   renderer.render( scene, camera );
 } 
   

@@ -26,10 +26,11 @@
 <script  type="module"> 
   import * as THREE from "three";
   import * as CANNON from '../../libs/cannon-es.js';
-  import { OrbitControls } from "three/addons/controls/OrbitControls.js"
+  import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+  import { GUI } from "three/addons/libs/lil-gui.module.min.js"
   import { CannonHelper } from '../../libs/CannonHelper.js';
   
-  let scene, camera, renderer, world, helper, dt, damping, marker, jointBody, raycaster, mouse, box, gplane, groundMaterial;
+  let scene, camera, renderer, controls, gui, world, helper, dt, damping, marker, jointBody, raycaster, mouse, box, gplane, groundMaterial;
 
 init();
 
@@ -42,20 +43,30 @@ function init(){
   const ambient = new THREE.HemisphereLight(0x555555, 0xFFFFFF);
   scene.add(ambient);
 
-  const light = new THREE.DirectionalLight(0xffffff);
+  const light = new THREE.DirectionalLight(0xffffff, 3);
   light.position.set(1,1.25,1.25);
   light.castShadow = true;
-  const size = 15;
-  light.shadow.left = -size;
-  light.shadow.bottom = -size;
-  light.shadow.right = size;
-  light.shadow.top = size;
+  light.shadow.radius = 3;
+  light.shadow.blurSamples = 10;
+  light.shadow.mapSize.width = 1024; 
+  light.shadow.mapSize.height = 1024; 
+  const size = 5;
+  light.shadow.camera.left = -size;
+  light.shadow.camera.bottom = -size;
+  light.shadow.camera.right = size;
+  light.shadow.camera.top = size;
+  light.shadow.camera.near = 1;
+  light.shadow.camera.far = 50;
   scene.add(light);
 
   renderer = new THREE.WebGLRenderer();
   renderer.setSize( window.innerWidth, window.innerHeight );
   renderer.shadowMap.enabled = true;
   document.body.appendChild( renderer.domElement );
+
+  controls = new OrbitControls(camera, renderer.domElement);
+  controls.target = new THREE.Vector3(0, 0.5, 0);
+  controls.update();
   
   raycaster = new THREE.Raycaster();
   mouse = new THREE.Vector2();
@@ -69,7 +80,7 @@ function init(){
   scene.add(gplane);
   
   //Create a marker to indicate where the mouse is
-  const geometry2 = new THREE.SphereBufferGeometry( 0.1, 8, 8 );
+  const geometry2 = new THREE.SphereGeometry( 0.1, 8, 8 );
   const material2 = new THREE.MeshStandardMaterial({ color: 0xaa0000 });
   marker = new THREE.Mesh( geometry2, material2 );
   marker.visible = false;
@@ -83,6 +94,11 @@ function init(){
   window.addEventListener("mousedown", onMouseDown, false );
   window.addEventListener("mousemove", onMouseMove, false );
   window.addEventListener("mouseup", onMouseUp, false );
+
+  gui = new GUI();
+  const folder = gui.addFolder('mouse');
+  folder.add( mouse, 'x' ).listen().decimals( 2 );
+  folder.add( mouse, 'y' ).listen().decimals( 2 );
   
   update();
 }
@@ -140,6 +156,7 @@ function addBody(box=true){
 function onMouseMove( event ) { 
   mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
   mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+  if (gui) gui.controllersRecursive().forEach( ctrl => ctrl.updateDisplay() );
   //console.log( `${mouse.x.toFixed(1)}, ${mouse.y.toFixed(1)}`);
 }
 
@@ -149,11 +166,13 @@ function onMouseDown( event ){
   if (intersects.length>0){
     marker.visible = true;
     marker.position.copy( intersects[0].point );
+    controls.enabled = false;
   }
 }
 
 function onMouseUp(){
   marker.visible = false;
+  controls.enabled = true;
 }
 
 function onWindowResize( event ) {
