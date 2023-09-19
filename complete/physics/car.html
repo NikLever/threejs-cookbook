@@ -44,14 +44,20 @@ function init(){
   const ambient = new THREE.HemisphereLight(0x555555, 0xFFFFFF);
   scene.add(ambient);
 
-  light = new THREE.DirectionalLight(0xffffff, 0.5);
-  light.position.set(1,1.25,1.25);
+  light = new THREE.DirectionalLight(0xffffff, 3);
+  light.position.set(10,12.5,12.5);
   light.castShadow = true;
+  light.shadow.radius = 3;
+  light.shadow.blurSamples = 10;
+  light.shadow.mapSize.width = 1024; 
+  light.shadow.mapSize.height = 1024; 
   const size = 15;
-  light.shadow.left = -size;
-  light.shadow.bottom = -size;
-  light.shadow.right = size;
-  light.shadow.top = size;
+  light.shadow.camera.left = -size;
+  light.shadow.camera.bottom = -size;
+  light.shadow.camera.right = size;
+  light.shadow.camera.top = size;
+  light.shadow.camera.near = 1;
+  light.shadow.camera.far = 50;
   scene.add(light);
 
   renderer = new THREE.WebGLRenderer();
