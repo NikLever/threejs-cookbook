@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>Three.JS: Geometry - Extrude</title>
+  <link rel="apple-touch-icon" sizes="180x180" href="../../images/favicon/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="../../images/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="../../images/favicon/favicon-16x16.png">
+  <link rel="manifest" href="../../site.webmanifest">
+  <style>
+    body{
+      padding: 0;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+<script type="importmap">
+  {
+    "imports": {
+      "three": "../../libs/three/build/three.module.js",
+    "three/addons/": "../../libs/three/examples/jsm/"
+    }
+  }
+</script>
+<script  type="module"> 
+  import * as THREE from "three"
+  
+  const vshader = `
+    varying vec2 v_uv;
+    varying vec3 v_position;
+    void main() {
+      v_uv = uv;
+      v_position = position;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+    }
+    `
+  const fshader = `
+    #define PI 3.141592653589
+    #define PI2 6.28318530718
+
+    uniform float u_time;
+    uniform float u_duration;
+    uniform sampler2D u_tex;
+
+    varying vec2 v_uv;
+    varying vec3 v_position;
+
+    void main (void)
+    {
+      float len = length(v_position.xy);
+      vec2 ripple = v_uv + v_position.xy/len*0.03*cos(len*12.0-u_time*4.0);
+      float delta = (((sin(u_time)+1.0)/2.0)* u_duration)/u_duration;
+      vec2 uv = mix(ripple, v_uv, delta);
+      vec3 color = texture2D(u_tex, uv).rgb;
+      gl_FragColor = vec4(color, 1.0); 
+    }
+    `
+
+    let scene, camera, renderer, clock, uniforms;
+
+    init();
+
+    function init(){
+        scene = new THREE.Scene();
+        camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 10);
+
+        renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        clock = new THREE.Clock();
+
+        const geometry = new THREE.PlaneGeometry(2, 1.5);
+        uniforms = {
+            u_tex: { value: new THREE.TextureLoader().setPath('../../assets/').load('sa1.jpg') },
+            u_duration: { value: 2.0 },
+            u_time: { value: 0.0 }
+        }
+
+        const material = new THREE.ShaderMaterial({
+            uniforms: uniforms,
+            vertexShader: vshader,
+            fragmentShader: fshader
+        });
+
+        const plane = new THREE.Mesh(geometry, material);
+        scene.add(plane);
+
+        camera.position.z = 1;
+
+        onWindowResize();
+
+        update();
+    }
+
+    function onWindowResize(event) {
+        const aspectRatio = window.innerWidth / window.innerHeight;
+        let width, height;
+        if (aspectRatio >= (2 / 1.5)) {
+            console.log("resize: Use width");
+            width = 1;
+            height = (window.innerHeight / window.innerWidth) * width;
+        } else {
+            console.log("resize: Use height")
+            height = 1.5 / 2;
+            width = (window.innerWidth / window.innerHeight) * height;
+        }
+        camera.left = -width;
+        camera.right = width;
+        camera.top = height;
+        camera.bottom = -height;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    function update() {
+        requestAnimationFrame(update);
+        uniforms.u_time.value += clock.getDelta();
+        renderer.render(scene, camera);
+    }
+  
+</script>
+
+</body>
+</html>
