@@ -86,7 +86,7 @@ function init(){
   marker.visible = false;
   scene.add(marker);
   
-  gui = new GUI();
+  const gui = new GUI();
   const folder = gui.addFolder('mouse');
   folder.add( mouse, 'x' ).listen().decimals( 2 );
   folder.add( mouse, 'y' ).listen().decimals( 2 );
