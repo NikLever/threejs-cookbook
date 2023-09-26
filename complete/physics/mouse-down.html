@@ -43,7 +43,7 @@ function init(){
   const ambient = new THREE.HemisphereLight(0x555555, 0xFFFFFF);
   scene.add(ambient);
 
-  const light = new THREE.DirectionalLight(0xffffff, 3);
+  const light = new THREE.DirectionalLight(0xffffff, 4);
   light.position.set(10,12.5,12.5);
   light.castShadow = true;
   light.shadow.radius = 3;

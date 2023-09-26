@@ -75,7 +75,7 @@
     const ambient = new THREE.AmbientLight(0xbbbbff, 0.6);
     scene.add(ambient);
 
-    const light = new THREE.DirectionalLight();
+    const light = new THREE.DirectionalLight(0xFFFFFF, 3);
     scene.add(light);
     
     renderer = new THREE.WebGLRenderer({antialias: true});

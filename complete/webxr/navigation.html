@@ -47,7 +47,7 @@
 
 		this.scene.add( new THREE.HemisphereLight( 0xffffff, 0x404040 ) );
 
-        const light = new THREE.DirectionalLight( 0xffffff );
+        const light = new THREE.DirectionalLight( 0xffffff, 6 );
         light.position.set( 1, 1, 1 ).normalize();
 		this.scene.add( light );
 			
@@ -88,7 +88,7 @@
 		this.scene.fog = new THREE.Fog( 0xa0a0a0, 50, 100 );
 
 		// ground
-		const ground = new THREE.Mesh( new THREE.PlaneBufferGeometry( 200, 200 ), new THREE.MeshPhongMaterial( { color: 0x999999, depthWrite: false } ) );
+		const ground = new THREE.Mesh( new THREE.PlaneGeometry( 200, 200 ), new THREE.MeshPhongMaterial( { color: 0x999999, depthWrite: false } ) );
 		ground.rotation.x = - Math.PI / 2;
 		this.scene.add( ground );
 

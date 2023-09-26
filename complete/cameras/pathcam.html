@@ -32,13 +32,11 @@
     init();
 
     function init(){
-        const assetPath = "https://s3-us-west-2.amazonaws.com/s.cdpn.io/2666677/";
-        
         clock = new THREE.Clock();
         
         scene = new THREE.Scene();
         const envMap = new THREE.CubeTextureLoader()
-            .setPath(`${assetPath}skybox1_`)
+            .setPath("../../assets/skybox1/")
             .load(['px.jpg', 'nx.jpg', 'py.jpg', 'ny.jpg', 'pz.jpg', 'nz.jpg']);
             scene.background = envMap;
             
