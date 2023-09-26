@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>Three.JS: Post-processing - Basic</title>
+  <link rel="apple-touch-icon" sizes="180x180" href="../../images/favicon/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="../../images/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="../../images/favicon/favicon-16x16.png">
+  <link rel="manifest" href="../../site.webmanifest">
+  <style>
+    body{
+      padding: 0;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+<script type="importmap">
+  {
+    "imports": {
+      "three": "../../libs/three/build/three.module.js",
+      "three/addons/": "../../libs/three/examples/jsm/"
+    }
+  }
+</script>
+<script  type="module"> 
+  import * as THREE from "three"
+  import { OrbitControls } from "three/addons/controls/OrbitControls.js"
+  import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+  import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+  import { DotScreenPass } from 'three/addons/postprocessing/DotScreenPass.js';
+  import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+  import { GUI } from "three/addons/libs/lil-gui.module.min.js"
+
+let camera, renderer, gui, composer, box, dot;
+
+init();
+animate();
+
+function init() {
+
+    renderer = new THREE.WebGLRenderer();
+    renderer.setPixelRatio( window.devicePixelRatio );
+    renderer.setSize( window.innerWidth, window.innerHeight );
+    document.body.appendChild( renderer.domElement );
+
+    //
+
+    camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 100 );
+    camera.position.z = 2;
+
+    const scene = new THREE.Scene();
+
+    const controls = new OrbitControls( camera, renderer.domElement );
+
+    const geometry = new THREE.BoxGeometry( );
+    const material = new THREE.MeshStandardMaterial();
+    box = new THREE.Mesh( geometry, material );
+    scene.add( box );
+
+    scene.add( new THREE.AmbientLight( 0x222222 ) );
+
+    const light = new THREE.DirectionalLight( 0xffffff, 3 );
+    light.position.set( 1, 1, 1 );
+    scene.add( light );
+
+    const params = {
+        dotScale: 2
+    }
+
+    gui = new GUI();
+    gui.add( params, 'dotScale', 1.0, 10.0 ).onChange( ( value ) => { dot.uniforms['scale'].value = Number( value ); } );
+
+    // postprocessing
+    composer = new EffectComposer( renderer );
+    composer.addPass( new RenderPass( scene, camera ) );
+
+    dot = new DotScreenPass( );
+    dot.uniforms[ 'scale' ].value = params.dotScale;
+
+    composer.addPass( dot );
+
+    composer.addPass( new OutputPass() );
+
+    window.addEventListener( 'resize', onWindowResize );
+
+    animate();
+
+}
+
+function onWindowResize() {
+
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+
+    renderer.setSize( window.innerWidth, window.innerHeight );
+    composer.setSize( window.innerWidth, window.innerHeight );
+
+}
+
+function animate() {
+
+    requestAnimationFrame( animate );
+
+    box.rotateY(0.005);
+
+    composer.render();
+
+}
+  
+</script>
+
+</body>
+</html>
