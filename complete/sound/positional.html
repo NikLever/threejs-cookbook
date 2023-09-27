@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>The Three.JS Cookbook: Sound - Template</title>
+  <link rel="apple-touch-icon" sizes="180x180" href="../../images/favicon/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="../../images/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="../../images/favicon/favicon-16x16.png">
+  <link rel="manifest" href="../../site.webmanifest">
+  <style>
+    body{
+      padding: 0;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+<script type="importmap">
+{
+  "imports": {
+    "three": "../../libs/three/build/three.module.js",
+    "three/addons/": "../../libs/three/examples/jsm/"
+  }
+}
+</script>
+<script  type="module"> 
+  import * as THREE from "three"
+  import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+  import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+  import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
+  import { LoadingBar } from '../../libs/LoadingBar.js';
+  import { NavmeshControls } from '../../libs/NavmeshControls.js';
+  import { GUI } from "three/addons/libs/lil-gui.module.min.js"
+
+  let scene, camera, renderer, controls, clock, loadingBar, factory, fans, navmesh;
+
+  init();
+
+  function init(){
+    scene = new THREE.Scene();
+    const col =  0x201510;
+    scene.background = new THREE.Color( col );
+    scene.fog = new THREE.Fog( col, 100, 200 );
+
+    camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 0.1, 500 );
+		camera.position.set( -10.6, 4, -1.46 );
+    camera.lookAt(-5,1,0);
+		camera.rotation.y = -Math.PI*0.5;
+
+    clock = new THREE.Clock();
+    
+    const ambient = new THREE.HemisphereLight(0xffffbb, 0x080820);
+    scene.add(ambient);
+    
+    const light = new THREE.DirectionalLight(0xFFFFFF, 3);
+    light.position.set( 4, 20, 20 );
+		light.target.position.set(-2, 0, 0);
+		light.castShadow = true;
+		//Set up shadow properties for the light
+		light.shadow.mapSize.width = 1024; 
+		light.shadow.mapSize.height = 512; 
+		light.shadow.camera.near = 0.5; 
+		light.shadow.camera.far = 50;
+		const d = 30; 
+		light.shadow.camera.left = -d;
+		light.shadow.camera.bottom = -d*0.25;
+		light.shadow.camera.right = light.shadow.camera.top = d;
+    scene.add(light);
+    
+    renderer = new THREE.WebGLRenderer({antialias: true});
+    renderer.shadowMap.enabled = true;
+    renderer.setSize( window.innerWidth, window.innerHeight );
+    document.body.appendChild( renderer.domElement );
+      
+    loadingBar = new LoadingBar();
+
+    setEnvironment();
+
+    loadEnvironment();
+
+    window.addEventListener( 'resize', resize, false);
+    
+    update();
+  }
+
+  function setEnvironment(){
+        const loader = new RGBELoader().setPath('../../assets/');
+        
+        loader.load( 'hdr/factory.hdr', ( texture ) => {
+
+          texture.mapping = THREE.EquirectangularReflectionMapping;
+          
+          scene.environment = texture;
+
+        }, undefined, (err)=>{
+            console.error( err.message );
+        } );
+    }
+
+  function loadEnvironment(){
+    const loader = new GLTFLoader( ).setPath('../../assets/');
+        
+		// Load a glTF resource
+		loader.load(
+			// resource URL
+			'factory.glb',
+			// called when the resource is loaded
+			gltf => {
+
+				scene.add( gltf.scene );
+        factory = gltf.scene;
+				fans = [];
+
+				const mergeObjects = {elements2:[], elements5:[], terrain:[]};
+
+				gltf.scene.traverse( child => {
+					if (child.isMesh){
+						if (child.name == 'NavMesh'){
+							navmesh = child;
+							navmesh.geometry.rotateX( Math.PI/2 );
+							navmesh.quaternion.identity();
+							navmesh.position.set(0,0,0);
+							//child.material.visible = false;
+              child.material.wireframe = true;
+						}else if (child.name.includes('fan')){
+							fans.push( child );
+						}else if (child.material.name.includes('elements2')){
+							mergeObjects.elements2.push(child);
+							child.castShadow = true;
+						}else if (child.material.name.includes('elements5')){
+							mergeObjects.elements5.push(child);
+							child.castShadow = true;
+						}else if (child.material.name.includes('terrain')){
+							mergeObjects.terrain.push(child);
+							child.castShadow = true;
+						}else if (child.material.name.includes('sand')){
+							child.receiveShadow = true;
+						}else if ( child.material.name.includes('elements1')){
+							child.castShadow = true;
+							child.receiveShadow = true;
+						}else if (child.parent.name.includes('main')){
+							child.castShadow = true;
+						}
+					}
+				});
+
+				scene.add(navmesh);
+
+				for(let prop in mergeObjects){
+					const array = mergeObjects[prop];
+					let material;
+					array.forEach( object => {
+						if (material == undefined){
+							material = object.material;
+						}else{
+							object.material = material;
+						}
+					});
+				}
+
+				controls = new NavmeshControls(navmesh, camera);
+
+        const g = new THREE.SphereGeometry(0.2);
+        const m = new THREE.MeshStandardMaterial({ color: 0xff0000, depthTest: false });
+        const mesh = new THREE.Mesh( g, m );
+        controls.target.add(mesh);
+        scene.add(controls.target);
+
+				loadingBar.visible = !loadingBar.loaded;
+
+        update();
+			},
+			// called while loading is progressing
+			xhr => {
+
+				loadingBar.update('environment', xhr.loaded, xhr.total);
+				
+			},
+			// called when loading has errors
+			err => {
+
+				console.error( err );
+
+			}
+		);
+	}	
+
+  function update(){
+    requestAnimationFrame( update );
+    
+		const dt = clock.getDelta();
+
+		if (fans !== undefined){
+        fans.forEach(fan => {
+            fan.rotateY(dt); 
+        });
+    }
+
+		if (controls !== undefined) controls.update(dt);
+
+    renderer.render( scene, camera );  
+  }
+
+  function resize(){
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize( window.innerWidth, window.innerHeight );
+  }
+</script>
+</body>
+</html>

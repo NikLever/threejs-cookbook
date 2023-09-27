@@ -80,7 +80,7 @@
     
     renderer = new THREE.WebGLRenderer({antialias: true});
     renderer.setSize( window.innerWidth, window.innerHeight );
-    renderer.outputColorSpace = THREE.LinearSRGBColorSpace;
+    //renderer.outputColorSpace = THREE.LinearSRGBColorSpace;
     document.body.appendChild( renderer.domElement );
     
     controls = new OrbitControls(camera, renderer.domElement);
