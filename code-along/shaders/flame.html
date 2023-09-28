@@ -2,7 +2,7 @@
 <html lang="en" >
 <head>
   <meta charset="UTF-8">
-  <title>The Three.JS Cookbook: Geometry - Extrude</title>
+  <title>The Three.JS Cookbook: Shaders - Flame</title>
   <link rel="apple-touch-icon" sizes="180x180" href="../../images/favicon/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="../../images/favicon/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="../../images/favicon/favicon-16x16.png">
@@ -96,9 +96,20 @@ const clock = new THREE.Clock();
 
 const geometry = new THREE.PlaneGeometry( 2, 2 );
 const uniforms = {
-  u_tex: { value: new THREE.TextureLoader().setPath('../../assets/').load("flame.png") },
+  u_tex: { value: null },
   u_time: { value: 0.0 },
 }
+
+const loader = new THREE.TextureLoader()
+                  .setPath('../../assets/')
+                  .load("flame.png", (tex) => {
+                    tex.wrapS = THREE.RepeatWrapping;
+                    tex.wrapT = THREE.RepeatWrapping;
+                    tex.offset = new THREE.Vector2( 0.0, -0.01 );
+                    tex.generateMipmaps = false;
+                    tex.minFilter = tex.magFilter = THREE.NearestFilter;
+                    uniforms.u_tex.value = tex;
+                  })
 
 const material = new THREE.ShaderMaterial( {
   uniforms: uniforms,

@@ -33,6 +33,8 @@
 			import { DotScreenShader } from 'three/addons/shaders/DotScreenShader.js';
 			import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 
+			import { GUI } from "three/addons/libs/lil-gui.module.min.js"
+
 			let camera, renderer, composer;
 			let object;
 
@@ -96,6 +98,13 @@
 				//
 
 				window.addEventListener( 'resize', onWindowResize );
+
+				const params = {
+        dotScale: 6
+    }
+
+    const gui = new GUI();
+    gui.add( params, 'dotScale', 1.0, 10.0 ).onChange( ( value ) => { effect1.uniforms['scale'].value = Number( value ); } );
 
 			}
 

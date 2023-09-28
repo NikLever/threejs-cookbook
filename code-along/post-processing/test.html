@@ -1,0 +1,56 @@
+<html>
+    <header>
+        <title>Test</title>
+    </header>
+    <body>
+        <script>
+            let image;
+            init();
+
+            function init(){
+                image = new Image();
+                image.onload = function(){
+                    //flip(image);
+                    stack(image);
+                }
+                image.src = '../../assets/lut/NeutralLUT.png';
+            }
+
+            function flip( image ) {
+		        const width = image.width;
+		        const height = image.height;
+
+                const canvas = document.createElement('canvas');
+                document.body.appendChild(canvas);
+                canvas.width = width;
+                canvas.height = height;
+
+                const context = canvas.getContext('2d');
+                context.scale(1, -1);
+                context.translate(0, -height);
+
+                context.drawImage( image, 0, 0 );
+            }
+		
+            function stack( image ){
+                const width = image.height;
+                const height = image.width;
+
+                const canvas = document.createElement('canvas');
+                document.body.appendChild(canvas);
+                canvas.width = width;
+                canvas.height = height;
+
+                const context = canvas.getContext('2d');
+                context.scale(1, -1);
+                context.translate(0, -height);
+
+                for(let i=0; i<width; i++){
+                    const sy = i * width;
+                    const dy = height - i * width;
+                    context.drawImage( image, dy, 0, width, width, 0, sy, width, width );
+                }
+            }
+        </script>
+    </body>
+</html>
