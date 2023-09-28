@@ -2,7 +2,7 @@
 <html lang="en" >
 <head>
   <meta charset="UTF-8">
-  <title>Three.JS: Geometry - Extrude</title>
+  <title>The Three.JS Cookbook: Geometry - Extrude</title>
   <link rel="apple-touch-icon" sizes="180x180" href="../../images/favicon/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="../../images/favicon/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="../../images/favicon/favicon-16x16.png">
@@ -26,7 +26,7 @@
 <script  type="module"> 
   import * as THREE from "three";
   import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-  import { MyShaderChunks } from "https://niksgames.com/libs/MyShaderChunks.js";
+  import { MyShaderChunks } from "../../libs/MyShaderChunks.js";
 
   const vshader = `
   #include <common>
@@ -38,7 +38,14 @@
   varying vec3 vLightIntensity;
 
   void main() {
-    #include <simple_lambert_vertex>
+    vec3 vLightFront, vLightBack, vIndirectFront;
+    #include <uv_vertex>
+    #include <color_vertex>
+    #include <beginnormal_vertex>
+    #include <defaultnormal_vertex>
+    #include <begin_vertex>
+    #include <project_vertex>
+    #include <lights_gouraud_vertex>
 
     vLightIntensity = vLightFront + ambientLightColor; 
 
@@ -76,8 +83,7 @@
   }
   `;
 
-  THREE.ShaderChunk.simple_lambert_vertex =
-    MyShaderChunks.simple_lambert_vertex_v155;
+  THREE.ShaderChunk.lights_gouraud_vertex = MyShaderChunks.lights_gouraud_vertex; 
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(
@@ -86,6 +92,9 @@
     0.1,
     1000
   );
+
+  const ambient = new THREE.HemisphereLight( 0xFFFFFF, 0xAAAA55 );
+  scene.add(ambient);
 
   const light = new THREE.DirectionalLight(0xffda6f, 1);
   light.position.set(0, 1.25, 1.25);
