@@ -2,7 +2,7 @@
 <html lang="en" >
 <head>
   <meta charset="UTF-8">
-  <title>The Three.JS Cookbook: Geometry - Extrude</title>
+  <title>The Three.JS Cookbook: Cameras - CubeCam</title>
   <link rel="apple-touch-icon" sizes="180x180" href="../../images/favicon/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="../../images/favicon/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="../../images/favicon/favicon-16x16.png">
@@ -71,18 +71,12 @@
 
             } );
 
-        //
-
-        cubeRenderTarget = new THREE.WebGLCubeRenderTarget( 256 );
-        cubeRenderTarget.texture.type = THREE.HalfFloatType;
-
-        cubeCamera = new THREE.CubeCamera( 1, 1000, cubeRenderTarget );
-        //cubeCamera.position.x = 100;
+        //1. Add cubeRenderTarget and cubeCamera initialisation here
 
         //
 
         material = new THREE.MeshStandardMaterial( {
-            envMap: cubeRenderTarget.texture,
+          //2. Add envMap here
             roughness: 0.05,
             metalness: 1
         } );
@@ -140,7 +134,7 @@
         torus.rotation.x += 0.02;
         torus.rotation.y += 0.03;
 
-        cubeCamera.update( renderer, scene );
+        //3. Update the cubeCamera here
 
         controls.update();
 
