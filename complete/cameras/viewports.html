@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>The Three.JS Cookbook: Geometry - Extrude</title>
+    <title>The Three.JS Cookbook: Cameras - Viewports</title>
     <link rel="apple-touch-icon" sizes="180x180" href="../../images/favicon/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="../../images/favicon/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="../../images/favicon/favicon-16x16.png">
@@ -93,10 +93,8 @@
             renderer.toneMappingExposure = 1;
             renderer.outputColorSpace = THREE.SRGBColorSpace;
             container.appendChild(renderer.domElement);
-            renderer.autoClear = false;
-
+        
             const controls = new OrbitControls(camera1, renderer.domElement);
-            //controls.addEventListener('change', render); // use if there is no animation loop
             controls.minDistance = 2;
             controls.maxDistance = 10;
             controls.target.set(0, 0, 0);
