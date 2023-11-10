@@ -39,10 +39,10 @@
             const container = document.createElement('div');
             document.body.appendChild(container);
 
-            let camera1, camera2, camera3, camera4;
-
             const target = new THREE.Vector3(0, 0, 0);
             const dist = 8;
+
+            let camera1, camera2, camera3, camera4;
 
             camera1 = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.25, 20);
             camera1.position.set(0, 0, dist);
@@ -94,7 +94,7 @@
             renderer.outputColorSpace = THREE.SRGBColorSpace;
             container.appendChild(renderer.domElement);
         
-            const controls = new OrbitControls(camera1, renderer.domElement);
+            const controls = new OrbitControls(camera, renderer.domElement);
             controls.minDistance = 2;
             controls.maxDistance = 10;
             controls.target.set(0, 0, 0);

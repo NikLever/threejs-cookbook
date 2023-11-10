@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>The Three.JS Cookbook: Geometry - Extrude</title>
+    <title>The Three.JS Cookbook: Cameras - Orthographic</title>
     <link rel="apple-touch-icon" sizes="180x180" href="../../images/favicon/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="../../images/favicon/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="../../images/favicon/favicon-16x16.png">
@@ -162,14 +162,19 @@
             mesh.rotation.x += 0.005;
             mesh.rotation.y += 0.005;
 
-            scene.background = envmap;
-            scene.overrideMaterial = null;
-
             camera.cameras.forEach( camera => {
-              renderer.render( scene, camera );
-              scene.background = col;
-              scene.overrideMaterial = mat;
+                renderer.setViewport(camera.viewport);
+                renderer.setScissor(camera.viewport);
+                if (camera.isOrthographicCamera){
+                    scene.background = col;
+                    scene.overrideMaterial = mat;
+                }else{
+                    scene.background = envmap;
+                    scene.overrideMaterial = null;
+                }
+                renderer.render( scene, camera );
             });
+
             //renderer.render(scene, camera);
 
             requestAnimationFrame(render);
