@@ -96,6 +96,9 @@
             renderer.outputColorSpace = THREE.SRGBColorSpace;
             container.appendChild(renderer.domElement);
             renderer.autoClear = false;
+            renderer.autoClearColor = false;
+            renderer.autoClearDepth = false;
+            renderer.autoClearStencil = false;
 
             const controls = new OrbitControls(camera1, renderer.domElement);
             //controls.addEventListener('change', render); // use if there is no animation loop
@@ -163,14 +166,18 @@
             mesh.rotation.y += 0.005;
 
             camera.cameras.forEach( camera => {
-                renderer.setViewport(camera.viewport);
-                renderer.setScissor(camera.viewport);
+                //renderer.setViewport(camera.viewport);
                 if (camera.isOrthographicCamera){
                     scene.background = col;
                     scene.overrideMaterial = mat;
                 }else{
                     scene.background = envmap;
                     scene.overrideMaterial = null;
+                }
+                if (!camera.isArrayCamera){
+                    //Workaround to use viewports
+                    camera.isArrayCamera = true;
+                    camera.cameras = [camera];
                 }
                 renderer.render( scene, camera );
             });
