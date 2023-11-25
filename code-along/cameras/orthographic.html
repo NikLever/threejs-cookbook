@@ -30,7 +30,7 @@
         import { OrbitControls } from "three/addons/controls/OrbitControls.js";
         import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
 
-        let cameras, camera, scene, renderer, envmap, mesh, col, mat;
+        let cameras, scene, renderer, envmap, mesh, col, mat;
 
         init();
 
@@ -39,32 +39,18 @@
             const container = document.createElement('div');
             document.body.appendChild(container);
 
-            let camera1, camera2, camera3, camera4;
-
             const target = new THREE.Vector3(0, 0, 0);
             const dist = 8;
 
-            camera1 = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.25, 20);
+            const camera1 = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.25, 20);
             camera1.position.set(0, 0, dist);
 
-            camera2 = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.25, 20);
-            camera2.position.set(0, dist, 0);
-            camera2.lookAt(target);
-
-            camera3 = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.25, 20);
-            camera3.position.set(dist, 0, 0);
-            camera3.lookAt(target);
-
-            camera4 = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.25, 20);
-            camera4.position.set(0, 0, -dist);
-            camera4.lookAt(target);
-
-            camera = new THREE.ArrayCamera([camera1, camera2, camera3, camera4]);
-            camera.cameras.forEach(camera => { 
+            cameras = [ camera1 ];
+            cameras.forEach(camera => { 
                 camera.viewport = new THREE.Vector4();
                 camera.updateMatrixWorld();
             });
-
+        
             scene = new THREE.Scene();
 
             new RGBELoader()
@@ -95,7 +81,6 @@
             renderer.toneMappingExposure = 1;
             renderer.outputColorSpace = THREE.SRGBColorSpace;
             container.appendChild(renderer.domElement);
-            renderer.autoClear = false;
 
             const controls = new OrbitControls(camera1, renderer.domElement);
             //controls.addEventListener('change', render); // use if there is no animation loop
@@ -116,37 +101,31 @@
 
             const AMOUNT = 2;
             const ASPECT_RATIO = window.innerWidth / window.innerHeight;
-            const WIDTH = (window.innerWidth / AMOUNT) * window.devicePixelRatio;
-            const HEIGHT = (window.innerHeight / AMOUNT) * window.devicePixelRatio;
-            const TOP = 2;
-            const RIGHT = TOP * ASPECT_RATIO;
-            
-            camera.aspect = ASPECT_RATIO;
-            camera.updateProjectionMatrix();
+            const WIDTH = (window.innerWidth / AMOUNT);
+            const HEIGHT = (window.innerHeight / AMOUNT);
            
             for (let y = 0; y < AMOUNT; y++) {
 
                 for (let x = 0; x < AMOUNT; x++) {
 
                     const index = AMOUNT * y + x;
-                    const subcamera = camera.cameras[index];
+                    if (index>=cameras.length) break;
 
-                    subcamera.viewport.set(
+                    const camera = cameras[index];
+
+                    camera.viewport.set(
                         Math.floor(x * WIDTH),
                         Math.floor(y * HEIGHT),
                         Math.ceil(WIDTH),
                         Math.ceil(HEIGHT));
 
                     if (index==0){
-                      subcamera.aspect = ASPECT_RATIO;
+                      camera.aspect = ASPECT_RATIO;
                     }else{
-                      subcamera.left = -RIGHT;
-                      subcamera.right = RIGHT;
-                      subcamera.top = TOP;
-                      subcamera.bottom = -TOP;
+                      //TO DO - set values for the OrthographicCameras
                     }
 
-                    subcamera.updateProjectionMatrix();
+                    camera.updateProjectionMatrix();
 
                 }
 
@@ -162,15 +141,21 @@
             mesh.rotation.x += 0.005;
             mesh.rotation.y += 0.005;
 
-            scene.background = envmap;
-            scene.overrideMaterial = null;
+            renderer.setClearColor(col, 1);
+            renderer.clearColor();
 
-            camera.cameras.forEach( camera => {
-              renderer.render( scene, camera );
-              scene.background = col;
-              scene.overrideMaterial = mat;
+            cameras.forEach( camera => {
+                if (camera.isOrthographicCamera){
+                    scene.overrideMaterial = mat;
+                }else{
+                    scene.background = envmap;
+                    scene.overrideMaterial = null;
+                }
+
+                renderer.setViewport( camera.viewport );
+
+                renderer.render( scene, camera );
             });
-            //renderer.render(scene, camera);
 
             requestAnimationFrame(render);
         } 
