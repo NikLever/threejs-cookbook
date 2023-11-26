@@ -56,14 +56,7 @@
         document.body.appendChild( renderer.domElement );
         
         //Add meshes here
-        const curve = new Curves.GrannyKnot();
-        const geometry = new THREE.TubeGeometry( curve, 100, 2, 8, true );
-        const material = new THREE.MeshBasicMaterial({ wireframe:true, color: 0xffffff, side: THREE.DoubleSide });
-        tube = new THREE.Mesh( geometry, material );
-        scene.add(tube);
         
-        binormal = new THREE.Vector3();
-        normal = new THREE.Vector3();
         
         window.addEventListener( 'resize', resize, false);
         
