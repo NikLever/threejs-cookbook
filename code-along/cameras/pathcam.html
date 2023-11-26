@@ -2,7 +2,7 @@
 <html lang="en" >
 <head>
   <meta charset="UTF-8">
-  <title>The Three.JS Cookbook: Geometry - Extrude</title>
+  <title>The Three.JS Cookbook: Cameras - Following a path</title>
   <link rel="apple-touch-icon" sizes="180x180" href="../../images/favicon/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="../../images/favicon/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="../../images/favicon/favicon-16x16.png">
@@ -71,16 +71,7 @@
     }
 
     function updateCamera(){
-        const time = clock.getElapsedTime();
-        const looptime = 20;
-            const t = ( time % looptime ) / looptime;
-        const t2 = ( (time + 0.1) % looptime) / looptime
-            
-        const pos = tube.geometry.parameters.path.getPointAt( t );
-        const pos2 = tube.geometry.parameters.path.getPointAt( t2 );
-            
-        camera.position.copy(pos);
-        camera.lookAt(pos2);
+        
     }
 
     function update(){

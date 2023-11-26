@@ -2,7 +2,7 @@
 <html lang="en" >
 <head>
   <meta charset="UTF-8">
-  <title>The Three.JS Cookbook: Geometry - Extrude</title>
+  <title>The Three.JS Cookbook: Cameras - Following a path</title>
   <link rel="apple-touch-icon" sizes="180x180" href="../../images/favicon/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="../../images/favicon/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="../../images/favicon/favicon-16x16.png">
@@ -27,7 +27,7 @@
     import * as THREE from "three";
     import * as Curves from "three/addons/curves/CurveExtras.js"
     
-    let scene, camera, renderer, clock, binormal, normal, tube;
+    let scene, camera, renderer, clock, tube;
 
     init();
 
@@ -62,9 +62,6 @@
         tube = new THREE.Mesh( geometry, material );
         scene.add(tube);
         
-        binormal = new THREE.Vector3();
-        normal = new THREE.Vector3();
-        
         window.addEventListener( 'resize', resize, false);
         
         update();
@@ -73,7 +70,7 @@
     function updateCamera(){
         const time = clock.getElapsedTime();
         const looptime = 20;
-            const t = ( time % looptime ) / looptime;
+        const t = ( time % looptime ) / looptime;
         const t2 = ( (time + 0.1) % looptime) / looptime
             
         const pos = tube.geometry.parameters.path.getPointAt( t );
