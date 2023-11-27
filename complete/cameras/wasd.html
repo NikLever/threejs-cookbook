@@ -2,7 +2,7 @@
 <html lang="en" >
 <head>
   <meta charset="UTF-8">
-  <title>The Three.JS Cookbook: Geometry - Extrude</title>
+  <title>The Three.JS Cookbook: Cameras - WASD Controller</title>
   <link rel="apple-touch-icon" sizes="180x180" href="../../images/favicon/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="../../images/favicon/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="../../images/favicon/favicon-16x16.png">
@@ -46,7 +46,7 @@ function init(){
   const ambient = new THREE.HemisphereLight(0xffffbb, 0x080820);
   scene.add(ambient);
   
-  light = new THREE.DirectionalLight(0xFFFFFF, 1);
+  light = new THREE.DirectionalLight(0xFFFFFF, 3);
   light.position.set( 1, 10, 6);
   lightOffset = light.position.clone();
   light.castShadow = true;
@@ -97,7 +97,7 @@ function init(){
   dolly = new THREE.Object3D();
   dolly.position.copy( camera.position );
   dolly.quaternion.copy( camera.quaternion );
-  player.add(dolly);
+  player.attach(dolly);
   
   target = new THREE.Vector3();
 
