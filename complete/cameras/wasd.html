@@ -101,6 +101,8 @@ function init(){
   
   target = new THREE.Vector3();
 
+  //showPlayer(false);
+
   addKeyboardControl();
    
   window.addEventListener( 'resize', resize, false);
@@ -114,56 +116,67 @@ function addKeyboardControl(){
 }
   
 function keyDown(evt){
-    let forward = (player.userData!==undefined && player.userData.move!==undefined) ? player.userData.move.forward : 0;
-    let turn = (player.userData!=undefined && player.userData.move!==undefined) ?  player.userData.move.turn : 0;
+    let forward = 0, turn = 0;
     
-    switch(evt.keyCode){
-      case 87://W
+    if (player.userData.move){
+      forward = player.userData.move.forward;
+      turn = player.userData.move.turn;
+    }
+    
+    switch(evt.code){
+      case "KeyW":
         forward = -1;
         break;
-      case 83://S
+      case "KeyS":
         forward = 1;
         break;
-      case 65://A
+      case "KeyA":
         turn = 1;
         break;
-      case 68://D
+      case "KeyD":
         turn = -1;
         break;
     }
     
-    playerControl(forward, turn);
+    setPlayerMove(forward, turn);
 }
   
 function keyUp(evt){
     let forward = (player.userData!==undefined && player.userData.move!==undefined) ? player.userData.move.forward : 0;
     let turn = (player.move!=undefined && player.userData.move!==undefined) ?  player.userData.move.turn : 0;
     
-    switch(evt.keyCode){
-      case 87://W
+    switch(evt.code){
+      case "KeyW":
         forward = 0;
         break;
-      case 83://S
+      case "KeyS":
         forward = 0;
         break;
-      case 65://A
+      case "KeyA":
         turn = 0;
         break;
-      case 68://D
+      case "KeyD":
         turn = 0;
         break;
     }
     
-    playerControl(forward, turn);
+    setPlayerMove(forward, turn);
 }
 
-function playerControl(forward, turn){
-   	if (forward==0 && turn==0){
+function setPlayerMove(forward, turn){
+   	if (forward==0 && turn==0 && player.userData.move){
 			delete player.userData.move;
+    }else if (player.userData.move){
+     player.userData.move.forward = forward;
+     player.userData.move.turn = turn;
 		}else{
       if (player.userData===undefined) player.userData = {};
 			player.userData.move = { forward, turn }; 
 		}
+}
+
+function showPlayer( mode ){
+  player.children.forEach( child => child.visible = mode );
 }
 
 function update(){

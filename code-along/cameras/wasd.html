@@ -102,6 +102,8 @@ function init(){
   
   target = new THREE.Vector3();
 
+  //showPlayer(false);
+
   addKeyboardControl();
    
   window.addEventListener( 'resize', resize, false);
@@ -117,17 +119,21 @@ function addKeyboardControl(){
 function keyDown(evt){
     //TO DO: 1
     
-    playerControl(forward, turn);
+    setPlayerMove(forward, turn);
 }
   
 function keyUp(evt){
     //TO DO: 2
     
-    playerControl(forward, turn);
+    setPlayerMove(forward, turn);
 }
 
-function playerControl(forward, turn){
+function setPlayerMove(forward, turn){
    	//TO DO: 3
+}
+
+function showPlayer( mode ){
+  player.children.forEach( child => child.visible = mode );
 }
 
 function update(){
@@ -137,7 +143,7 @@ function update(){
     const dt = clock.getDelta();
   
     if (player.userData.move!==undefined){
-        //TO DOL 4
+        //TO DO 4
     }
     
     light.position.copy(player.position).add(lightOffset);
