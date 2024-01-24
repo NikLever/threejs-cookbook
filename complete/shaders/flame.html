@@ -96,9 +96,18 @@ const clock = new THREE.Clock();
 
 const geometry = new THREE.PlaneGeometry( 2, 2 );
 const uniforms = {
-  u_tex: { value: new THREE.TextureLoader().setPath('../../assets/').load("flame.png") },
+  u_tex: { value: null },
   u_time: { value: 0.0 },
 }
+
+const loader = new THREE.TextureLoader()
+                  .setPath('../../assets/')
+                  .load("flame.png", (tex) => {
+                    tex.wrapS = THREE.RepeatWrapping;
+                    tex.wrapT = THREE.RepeatWrapping;
+                    tex.generateMipmaps = false;
+                    uniforms.u_tex.value = tex;
+                  })
 
 const material = new THREE.ShaderMaterial( {
   uniforms: uniforms,
