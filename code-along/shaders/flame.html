@@ -35,11 +35,7 @@ void main() {
 }
 `
 const fshader = `
-uniform vec2 u_resolution;
-uniform vec2 u_mouse;
 uniform float u_time;
-uniform vec3 u_color_a;
-uniform vec3 u_color_b;
 
 varying vec2 v_uv;
 
@@ -103,26 +99,13 @@ const clock = new THREE.Clock();
 
 const geometry = new THREE.PlaneGeometry( 2, 2 );
 const uniforms = {
-  u_tex: { value: null },
-  u_time: { value: 0.0 },
+  u_time: { value: 0.0 }
 }
-
-const loader = new THREE.TextureLoader()
-                  .setPath('../../assets/')
-                  .load("flame.png", (tex) => {
-                    tex.wrapS = THREE.RepeatWrapping;
-                    tex.wrapT = THREE.RepeatWrapping;
-                    tex.offset = new THREE.Vector2( 0.0, -0.01 );
-                    tex.generateMipmaps = false;
-                    tex.minFilter = tex.magFilter = THREE.NearestFilter;
-                    uniforms.u_tex.value = tex;
-                  })
 
 const material = new THREE.ShaderMaterial( {
   uniforms: uniforms,
   vertexShader: vshader,
-  fragmentShader: fshader, 
-  transparent: true
+  fragmentShader: fshader
 } );
 
 const plane = new THREE.Mesh( geometry, material );
@@ -140,7 +123,6 @@ function onWindowResize( event ) {
   if (aspectRatio>=1){
     width = 1;
     height = (window.innerHeight/window.innerWidth) * width;
-    
   }else{
     width = aspectRatio;
     height = 1;
