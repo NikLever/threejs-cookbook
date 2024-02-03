@@ -36,6 +36,8 @@
     }
     `
   const fshader = `
+    #define PI2 6.28
+
     uniform float u_time;
     uniform float u_duration;
     uniform sampler2D u_tex;
@@ -47,7 +49,7 @@
     {
       float len = length(v_position.xy);
       vec2 ripple = v_uv + v_position.xy/len*0.03*cos(len*12.0-u_time*4.0);
-      float delta = (((sin(u_time)+1.0)/2.0)* u_duration)/u_duration;
+      float delta = (sin((u_time / u_duration) * PI2)+1.0)/2.0;
       vec2 uv = mix(ripple, v_uv, delta);
       vec3 color = texture2D(u_tex, uv).rgb;
       gl_FragColor = vec4(color, 1.0); 
@@ -71,7 +73,7 @@
         const geometry = new THREE.PlaneGeometry(2, 1.5);
         uniforms = {
             u_tex: { value: new THREE.TextureLoader().setPath('../../assets/').load('sa1.jpg') },
-            u_duration: { value: 2.0 },
+            u_duration: { value: 5.0 },
             u_time: { value: 0.0 }
         }
 

@@ -37,13 +37,16 @@
     `
   const fshader = `
     uniform float u_time;
-    
+    uniform sampler2D u_tex;
+
     varying vec2 v_uv;
     varying vec3 v_position;
 
     void main (void)
     {
-      gl_FragColor = vec4(v_position, 1.0); 
+      vec3 texel = texture2D( u_tex, v_uv).rgb;
+
+      gl_FragColor = vec4(texel, 1.0); 
     }
     `
 
@@ -64,7 +67,10 @@
         const geometry = new THREE.PlaneGeometry(2, 1.5);
         uniforms = {
             u_duration: { value: 2.0 },
-            u_time: { value: 0.0 }
+            u_time: { value: 0.0 },
+            u_tex: { value: new THREE.TextureLoader()
+                                       .setPath('../../assets/')
+                                       .load('sa1.jpg') }
         }
 
         const material = new THREE.ShaderMaterial({

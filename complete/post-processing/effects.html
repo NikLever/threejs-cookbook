@@ -2,7 +2,7 @@
 <html lang="en" >
 <head>
   <meta charset="UTF-8">
-  <title>The Three.JS Cookbook: Geometry - Extrude</title>
+  <title>The Three.JS Cookbook: Post Processing - Effects</title>
   <link rel="apple-touch-icon" sizes="180x180" href="../../images/favicon/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="../../images/favicon/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="../../images/favicon/favicon-16x16.png">
@@ -33,9 +33,12 @@
   import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
   import { RGBShiftShader } from 'three/addons/shaders/RGBShiftShader.js';
   import { DotScreenShader } from 'three/addons/shaders/DotScreenShader.js';
+  import { AfterimagePass } from 'three/addons/postprocessing/AfterimagePass.js';
+  import { BokehPass } from 'three/addons/postprocessing/BokehPass.js';
+
   import { GUI } from "three/addons/libs/lil-gui.module.min.js"
 
-let camera, renderer, composer, object, dot, rgb, glitch, bloom;
+let camera, renderer, composer, object, dot, rgb, glitch, bloom, afterimage, bokeh;
 
 init();
 animate();
@@ -91,6 +94,12 @@ function init() {
     
     glitch = new GlitchPass();
     bloom = new UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight ) );
+    afterimage = new AfterimagePass();
+    bokeh = new BokehPass(scene, camera, {
+					focus: 320.0,
+					aperture: 3 * 0.00005,
+					maxblur: 0.02
+				});
 				
     const params = {
         dotPass: false,
@@ -102,7 +111,13 @@ function init() {
         bloomPass: false,
         bloomStrength: 0.6,
 		bloomThreshold: 0,
-		bloomRadius: 0
+		bloomRadius: 0,
+        afterImage: false,
+        afterImageDamp: 0.5,
+        bokeh: false,
+        bokehfocus: 320.0,
+		bokehaperture: 3,
+		bokehmaxblur: 0.02
     }
 
     bloom.threshold = params.bloomThreshold;
@@ -111,7 +126,9 @@ function init() {
 
     const gui = new GUI();
 
-    gui.add(params, 'dotPass').onChange( value => {
+    const dotui = gui.addFolder('DotPass').close();
+
+    dotui.add(params, 'dotPass').name('enable').onChange( value => {
         if (value){
             composer.addPass(dot);
         }else{
@@ -119,9 +136,11 @@ function init() {
         }
     });
 
-    gui.add( params, 'dotScale', 1.0, 10.0 ).onChange( ( value ) => { dot.uniforms['scale'].value = Number( value ); } );
+    dotui.add( params, 'dotScale', 1.0, 10.0 ).name('scale').onChange( ( value ) => { dot.uniforms['scale'].value = Number( value ); } );
     
-    gui.add(params, 'rgbPass').onChange( value => {
+    const rgbui = gui.addFolder('RGBPass').close();
+
+    rgbui.add(params, 'rgbPass').name('enable').onChange( value => {
         if (value){
             composer.addPass(rgb);
         }else{
@@ -129,9 +148,11 @@ function init() {
         }
     });
 
-    gui.add( params, 'rgbAmount', 0.0, 0.1 ).step(0.001).onChange( ( value ) => { rgb.uniforms['amount'].value = Number( value ); } );
+    rgbui.add( params, 'rgbAmount', 0.0, 0.1 ).name('amount').step(0.001).onChange( ( value ) => { rgb.uniforms['amount'].value = Number( value ); } );
     
-    gui.add(params, 'glitchPass').onChange( value => {
+    const glitchui = gui.addFolder('GlitchPass').close();
+
+    glitchui.add(params, 'glitchPass').name('enable').onChange( value => {
         if (value){
             composer.addPass(glitch);
         }else{
@@ -139,9 +160,11 @@ function init() {
         }
     });
 
-    gui.add( params, 'glitchWild').onChange( ( value ) => { glitch.goWild = value; } );
+    glitchui.add( params, 'glitchWild').name('goWild').onChange( ( value ) => { glitch.goWild = value; } );
     
-    gui.add(params, 'bloomPass').onChange( value => {
+    const bloomui = gui.addFolder('BloomPass').close();
+
+    bloomui.add(params, 'bloomPass').name('enable').onChange( value => {
         if (value){
             composer.addPass(bloom);
         }else{
@@ -149,10 +172,36 @@ function init() {
         }
     });
 
-    gui.add( params, 'bloomThreshold', 0.0, 1.0 ).onChange( ( value ) => { bloom.threshold = Number( value ); } );
-    gui.add( params, 'bloomStrength', 0.0, 3.0 ).onChange( ( value ) => { bloom.strength = Number( value );} );
-    gui.add( params, 'bloomRadius', 0.0, 1.0 ).step( 0.01 ).onChange( ( value ) => { bloom.radius = Number( value ); } );
+    bloomui.add( params, 'bloomThreshold', 0.0, 1.0 ).name('threshold').onChange( ( value ) => { bloom.threshold = Number( value ); } );
+    bloomui.add( params, 'bloomStrength', 0.0, 3.0 ).name('strength').onChange( ( value ) => { bloom.strength = Number( value );} );
+    bloomui.add( params, 'bloomRadius', 0.0, 1.0 ).name('radius').step( 0.01 ).onChange( ( value ) => { bloom.radius = Number( value ); } );
     //
+
+    const aiui = gui.addFolder('AfterImagePass').close();
+
+    aiui.add(params, 'afterImage').name('enable').onChange( value => {
+        if (value){
+            composer.addPass(afterimage);
+        }else{
+            composer.removePass(afterimage);
+        }
+    });
+
+    aiui.add( params, 'afterImageDamp', 0.0, 1.0 ).name('damp').onChange( ( value ) => { afterimage.uniforms['damp'].value = Number( value ); } );
+    
+    const dofui = gui.addFolder('BokehPass').close();
+
+    dofui.add(params, 'bokeh').name('enable').onChange( value => {
+        if (value){
+            composer.addPass(bokeh);
+        }else{
+            composer.removePass(bokeh);
+        }
+    });
+
+    dofui.add( params, 'bokehfocus', 0.0, 800.0, 5 ).name('focus').onChange( ( value ) => { bokeh.uniforms['focus'].value = Number( value ); } );
+    dofui.add( params, 'bokehaperture', 1, 10, 0.1 ).name('aperture').onChange( ( value ) => { bokeh.uniforms['aperture'].value = Number( value )  * 0.00005; } );
+    dofui.add( params, 'bokehmaxblur', 0.0, 0.02, 0.001 ).name('maxblur').onChange( ( value ) => { bokeh.uniforms['maxblur'].value = Number( value ); } );
 
     window.addEventListener( 'resize', onWindowResize );
 
