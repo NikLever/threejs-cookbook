@@ -35,10 +35,14 @@
   import { DotScreenShader } from 'three/addons/shaders/DotScreenShader.js';
   import { AfterimagePass } from 'three/addons/postprocessing/AfterimagePass.js';
   import { BokehPass } from 'three/addons/postprocessing/BokehPass.js';
+  import { RenderPixelatedPass } from 'three/addons/postprocessing/RenderPixelatedPass.js';
+  import { LuminosityShader } from 'three/addons/shaders/LuminosityShader.js';
+  import { SobelOperatorShader } from 'three/addons/shaders/SobelOperatorShader.js';
 
   import { GUI } from "three/addons/libs/lil-gui.module.min.js"
 
-let camera, renderer, composer, object, dot, rgb, glitch, bloom, afterimage, bokeh;
+let camera, renderer, composer, object, dot, rgb, glitch, bloom, afterimage, bokeh, pixel,
+    luminosity, sobel;
 
 init();
 animate();
@@ -100,6 +104,14 @@ function init() {
 					aperture: 3 * 0.00005,
 					maxblur: 0.02
 				});
+    pixel = new RenderPixelatedPass( 10, scene, camera );
+    pixel.normalEdgeStrength = 1.5;
+
+    luminosity = new ShaderPass( LuminosityShader );
+
+    sobel = new ShaderPass( SobelOperatorShader );
+    sobel.uniforms[ 'resolution' ].value.x = window.innerWidth * window.devicePixelRatio;
+    sobel.uniforms[ 'resolution' ].value.y = window.innerHeight * window.devicePixelRatio;
 				
     const params = {
         dotPass: false,
@@ -117,7 +129,12 @@ function init() {
         bokeh: false,
         bokehfocus: 320.0,
 		bokehaperture: 3,
-		bokehmaxblur: 0.02
+		bokehmaxblur: 0.02,
+        pixel: false,
+        pixelSize: 10, 
+        pixelNormalEdgeStrength: 1.5,
+        luminosity: false,
+        sobel: false
     }
 
     bloom.threshold = params.bloomThreshold;
@@ -203,6 +220,39 @@ function init() {
     dofui.add( params, 'bokehaperture', 1, 10, 0.1 ).name('aperture').onChange( ( value ) => { bokeh.uniforms['aperture'].value = Number( value )  * 0.00005; } );
     dofui.add( params, 'bokehmaxblur', 0.0, 0.02, 0.001 ).name('maxblur').onChange( ( value ) => { bokeh.uniforms['maxblur'].value = Number( value ); } );
 
+    const pixui = gui.addFolder('PixelPass').close();
+
+    pixui.add(params, 'pixel').name('enable').onChange( value => {
+        if (value){
+            composer.addPass(pixel);
+        }else{
+            composer.removePass(pixel);
+        }
+    });
+
+    pixui.add( params, 'pixelSize', 1, 16, 1).onChange( (value ) => { pixel.setPixelSize( Number( value ) ); } );
+    pixui.add( params, 'pixelNormalEdgeStrength', 0, 2, 0.05 ).name('NormalEdgeStrength').onChange( (value) => { pixel.normalEdgeStrength = Number( value ); } );
+
+    const lumui = gui.addFolder('GrayScalePass').close();
+
+    lumui.add(params, 'luminosity').name('enable').onChange( value => {
+        if (value){
+            composer.addPass(luminosity);
+        }else{
+            composer.removePass(luminosity);
+        }
+    });
+
+    const sobui = gui.addFolder('SobelPass').close();
+
+    sobui.add(params, 'sobel').name('enable').onChange( value => {
+        if (value){
+            composer.addPass(sobel);
+        }else{
+            composer.removePass(sobel);
+        }
+    });
+
     window.addEventListener( 'resize', onWindowResize );
 
 }
@@ -215,6 +265,10 @@ function onWindowResize() {
     renderer.setSize( window.innerWidth, window.innerHeight );
     composer.setSize( window.innerWidth, window.innerHeight );
 
+    if (sobel){
+        sobel.uniforms[ 'resolution' ].value.x = window.innerWidth * window.devicePixelRatio;
+        sobel.uniforms[ 'resolution' ].value.y = window.innerHeight * window.devicePixelRatio;
+    }
 }
 
 function animate() {
