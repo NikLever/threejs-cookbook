@@ -7,11 +7,6 @@
 		<link type="text/css" rel="stylesheet" href="main.css">
 	</head>
 	<body>
-
-		<!-- Import maps polyfill -->
-		<!-- Remove this when import maps will be widely supported -->
-		<script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
-
 		<script type="importmap">
 			{
 				"imports": {
@@ -32,8 +27,6 @@
 			import { RGBShiftShader } from 'three/addons/shaders/RGBShiftShader.js';
 			import { DotScreenShader } from 'three/addons/shaders/DotScreenShader.js';
 			import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
-
-			import { GUI } from "three/addons/libs/lil-gui.module.min.js"
 
 			let camera, renderer, composer;
 			let object;
@@ -98,13 +91,6 @@
 				//
 
 				window.addEventListener( 'resize', onWindowResize );
-
-				const params = {
-        dotScale: 6
-    }
-
-    const gui = new GUI();
-    gui.add( params, 'dotScale', 1.0, 10.0 ).onChange( ( value ) => { effect1.uniforms['scale'].value = Number( value ); } );
 
 			}
 

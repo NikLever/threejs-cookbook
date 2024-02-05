@@ -36,8 +36,10 @@
   import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
   import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
   import { LUTPass } from 'three/addons/postprocessing/LUTPass.js';
+  import { LUTCubeLoader } from 'three/addons/loaders/LUTCubeLoader.js';
+	import { LUT3dlLoader } from 'three/addons/loaders/LUT3dlLoader.js';
+	import { LUTImageLoader } from 'three/addons/loaders/LUTImageLoader.js';
   import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
-  import { Image2LUT } from 'libs/Image2LUT.js';
   import { GUI } from "three/addons/libs/lil-gui.module.min.js"
   import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
   import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
@@ -83,43 +85,57 @@
 		};
 
     lutMaps = {
+      'Bourbon 64.CUBE': null,
+      'Chemical 168.CUBE': null,
+      'Clayton 33.CUBE': null,
+      'Cubicle 99.CUBE': null,
+      'Remy 24.CUBE': null,
+      'Presetpro-Cinematic.3dl': null,
       'NeutralLUT': null,
-      'NightLUT': null,
-      'B&WLUT': null
+      'B&WLUT': null,
+      'NightLUT': null
     };
 
     Object.keys( lutMaps ).forEach( name => {
-      const img2Lut = new Image2LUT( `../../assets/lut/${name}.png` );
-      checkComplete();
-      function checkComplete(){
-        if (img2Lut.done){
-          lutMaps[name] = img2Lut.lutMap;
-          if (name == params.lutMap){
-            const lut = lutMaps[ name ];
+      const path = '../../libs/three/examples/luts/';
+
+      if ( /\.CUBE$/i.test( name ) ) {
+
+      new LUTCubeLoader().setPath(path)
+        .load( name, function ( result ) {
+          lutMaps[ name ] = result;
+        } );
+      } else if ( /\LUT$/i.test( name ) ){
+      new LUTImageLoader().setPath(path)
+        .load( `${name}.png`, function ( lut ) {
+          lutMaps[ name ] = lut;
+          if (name==params.lutMap){
 			      lutPass.lut = params.use2DLut ? lut.texture : lut.texture3D;
           }
-        }else{
-          setTimeout( checkComplete, 500);
-        }
+        } );
+      } else {
+      new LUT3dlLoader().setPath(path)
+        .load( name, function ( result ) {
+          lutMaps[ name ] = result;
+        } );
       }
     });
 
     gui = new GUI();
+
     gui.add( lutPass, 'enabled' );
+
 		gui.add( params, 'lutMap', Object.keys( lutMaps ) ).onChange( value => {
       const lut = lutMaps[ value ];
 			lutPass.lut = params.use2DLut ? lut.texture : lut.texture3D;
     });
+
 		gui.add( lutPass, 'intensity', 0, 1 );
 
     if ( renderer.capabilities.isWebGL2 ) {
-
       gui.add( params, 'use2DLut' );
-
     } else {
-
       params.use2DLut = true;
-
     }
 
     loadingBar = new LoadingBar();
@@ -181,10 +197,7 @@
 
   function update(){
     requestAnimationFrame( update );
-    if (lutPass.lut == null && lutMaps[params.lutMap] != null){
-      const lut = lutMaps[ params.lutMap ];
-			lutPass.lut = params.use2DLut ? lut.texture : lut.texture3D;
-    }
+
     composer.render( scene, camera ); 
     //renderer.render( scene, camera ); 
   }
