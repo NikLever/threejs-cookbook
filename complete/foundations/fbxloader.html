@@ -38,7 +38,7 @@
   import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
   import { LoadingBar } from 'libs/LoadingBar.js';
 
-  let scene, camera, renderer, loadingBar, controls, clock, stove, mixer;
+  let scene, camera, renderer, loadingBar, controls, clock, wrench, mixer;
 
   init();
 
@@ -99,16 +99,16 @@
     // Load a glTF resource
     loader.load(
       // resource URL
-      'stove.fbx',
+      'PipeWrench.fbx',
       // called when the resource is loaded
       object => {        
         mixer = new THREE.AnimationMixer( object );
-        stove = object;
+        wrench = object;
 
 				const action = mixer.clipAction( object.animations[ 0 ] );
 				action.play();
 
-        const scale = 0.02;
+        const scale = 1;
         object.scale.set( scale, scale, scale );
 
 				object.traverse( ( child ) => {
