@@ -72,12 +72,11 @@
 
     const renderPass = new RenderPass( scene, camera );
     composer.addPass( renderPass );
+    const outputPass = new OutputPass();
+    composer.addPass( outputPass );
 
     lutPass = new LUTPass(  );
     composer.addPass( lutPass );
-
-    const outputPass = new OutputPass();
-    composer.addPass( outputPass );
 
     params = {
 				use2DLut: false,
@@ -85,27 +84,26 @@
 		};
 
     lutMaps = {
-      'Bourbon 64.CUBE': null,
-      'Chemical 168.CUBE': null,
-      'Clayton 33.CUBE': null,
-      'Cubicle 99.CUBE': null,
-      'Remy 24.CUBE': null,
-      'Presetpro-Cinematic.3dl': null,
+      'GreyScale.CUBE': null,
+      'Negative.CUBE': null,
+      'Sepia.CUBE': null,
+      'Saturate.CUBE': null,
       'NeutralLUT': null,
       'B&WLUT': null,
       'NightLUT': null
     };
 
-    Object.keys( lutMaps ).forEach( name => {
-      const path = '../../libs/three/examples/luts/';
+    const path = '../../assets/lut/';
 
-      if ( /\.CUBE$/i.test( name ) ) {
+    Object.keys( lutMaps ).forEach( name => {
+      
+      if ( name.search( 'CUBE' ) != -1 ) {
 
       new LUTCubeLoader().setPath(path)
         .load( name, function ( result ) {
           lutMaps[ name ] = result;
         } );
-      } else if ( /\LUT$/i.test( name ) ){
+      } else if ( name.search ( 'LUT' ) != -1 ){
       new LUTImageLoader().setPath(path)
         .load( `${name}.png`, function ( lut ) {
           lutMaps[ name ] = lut;
@@ -113,12 +111,8 @@
 			      lutPass.lut = params.use2DLut ? lut.texture : lut.texture3D;
           }
         } );
-      } else {
-      new LUT3dlLoader().setPath(path)
-        .load( name, function ( result ) {
-          lutMaps[ name ] = result;
-        } );
-      }
+      } 
+
     });
 
     gui = new GUI();

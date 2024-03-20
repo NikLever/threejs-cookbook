@@ -34,31 +34,12 @@
 
   const SepiaShader = {
     uniforms: {
-      tDiffuse: { value: null },
-      intensity: { value: 1.0 }
     },
     vertexShader: `
-      varying vec2 vUv;
-      void main() {
-        vUv = uv;
-        gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
-    }`,
+      `,
     fragmentShader: `
-      uniform sampler2D tDiffuse;
-      uniform float intensity;
-
-      varying vec2 vUv;
-      
-      void main() {
-        vec4 color = texture2D( tDiffuse, vUv );
-        vec3 c = vec3(color.rgb);
-        vec3 d = vec3(1.0);
-        color.r = dot(d, c * vec3(0.393, 0.769, 0.189));
-        color.g = dot(d, c * vec3(0.349, 0.686, 0.168));
-        color.b = dot(d, c * vec3(0.272, 0.534, 0.131));
-        gl_FragColor = vec4(mix(c,  min( d, color.rgb ), intensity), 1.0 );
-      }`
-  };
+     `
+  }
 
 let camera, renderer, gui, composer, object, sepiaPass;
 
