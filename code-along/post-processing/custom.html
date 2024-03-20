@@ -36,7 +36,11 @@
     uniforms: {
     },
     vertexShader: `
-      `,
+      varying vec2 vUv;
+      void main() {
+        vUv = uv;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+    }`,
     fragmentShader: `
      `
   }
@@ -103,16 +107,7 @@ function init() {
     composer = new EffectComposer( renderer );
     composer.addPass( new RenderPass( scene, camera ) );
 
-    sepiaPass = new ShaderPass( SepiaShader );         
-    composer.addPass(sepiaPass );
-
     composer.addPass( new OutputPass() );
-
-    gui = new GUI();
-    gui.add( sepiaPass, 'enabled' );
-    gui.add( params, 'intensity', 0, 1).onChange( value => {
-      sepiaPass.material.uniforms.intensity.value = value;
-    });
 
     window.addEventListener( 'resize', onWindowResize );
 

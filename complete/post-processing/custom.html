@@ -68,6 +68,18 @@
         vec3 color = gray * sepia;
         // mix
         gl_FragColor = vec4(mix(texel.rgb, clamp(color, 0.0, 1.0), intensity), 1.0 );
+        /*
+        color.r = dot(d, c * vec3(0.393, 0.769, 0.189));
+        color.g = dot(d, c * vec3(0.349, 0.686, 0.168));
+        color.b = dot(d, c * vec3(0.272, 0.534, 0.131));*/
+        
+        vec3 sepia = vec3(1.2, 1.0, 0.8);
+        vec4 color = texture2D( tDiffuse, vUv );
+        vec3 c = vec3(color.rgb);
+        vec3 d = vec3(1.0);
+        float gray = (color.r + color.g + color.b) / 3.0;
+        color.rgb = gray * sepia;
+        gl_FragColor = vec4(mix(c,  min( d, color.rgb ), intensity), 1.0 );
       }`
   };
 
