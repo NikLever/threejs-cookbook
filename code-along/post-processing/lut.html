@@ -100,7 +100,7 @@
 
 		gui.add( params, 'lutMap', Object.keys( lutMaps ) ).onChange( value => {
       const lut = lutMaps[ value ];
-			lutPass.lut = params.use2DLut ? lut.texture : lut.texture3D;
+			if (lutPass) lutPass.lut = params.use2DLut ? lut.texture : lut.texture3D;
     });
 
     if ( renderer.capabilities.isWebGL2 ) {

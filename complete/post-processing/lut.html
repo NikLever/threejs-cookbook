@@ -90,7 +90,8 @@
       'Saturate.CUBE': null,
       'NeutralLUT': null,
       'B&WLUT': null,
-      'NightLUT': null
+      'NightLUT': null,
+      'PosterizeLUT': null
     };
 
     const path = '../../assets/lut/';
@@ -118,13 +119,12 @@
     gui = new GUI();
 
     gui.add( lutPass, 'enabled' );
+    gui.add( lutPass, 'intensity', 0, 1 );
 
 		gui.add( params, 'lutMap', Object.keys( lutMaps ) ).onChange( value => {
       const lut = lutMaps[ value ];
 			lutPass.lut = params.use2DLut ? lut.texture : lut.texture3D;
     });
-
-		gui.add( lutPass, 'intensity', 0, 1 );
 
     if ( renderer.capabilities.isWebGL2 ) {
       gui.add( params, 'use2DLut' );
