@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>The Three.JS Cookbook: Foundations - Template</title>
+  <link rel="apple-touch-icon" sizes="180x180" href="../../images/favicon/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="../../images/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="../../images/favicon/favicon-16x16.png">
+  <link rel="manifest" href="../../site.webmanifest">
+  <style>
+    body{
+      padding: 0;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+<!--
+  "three": "https://unpkg.com/three@0.150.0/build/three.module.js",             
+  "three/addons/":"https://unpkg.com/three@0.150.0/examples/jsm/"
+-->
+<script async src="https://unpkg.com/es-module-shims@1.3.6/dist/es-module-shims.js"></script>
+<script type="importmap">
+{
+  "imports": {
+    "three": "../../libs/three/build/three.module.js",
+    "three/addons/": "../../libs/three/examples/jsm/"
+  }
+}
+</script>
+<script  type="module"> 
+  import * as THREE from "three";
+  import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+  import { GUI } from "three/addons/libs/lil-gui.module.min.js";
+  import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+  import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+  import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
+  import { LoadingBar } from '../../libs/LoadingBar.js';
+  import { Flow } from 'three/addons/modifiers/CurveModifier.js';
+
+  let scene, camera, renderer, controls, shark, flow, curve, pathCtrl, params;
+
+  init();
+
+  function init(){
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color( 0x000099 );
+    
+    camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 0.1, 1000 );
+    camera.position.set(0, 3, -15);
+    
+    const ambient = new THREE.HemisphereLight(0xffffbb, 0x080820);
+    scene.add(ambient);
+    
+    const light = new THREE.DirectionalLight(0xFFFFFF, 2);
+    light.position.set( 1, 10, 6);
+    scene.add(light);
+    
+    renderer = new THREE.WebGLRenderer({antialias: true});
+    renderer.setSize( window.innerWidth, window.innerHeight );
+    document.body.appendChild( renderer.domElement );
+    
+    controls = new OrbitControls(camera, renderer.domElement);
+      
+    window.addEventListener( 'resize', resize, false);
+
+    setEnvironment();
+    loadGLTF();
+    createCurve();
+
+    const gui = new GUI();
+    params = {
+      flow: true,
+      play: true,
+      path: 0,
+      wireframe: false
+    }
+    gui.add( params, 'flow').onChange( value => flow.uniforms.flow.value = value );
+    gui.add( params, 'play');
+    pathCtrl = gui.add( params, 'path', 0, 1).onChange( value => flow.uniforms.pathOffset.value = value );
+    gui.add( params, 'wireframe').onChange( value => {
+      flow.object3D.material.wireframe = value;
+      scene.background = (value) ? scene.background.set( 0xbbbbbb ) : scene.background.set( 0x000099 );
+    });
+    
+    update();
+  }
+
+  function setEnvironment(){
+    const loader = new RGBELoader();
+    const pmremGenerator = new THREE.PMREMGenerator( renderer );
+    pmremGenerator.compileEquirectangularShader();
+    
+    loader.load( '../../assets/hdr/venice_sunset_1k.hdr', ( texture ) => {
+      const envMap = pmremGenerator.fromEquirectangular( texture ).texture;
+      pmremGenerator.dispose();
+
+      scene.environment = envMap;
+
+    }, undefined, (err)=>{
+        console.error( 'An error occurred setting the environment.' + err.message );
+    } );
+  }
+
+  function loadGLTF(){
+    const loader = new GLTFLoader( ).setPath('../../assets/');
+    const dracoLoader = new DRACOLoader();
+    dracoLoader.setDecoderPath( '../../libs/three/examples/jsm/libs/draco/' );
+    loader.setDRACOLoader( dracoLoader );
+
+    // Load a glTF resource
+    loader.load(
+      // resource URL
+      'shark.glb',
+      // called when the resource is loaded
+      gltf => {  
+        let tmp = gltf.scene;
+        
+        while(!tmp.isMesh) tmp = tmp.children[0];
+
+        shark = tmp;
+        shark.geometry.rotateZ( Math.PI/2 );
+        shark.geometry.rotateX( Math.PI/2 );
+
+        const scale = 1;
+        shark.scale.set( scale, scale, scale );
+               
+        setFlow();
+                
+        //loadingBar.visible = false;
+        
+        //update();
+      },
+      // called while loading is progressing
+      xhr => {
+
+        //loadingBar.progress = (xhr.loaded / xhr.total);
+        
+      },
+      // called when loading has errors
+      err => {
+
+        console.error( err.message );
+
+      }  
+    );
+  }
+
+  function createCurve(showHandles=true){
+    const size = 5;
+    const curveHandles = [
+        new THREE.Vector3( size, 1, -size ),
+        new THREE.Vector3( size, -1, size ),
+        new THREE.Vector3( -size, 1, size ),
+        new THREE.Vector3( -size, -1, -size ),
+      ];
+
+      curve = new THREE.CatmullRomCurve3( curveHandles );
+      curve.curveType = 'centripetal';
+      curve.closed = true;
+
+      const points = curve.getPoints( 50 );
+      const line = new THREE.LineLoop(
+        new THREE.BufferGeometry().setFromPoints( points ),
+        new THREE.LineBasicMaterial( { color: 0x00ff00 } )
+      );
+
+      scene.add( line );
+
+      setFlow();
+  }
+
+  function setFlow(){
+    if (shark==undefined || curve==undefined || flow!=undefined) return;
+    flow = new Flow( shark );
+		flow.updateCurve( 0, curve );
+		scene.add( flow.object3D );
+  }
+
+  function update(){
+    requestAnimationFrame( update );
+    if (flow && params.play){
+      flow.moveAlongCurve(0.001);
+      params.path = flow.uniforms.pathOffset.value % 1;
+      pathCtrl.updateDisplay();
+    }
+    renderer.render( scene, camera );  
+  }
+
+  function resize(){
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize( window.innerWidth, window.innerHeight );
+  }
+</script>
+</body>
+</html>
