@@ -33,7 +33,7 @@ import {RGBELoader} from 'three/addons/loaders/RGBELoader.js';
 import {LoadingBar} from '../../libs/LoadingBar.js';
 import GUI from 'three/addons/libs/lil-gui.module.min.js';
 
-let camera, scene, renderer, envmap;
+let camera, scene, renderer, envmap, options;
 let apples, apple, light, clock, loadingBar;
 
 init();
@@ -73,8 +73,9 @@ function init() {
     renderer.render( scene, camera );
   });
   
-  const options = {
-    wireframe: false
+  options = {
+    wireframe: false,
+    animated: true
   }
   const gui = new GUI();
   gui.add(options, 'wireframe').onChange( value => {
@@ -84,6 +85,7 @@ function init() {
       });
     }
   });
+  gui.add(options, 'animated');
   
   setEnvironment();
   loadModel();
@@ -121,7 +123,7 @@ function loadModel(){
   function update(){
     requestAnimationFrame( update );
 
-    if (apples){
+    if (apples && options.animated){
       apples.rotation.x += 0.003;
       apples.rotation.y += 0.003;
     }

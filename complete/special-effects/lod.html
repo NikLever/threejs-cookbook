@@ -40,8 +40,8 @@ import GUI from 'three/addons/libs/lil-gui.module.min.js';
 
 //Tip 27: LOD
 
-let camera, scene, renderer, envmap;
-let apples, apple, light, clock, loadingBar;
+let camera, scene, renderer, envmap, options;
+let apples, light, clock, loadingBar;
 
 init();
 
@@ -80,8 +80,9 @@ function init() {
     renderer.render( scene, camera );
   });
   
-  const options = {
-    wireframe: false
+  options = {
+    wireframe: false,
+    animated: true
   }
   const gui = new GUI();
   gui.add(options, 'wireframe').onChange( value => {
@@ -89,6 +90,7 @@ function init() {
       level.object.material.wireframe = value;
     })
   });
+  gui.add(options, 'animated');
   
   setEnvironment();
   loadModel();
@@ -122,55 +124,55 @@ function loadModel(){
 		
   apples = new THREE.Group();
   scene.add( apples );
-  apple = new THREE.LOD();
-  let count = 0;
+  const apple = new THREE.LOD();
   
-  for( let i=1; i<=4; i++){
-    const name = `apple-lod${i}.glb`;
-		// Load a glTF resource
-		loader.load(
-			// resource URL
-			name,
-			// called when the resource is loaded
-			gltf => {
-          const mesh = gltf.scene.children[0];
+  loader.load(
+    // resource URL
+    'apple-lod.glb',
+    // called when the resource is loaded
+    gltf => {
+        for(let i=1; i<=4; i++){
+          const mesh = gltf.scene.getObjectByName(`apple${i}`);
+          mesh.position.set(0,0,0);
           apple.addLevel( mesh, i-1 * 0.9 );
-          if (apple.levels.length == 4){
-            const size = 2;
-            
-            for( let n=0; n<50; n++){
-              const lod = apple.clone();
-              lod.position.x = Math.random()*size - size/2;
-              lod.position.y = Math.random()*size - size/2;
-              lod.position.z = Math.random()*size - size/2;
-              
-              apples.add(lod);
-            }
-            
-            loadingBar.visible = false;
-            update();
         }
-			},
-			// called while loading is progressing
-			xhr => {
-       loadingBar.update(name, xhr.loaded, xhr.total);
-				
-			},
-			// called when loading has errors
-			err => {
+        
+        const size = 2;
+        
+        for( let n=0; n<50; n++){
+          const lod = apple.clone();
 
-				console.error( err );
+          lod.position.x = Math.random()*size - size/2;
+          lod.position.y = Math.random()*size - size/2;
+          lod.position.z = Math.random()*size - size/2;
+          
+          apples.add(lod);
+        }
+        
+        loadingBar.visible = false;
+        update();
+    },
+    // called while loading is progressing
+    xhr => {
+      loadingBar.update(name, xhr.loaded, xhr.total);
+      
+    },
+    // called when loading has errors
+    err => {
 
-			}
-		);
+      console.error( err );
+
     }
+  );
 }
 
   function update(){
     requestAnimationFrame( update );
 
-    apples.rotation.x += 0.003;
-    apples.rotation.y += 0.003;
+    if (apples && options.animated){
+      apples.rotation.x += 0.003;
+      apples.rotation.y += 0.003;
+    }
 
     renderer.render( scene, camera );  
   }
