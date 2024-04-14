@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html lang="en" >
 <head>
-  <meta charset="UTF-8">SmokeExtrude</title>
+  <meta charset="UTF-8">
+  <title>The Three.JS Cookbook: Special Effects - Smoke</title>
   <link rel="apple-touch-icon" sizes="180x180" href="../../images/favicon/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="../../images/favicon/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="../../images/favicon/favicon-16x16.png">
@@ -23,8 +24,8 @@
   }
 </script>
 <script  type="module"> 
-  import * as THREE from "three"
-  import { OrbitControls } from "three/addons/controls/OrbitControls.js"
+  import * as THREE from "three";
+  import { OrbitControls } from "three/addons/controls/OrbitControls.js";
  
   let camera, scene, renderer, sprites, control, clock, light;
   const assetPath = '../../assets/';
@@ -42,16 +43,31 @@ function init() {
     scene = new THREE.Scene();
  
     camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 1, 100 );
-    camera.position.z = 5;
+    camera.position.z = 15;
     scene.add( camera );
-
-    light = new THREE.DirectionalLight(0xffffff, 1.0);
-    light.position.set(-1,0,1);
-    scene.add(light);
   
     control = new OrbitControls( camera, renderer.domElement );
   
-    //TO DO: 1
+    const tex = new THREE.TextureLoader()
+      .setPath(assetPath)
+      .load('snowflake.png');
+    
+    const material = new THREE.SpriteMaterial({ map: tex });
+
+    sprites = [];
+
+    const size = 10;
+  
+    for (let i=0; i<100; i++) {
+        const sprite = new THREE.Sprite(material);
+        //sprite.scale.set(size, size, size);
+        sprite.position.set(
+          ( Math.random()-0.5 ) * size, 
+          ( Math.random()-0.5 ) * size*2, 
+          ( Math.random()-0.5 ) * size);
+        scene.add(sprite);
+        sprites.push(sprite);
+    }
 
     renderer.setAnimationLoop( update );
 }
@@ -59,7 +75,11 @@ function init() {
 function update() { 
     const dt = clock.getDelta();
     if (sprites){
-      //TO DO: 2
+        sprites[0].material.rotation += dt * 0.3;
+        sprites.forEach( sprite => {
+            sprite.position.y -= dt;
+            if (sprite.position.y<-10) sprite.position.y = 10;
+        });
     }
     renderer.render( scene, camera );
 } 

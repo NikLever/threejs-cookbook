@@ -2,7 +2,7 @@
 <html lang="en" >
 <head>
   <meta charset="UTF-8">
-  <title>The Three.JS Cookbook: Geometry - Extrude</title>
+  <title>The Three.JS Cookbook: Special Effects - Smoke</title>
   <link rel="apple-touch-icon" sizes="180x180" href="../../images/favicon/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="../../images/favicon/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="../../images/favicon/favicon-16x16.png">
@@ -24,11 +24,11 @@
   }
 </script>
 <script  type="module"> 
-  import * as THREE from "three"
-  import { OrbitControls } from "three/addons/controls/OrbitControls.js"
+  import * as THREE from "three";
+  import { OrbitControls } from "three/addons/controls/OrbitControls.js";
  
-  let camera, scene, renderer, particles, control, clock, light;
-  const assetPath = '../../assets/';//'https://s3-us-west-2.amazonaws.com/s.cdpn.io/2666677/';
+  let camera, scene, renderer, sprites, control, clock, light;
+  const assetPath = '../../assets/';
 
 init(); 
 
@@ -45,50 +45,36 @@ function init() {
     camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 1, 100 );
     camera.position.z = 5;
     scene.add( camera );
-
-    light = new THREE.DirectionalLight(0xffffff, 1.0);
-    light.position.set(-1,0,1);
-    scene.add(light);
   
     control = new OrbitControls( camera, renderer.domElement );
   
     const tex = new THREE.TextureLoader()
       .setPath(assetPath)
       .load('smoke_01.png');
-    const material = new THREE.MeshLambertMaterial({
-      color: 0xffffff, 
-      depthWrite: false,
-      map: tex, 
-      transparent: true
-    });
-    const geometry = new THREE.PlaneGeometry(5,5);
-    particles = [];
+    
+    const material = new THREE.SpriteMaterial({ map: tex });
+
+    sprites = [];
 
     const size = 5;
   
     for (let i=0; i<40; i++) {
-        const particle = new THREE.Mesh(geometry, material);
-        particle.position.set(
-          ( Math.random()-0.5) * size, 
-          ( Math.random()-0.5) * size, 
-          ( Math.random()-0.5) * size);
-        particle.rotation.z = Math.random() * Math.PI * 2;
-        scene.add(particle);
-        particles.push(particle);
+        const sprite = new THREE.Sprite(material);
+        sprite.scale.set(size, size, size);
+        sprite.position.set(
+          ( Math.random()-0.5 ) * size, 
+          ( Math.random()-0.5 ) * size, 
+          ( Math.random()-0.5 ) * size);
+        scene.add(sprite);
+        sprites.push(sprite);
     }
- 
+
     renderer.setAnimationLoop( update );
 }
  
 function update() { 
     const dt = clock.getDelta();
-    if (particles){
-      particles.forEach( particle => {
-        const z = particle.rotation.z;
-        particle.lookAt( camera.position );
-        particle.rotation.z = z + dt * 0.1;
-      });
-    }
+    if (sprites) sprites[0].material.rotation += dt * 0.1;
     renderer.render( scene, camera );
 } 
   
