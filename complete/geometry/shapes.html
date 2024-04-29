@@ -73,7 +73,7 @@ function createMesh(name, type){
   let pts = [];
   if (mesh!==undefined){
     scene.remove(mesh);
-    mesh.geometry.dispose();s
+    mesh.geometry.dispose();
     if ( mesh.material != material ) mesh.material.dispose();
   }
   let shape = new THREE.Shape();
@@ -210,11 +210,11 @@ function createMesh(name, type){
     shape.moveTo( 80, 40 );
     shape.absarc( 40, 40, 40, 0, Math.PI * 2, false );
     const eye1Path = new THREE.Path();
-    eye1Path.moveTo( 35, 20 );
+    eye1Path.moveTo( 25, 20 );
     eye1Path.absellipse( 25, 20, 10, 10, 0, Math.PI * 2, true );
     shape.holes.push( eye1Path );
     const eye2Path = new THREE.Path();
-    eye2Path.moveTo( 65, 20 );
+    eye2Path.moveTo( 55, 20 );
     eye2Path.absarc( 55, 20, 10, 0, Math.PI * 2, true );
     shape.holes.push( eye2Path );
     const mouthPath = new THREE.Path();
