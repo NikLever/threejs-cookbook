@@ -31,15 +31,10 @@
   </style>
 </head>
 <body>
-<!--
-  "three": "https://unpkg.com/three@0.150.0/build/three.module.js",             
-  "three/addons/":"https://unpkg.com/three@0.150.0/examples/jsm/"
--->
-<script async src="https://unpkg.com/es-module-shims@1.3.6/dist/es-module-shims.js"></script>
 <script type="importmap">
 {
   "imports": {
-    "three": "../../libs/three/build/three.module.js",
+    "three": "../../libs/three/build/three.module.min.js",
     "three/addons/": "../../libs/three/examples/jsm/",
     "libs/": "../../libs/"
   }
@@ -78,9 +73,9 @@
     const light = new THREE.DirectionalLight(0xFFFFFF, 3);
     scene.add(light);
     
-    renderer = new THREE.WebGLRenderer({antialias: true});
+    renderer = new THREE.WebGLRenderer({antialias: true, stencil: true});
     renderer.setSize( window.innerWidth, window.innerHeight );
-    //renderer.outputColorSpace = THREE.LinearSRGBColorSpace;
+  
     document.body.appendChild( renderer.domElement );
     
     controls = new OrbitControls(camera, renderer.domElement);
@@ -159,9 +154,6 @@
       'small-room.glb',
       // called when the resource is loaded
       gltf => {
-        //const bbox = new THREE.Box3().setFromObject( gltf.scene );
-        //console.log(`min:${bbox.min.x.toFixed(2)},${bbox.min.y.toFixed(2)},${bbox.min.z.toFixed(2)} -  max:${bbox.max.x.toFixed(2)},${bbox.max.y.toFixed(2)},${bbox.max.z.toFixed(2)}`);
-
         const halo = gltf.scene.getObjectByName('Sphere');
         if (halo){
             gltf.scene.remove(halo);
@@ -173,26 +165,28 @@
             scene.add(light);
         }
 
+        gltf.scene.renderOrder = 0;
+
         const stencilRef = 1;
 
         const desk = gltf.scene.getObjectByName('desk');
+        scene.attach(desk);
         desk.material = desk.material.clone();
-        desk.material.renderOrder = 2;
+        desk.renderOrder = 2;
         desk.material.stencilWrite = true;
         desk.material.stencilRef = stencilRef;
         desk.material.stencilFunc = THREE.NotEqualStencilFunc;
 
         magnifyingGlass = gltf.scene.getObjectByName('magnifying_glass');
-        scene.attach( magnifyingGlass );
-
+        scene.attach(magnifyingGlass);
+        magnifyingGlass.renderOrder = 1;
         const lens = magnifyingGlass.children[1];
         lens.material.depthWrite = false;
-        lens.material.renderOrder = 1;
+        lens.material.colorWrite = false;
         lens.material.stencilWrite = true;
         lens.material.stencilRef = stencilRef;
         lens.material.stencilFunc = THREE.AlwaysStencilFunc;
         lens.material.stencilZPass = THREE.ReplaceStencilOp;
-        //lens.material.visible = false;
                 
         scene.add( gltf.scene );
                 
