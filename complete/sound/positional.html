@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>The Three.JS Cookbook: Sound - Template</title>
+  <title>The Three.JS Cookbook: Sound - Basic</title>
   <link rel="apple-touch-icon" sizes="180x180" href="../../images/favicon/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="../../images/favicon/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="../../images/favicon/favicon-16x16.png">
@@ -26,180 +26,192 @@
 </script>
 <script  type="module"> 
   import * as THREE from "three"
+  import { OrbitControls } from "three/addons/controls/OrbitControls.js"
   import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-  import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
-  import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
-  import { LoadingBar } from '../../libs/LoadingBar.js';
-  import { NavmeshControls } from '../../libs/NavmeshControls.js';
-  import { GUI } from "three/addons/libs/lil-gui.module.min.js"
+  import { PositionalAudioHelper } from 'three/addons/helpers/PositionalAudioHelper.js';
+  import { GUI } from "three/addons/libs/lil-gui.module.min.js";
+  import { CanvasText } from '../../libs/CanvasText.js';
 
-  let scene, camera, renderer, controls, clock, loadingBar, factory, fans, navmesh;
+  let scene, camera, clock,renderer, controls, boomBoxes, listener, playPressed = false;
 
   init();
 
   function init(){
     scene = new THREE.Scene();
-    const col =  0x201510;
-    scene.background = new THREE.Color( col );
-    scene.fog = new THREE.Fog( col, 100, 200 );
-
-    camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 0.1, 500 );
-		camera.position.set( -10.6, 4, -1.46 );
-    camera.lookAt(-5,1,0);
-		camera.rotation.y = -Math.PI*0.5;
-
-    clock = new THREE.Clock();
+    scene.background = new THREE.Color( 0xaaaaaa );
+    scene.fog = new THREE.Fog( 0xAAAAAA, 5, 10);
     
+    camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 0.1, 100 );
+    camera.position.set(0, 1, -2);
+    camera.lookAt(0,0.3,0);
+
+    clock = new THREE.Clock(false);
+ 
     const ambient = new THREE.HemisphereLight(0xffffbb, 0x080820);
     scene.add(ambient);
     
     const light = new THREE.DirectionalLight(0xFFFFFF, 3);
-    light.position.set( 4, 20, 20 );
-		light.target.position.set(-2, 0, 0);
-		light.castShadow = true;
-		//Set up shadow properties for the light
-		light.shadow.mapSize.width = 1024; 
-		light.shadow.mapSize.height = 512; 
-		light.shadow.camera.near = 0.5; 
-		light.shadow.camera.far = 50;
-		const d = 30; 
-		light.shadow.camera.left = -d;
-		light.shadow.camera.bottom = -d*0.25;
-		light.shadow.camera.right = light.shadow.camera.top = d;
+    light.position.set( 1, 10, -6);
+    light.castShadow = true;
+    light.shadow.radius = 7;
+    light.shadow.blurSamples = 8;
+    const size = 4;
+    light.shadow.camera.top = size;
+    light.shadow.camera.bottom = -size;
+    light.shadow.camera.left = -size;
+    light.shadow.camera.right = size;
+    light.shadow.camera.near = 0.1;
+    light.shadow.camera.far = 20;
     scene.add(light);
+
+    const floorgeo = new THREE.PlaneGeometry( 25, 25 );
+    floorgeo.rotateX( -Math.PI/2  );
+    const floormat = new THREE.MeshStandardMaterial( { color: 0xFFFFFF } );
+    const floor = new THREE.Mesh( floorgeo, floormat );
+    floor.position.y = -0.01;
+    scene.add( floor );
+    floor.receiveShadow = true;
+
+    const gridHelper = new THREE.GridHelper( 25, 25 );
+    scene.add( gridHelper );
     
     renderer = new THREE.WebGLRenderer({antialias: true});
-    renderer.shadowMap.enabled = true;
     renderer.setSize( window.innerWidth, window.innerHeight );
     document.body.appendChild( renderer.domElement );
-      
-    loadingBar = new LoadingBar();
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.VSMShadowMap; 
+    
+    //controls = new OrbitControls(camera, renderer.domElement);
 
     setEnvironment();
-
-    loadEnvironment();
+    loadModel();
+      
+    addBoomBoxClicked();
 
     window.addEventListener( 'resize', resize, false);
     
     update();
   }
 
-  function setEnvironment(){
-        const loader = new RGBELoader().setPath('../../assets/');
-        
-        loader.load( 'hdr/factory.hdr', ( texture ) => {
+  function addBoomBoxClicked(){
+    document.addEventListener('mousedown', onMouseDown, false);
 
-          texture.mapping = THREE.EquirectangularReflectionMapping;
-          
-          scene.environment = texture;
+    function onMouseDown(e) {
+        if (!boomBoxes || boomBoxes.length<1) return;
 
-        }, undefined, (err)=>{
-            console.error( err.message );
-        } );
+        const vectorMouse = new THREE.Vector3( //vector from camera to mouse
+            -(window.innerWidth/2-e.clientX)*2/window.innerWidth,
+            (window.innerHeight/2-e.clientY)*2/window.innerHeight,
+            -1/Math.tan(30*Math.PI/180)); //30 is half of camera frustum angle 45 degree
+        vectorMouse.applyQuaternion(camera.quaternion);
+        vectorMouse.normalize();        
+
+        const vectorObject = new THREE.Vector3(); //vector from camera to object
+        vectorObject.copy(boomBoxes[0].position).sub(camera.position).normalize();
+
+        const theta = vectorMouse.angleTo(vectorObject) * 180/Math.PI;
+
+        //console.log(`Click ${theta.toFixed(1)}`);
+
+        if (theta < 3) {
+            //mouse's position is near object's position
+            addSound();
+            playPressed = true;
+            clock.start();
+            document.removeEventListener( 'mousedown', onMouseDown, false );
+        }
     }
+  }
 
-  function loadEnvironment(){
-    const loader = new GLTFLoader( ).setPath('../../assets/');
-        
-		// Load a glTF resource
-		loader.load(
-			// resource URL
-			'factory.glb',
-			// called when the resource is loaded
-			gltf => {
+  function addSound(){
+    listener = new THREE.AudioListener();
+    camera.add( listener );
 
-				scene.add( gltf.scene );
-        factory = gltf.scene;
-				fans = [];
+    const path = '../../assets/sfx/';
 
-				const mergeObjects = {elements2:[], elements5:[], terrain:[]};
+    [{ sfx:'bugle', index:0 }, { sfx:'organ', index:1 }, { sfx:'snare', index:2 }].forEach( data => {
+      // create the PositionalAudio object (passing in the listener)
+      const sound = new THREE.PositionalAudio( listener );
+      sound.setDirectionalCone( 60, 90, 0 );
+      const helper = new PositionalAudioHelper( sound, 0.1 );
+      sound.add( helper );
 
-				gltf.scene.traverse( child => {
-					if (child.isMesh){
-						if (child.name == 'NavMesh'){
-							navmesh = child;
-							navmesh.geometry.rotateX( Math.PI/2 );
-							navmesh.quaternion.identity();
-							navmesh.position.set(0,0,0);
-							//child.material.visible = false;
-              child.material.wireframe = true;
-						}else if (child.name.includes('fan')){
-							fans.push( child );
-						}else if (child.material.name.includes('elements2')){
-							mergeObjects.elements2.push(child);
-							child.castShadow = true;
-						}else if (child.material.name.includes('elements5')){
-							mergeObjects.elements5.push(child);
-							child.castShadow = true;
-						}else if (child.material.name.includes('terrain')){
-							mergeObjects.terrain.push(child);
-							child.castShadow = true;
-						}else if (child.material.name.includes('sand')){
-							child.receiveShadow = true;
-						}else if ( child.material.name.includes('elements1')){
-							child.castShadow = true;
-							child.receiveShadow = true;
-						}else if (child.parent.name.includes('main')){
-							child.castShadow = true;
-						}
-					}
-				});
+      // load a sound and set it as the PositionalAudio object's buffer
+      const audioLoader = new THREE.AudioLoader();
+      audioLoader.setPath( path )
+        .load( `${data.sfx}.mp3`, buffer => {
+          sound.setBuffer( buffer );
+          sound.setLoop(true);
+          sound.setRefDistance( 2 );
+          sound.play();
+          boomBoxes[data.index].add(sound);
+        });
+      });
+  }
 
-				scene.add(navmesh);
+  function setEnvironment(){
+    scene.environment = new THREE.CubeTextureLoader()
+      .setPath( '../../libs/three/examples/textures/cube/SwedishRoyalCastle/' )
+      .load( [ 'px.jpg', 'nx.jpg', 'py.jpg', 'ny.jpg', 'pz.jpg', 'nz.jpg' ] );
+  }
 
-				for(let prop in mergeObjects){
-					const array = mergeObjects[prop];
-					let material;
-					array.forEach( object => {
-						if (material == undefined){
-							material = object.material;
-						}else{
-							object.material = material;
-						}
-					});
-				}
+  function random( min, max ){
+    if (min>max) [ max, min ] = [ min, max ];
+    const range = max - min;
+    return Math.random() * range + min;
+  }
 
-				controls = new NavmeshControls(navmesh, camera);
+  function loadModel(){
+    const gltfLoader = new GLTFLoader();
 
-        const g = new THREE.SphereGeometry(0.2);
-        const m = new THREE.MeshStandardMaterial({ color: 0xff0000, depthTest: false });
-        const mesh = new THREE.Mesh( g, m );
-        controls.target.add(mesh);
-        scene.add(controls.target);
+    gltfLoader.load( '../../libs/three/examples/models/gltf/BoomBox.glb',  gltf => {
 
-				loadingBar.visible = !loadingBar.loaded;
+      const boomBox = gltf.scene;
+      boomBox.position.set( 0, 0.3, 0 );
+      boomBox.scale.set( 30, 30, 30 );
+      boomBox.traverse( child => {
+        if (child.isMesh){
+          child.geometry.rotateY( - Math.PI );
+          child.castShadow = true;
+        }
+      })
+      boomBox.rotateY( Math.PI );
+      scene.add( boomBox );
 
-        update();
-			},
-			// called while loading is progressing
-			xhr => {
+      const boxgeo = new THREE.BoxGeometry( 0.01, 0.005, 0.00001 );
+      const material = new THREE.MeshStandardMaterial( { map: new CanvasText('Bugle').texture } );
+      const card = new THREE.Mesh( boxgeo, material );
+      card.name = 'card';
+      card.position.set(0, -0.005, 0.013 );
+      boomBox.add( card );
 
-				loadingBar.update('environment', xhr.loaded, xhr.total);
-				
-			},
-			// called when loading has errors
-			err => {
+      const boomBox2 = boomBox.clone();
+      boomBox2.position.set( -3, 0.3, 0 );
+      const card2 = boomBox2.getObjectByName('card');
+      card2.material = new THREE.MeshStandardMaterial( { map: new CanvasText('Organ').texture } );
+      scene.add( boomBox2 );
 
-				console.error( err );
+      const boomBox3 = boomBox.clone();
+      boomBox3.position.set( 3, 0.3, 0);
+      const card3 = boomBox3.getObjectByName('card');
+      card3.material = new THREE.MeshStandardMaterial( { map: new CanvasText('Drum').texture } );
+      scene.add( boomBox3 );
 
-			}
-		);
-	}	
+      boomBoxes = [ boomBox, boomBox2, boomBox3 ];
+
+      update();
+
+    } );
+  }
 
   function update(){
+    const t = clock.getElapsedTime();
+
+    if (playPressed) camera.position.x = Math.sin(t*0.2) * 3;
+
     requestAnimationFrame( update );
-    
-		const dt = clock.getDelta();
-
-		if (fans !== undefined){
-        fans.forEach(fan => {
-            fan.rotateY(dt); 
-        });
-    }
-
-		if (controls !== undefined) controls.update(dt);
-
-    renderer.render( scene, camera );  
+    renderer.render( scene, camera ); 
   }
 
   function resize(){
