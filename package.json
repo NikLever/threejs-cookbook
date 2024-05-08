@@ -1,0 +1,17 @@
+{
+  "name": "threejs-cookbook",
+  "version": "1.0.0",
+  "description": "Files for my Udemy course",
+  "main": "index.html",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Nik Lever",
+  "license": "ISC",
+  "dependencies": {
+    "three": "^0.164.1"
+  },
+  "devDependencies": {
+    "@types/three": "^0.164.0"
+  }
+}

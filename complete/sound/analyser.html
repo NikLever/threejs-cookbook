@@ -21,11 +21,7 @@
     <button id="startButton">Play</button>
 </div>
 <div id="container"></div>
-<div id="info">
-    <a href="https://threejs.org" target="_blank" rel="noopener noreferrer">three.js</a> webaudio - orientation<br/>
-    music by <a href="http://www.newgrounds.com/audio/listen/376737" target="_blank" rel="noopener noreferrer">skullbeatz</a>
-</div>
-
+<reference path='../../libs/three/three.js' />
 <script type="importmap">
 {
   "imports": {
@@ -38,6 +34,9 @@
 
     import * as THREE from 'three';
     import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import { Line2 } from 'three/addons/lines/Line2.js';
+	import { LineMaterial } from 'three/addons/lines/LineMaterial.js';
+	import { LineGeometry } from 'three/addons/lines/LineGeometry.js';
 
     let scene, camera, renderer, analyser, visualizer;
 
@@ -63,7 +62,7 @@
         container.appendChild( renderer.domElement );
 
         scene = new THREE.Scene();
-        scene.background = new THREE.Color( 0xaaaaff );
+        scene.background = new THREE.Color( 0x000000 );
 
         camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 0.1, 100 );
         camera.position.set( 0, 0, 5 );
@@ -82,7 +81,7 @@
         const listener = new THREE.AudioListener();
 
         const audio = new THREE.Audio( listener );
-        const file = '../../libs/three/examples/sounds/376737_Skullbeatz___Bad_Cat_Maste.mp3';
+        const file = '../../assets/sfx/organ.mp3';
 
         if ( /(iPad|iPhone|iPod)/g.test( navigator.userAgent ) ) {
 
@@ -107,10 +106,10 @@
 
         //
 
-        visualizer = new THREE.Group();
-        scene.add( visualizer );
+       // visualizer = new THREE.Group();
+       // scene.add( visualizer );
 
-        const width = 0.2;
+        /*const width = 0.2;
         const geometry = new THREE.BoxGeometry( width, 0.1, 0.1 );
         const material = new THREE.MeshStandardMaterial();
 
@@ -121,8 +120,33 @@
             const bar = new THREE.Mesh( geometry, mat );
             bar.position.x = i * width - 2;
             visualizer.add(bar);
-        }
+        }*/
         //
+
+        const sphere = new THREE.IcosahedronGeometry();
+        const positions = sphere.getAttribute( 'position' ).array;
+        const geometry = new LineGeometry();
+        const length = positions.length/3;
+        const colors = [];
+        const color = new THREE.Color( 0xFF00FF );
+        for(let i=0; i<length; i++){
+            colors.push(color);
+        }
+		geometry.setPositions( positions );
+		geometry.setColors( colors );
+
+        const material = new LineMaterial( {            
+            color: 0xffffff,
+            linewidth: 5, // in world units with size attenuation, pixels otherwise
+            vertexColors: true,
+            dashed: false,
+            alphaToCoverage: true,
+        });
+
+        visualizer = new Line2( geometry, material );
+        visualizer.computeLineDistances();
+		visualizer.scale.set( 1, 1, 1 );
+        scene.add( visualizer );
 
         window.addEventListener( 'resize', onWindowResize );
 
@@ -146,7 +170,7 @@
 
     function render() {
 
-        analyser.getFrequencyData();
+        /*analyser.getFrequencyData();
 
         for(let i=0; i<visualizer.children.length; i++){
             const a = analyser.data[i*3 + 0];
@@ -154,7 +178,7 @@
             const c = analyser.data[i*3 + 2];
             const d = ((((a + b + c)/3)/255)-0.5) * 4;
             visualizer.children[i].position.y = d;
-        }
+        }*/
 
         renderer.render( scene, camera );
 
