@@ -25,20 +25,17 @@
 <script type="importmap">
 {
   "imports": {
-    "three": "../../libs/three/build/three.module.js",
-    "three/addons/": "../../libs/three/examples/jsm/"
+    "three": "../../node_modules/three/build/three.module.js",
+    "three/addons/": "../../node_modules/three/examples/jsm/"
   }
 }
 </script>
 <script type="module">
-
     import * as THREE from 'three';
     import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-    import { Line2 } from 'three/addons/lines/Line2.js';
-	import { LineMaterial } from 'three/addons/lines/LineMaterial.js';
-	import { LineGeometry } from 'three/addons/lines/LineGeometry.js';
+    import { mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 
-    let scene, camera, renderer, analyser, visualizer;
+    let scene, camera, renderer, analyser, visualizer, tmpVec;
 
     const startButton = document.getElementById( 'startButton' );
     startButton.addEventListener( 'click', init );
@@ -122,30 +119,20 @@
             visualizer.add(bar);
         }*/
         //
+        tmpVec = new THREE.Vector3();
 
-        const sphere = new THREE.IcosahedronGeometry();
-        const positions = sphere.getAttribute( 'position' ).array;
-        const geometry = new LineGeometry();
-        const length = positions.length/3;
-        const colors = [];
-        const color = new THREE.Color( 0xFF00FF );
-        for(let i=0; i<length; i++){
-            colors.push(color);
+        const geometry = new THREE.IcosahedronGeometry();
+        const geometry1 = mergeVertices( geometry, 0.001 );
+        const positions = geometry1.getAttribute( 'position' ).array;
+        const normals = [];
+        for(let i=0; i<positions.length; i+=3){
+            normals.push( new THREE.Vector3( positions[i], positions[i+1], positions[i+2] ).normalize() );
         }
-		geometry.setPositions( positions );
-		geometry.setColors( colors );
-
-        const material = new LineMaterial( {            
-            color: 0xffffff,
-            linewidth: 5, // in world units with size attenuation, pixels otherwise
-            vertexColors: true,
-            dashed: false,
-            alphaToCoverage: true,
-        });
-
-        visualizer = new Line2( geometry, material );
-        visualizer.computeLineDistances();
-		visualizer.scale.set( 1, 1, 1 );
+        const line = new THREE.Mesh( geometry1, new THREE.MeshBasicMaterial({ wireframe: true }) );
+        visualizer = new THREE.Group();
+        visualizer.userData.normals = normals;
+        visualizer.userData.positions = positions;
+        visualizer.add( line );
         scene.add( visualizer );
 
         window.addEventListener( 'resize', onWindowResize );
@@ -170,15 +157,21 @@
 
     function render() {
 
-        /*analyser.getFrequencyData();
+        analyser.getFrequencyData();
 
-        for(let i=0; i<visualizer.children.length; i++){
-            const a = analyser.data[i*3 + 0];
-            const b = analyser.data[i*3 + 1];
-            const c = analyser.data[i*3 + 2];
-            const d = ((((a + b + c)/3)/255)-0.5) * 4;
-            visualizer.children[i].position.y = d;
-        }*/
+        const pos = visualizer.userData.positions;
+
+        for(let i=0; i<analyser.data.length; i++){
+            const a = analyser.data[i + 0];
+            const b = analyser.data[i + 1];
+            const c = analyser.data[i + 2];
+            const d = ((((a + b + c)/3)/255)-0.5) * 0.25 + 1;
+            tmpVec.copy(visualizer.userData.normals[i]).multiplyScalar(d);
+            pos[i] = tmpVec.x;
+            pos[i+1] = tmpVec.y;
+            pos[i+2] = tmpVec.z;
+            console.log(`Vertex: ${i}: ${tmpVec.x.toFixed(1)}, ${tmpVec.y.toFixed(1)}, ${tmpVec.z.toFixed(1)}` );
+        }
 
         renderer.render( scene, camera );
 
