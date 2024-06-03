@@ -42,7 +42,7 @@
 
     function init() {
 
-        const fftSize = 128;
+        const fftSize = 64;
 
         //
 
@@ -62,7 +62,7 @@
         scene.background = new THREE.Color( 0x000000 );
 
         camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 0.1, 100 );
-        camera.position.set( 0, 0, 5 );
+        camera.position.set( 0, 0, 8 );
 
         const ambient = new THREE.HemisphereLight( 0xAAAAFF, 0x555555 );
         scene.add( ambient );
@@ -101,39 +101,11 @@
 
         analyser = new THREE.AudioAnalyser( audio, fftSize );
 
-        //
-
-       // visualizer = new THREE.Group();
-       // scene.add( visualizer );
-
-        /*const width = 0.2;
-        const geometry = new THREE.BoxGeometry( width, 0.1, 0.1 );
-        const material = new THREE.MeshStandardMaterial();
-
-        for(let i=0; i<20; i++){
-            const mat = material.clone();
-            mat.color.setRGB( Math.random()*0.5 + 0.25, Math.random()*0.5 + 0.25, Math.random()*0.5 + 0.25 );
-            mat.needsUpdate = true;
-            const bar = new THREE.Mesh( geometry, mat );
-            bar.position.x = i * width - 2;
-            visualizer.add(bar);
-        }*/
-        //
-        tmpVec = new THREE.Vector3();
-
-        const geometry = new THREE.IcosahedronGeometry();
-        const geometry1 = mergeVertices( geometry, 0.001 );
-        const positions = geometry1.getAttribute( 'position' ).array;
-        const normals = [];
-        for(let i=0; i<positions.length; i+=3){
-            normals.push( new THREE.Vector3( positions[i], positions[i+1], positions[i+2] ).normalize() );
-        }
-        const line = new THREE.Mesh( geometry1, new THREE.MeshBasicMaterial({ wireframe: true }) );
-        visualizer = new THREE.Group();
-        visualizer.userData.normals = normals;
-        visualizer.userData.positions = positions;
-        visualizer.add( line );
-        scene.add( visualizer );
+        const geometry = new THREE.SphereGeometry( 0.1, 12, 6 );
+        const material = new THREE.MeshStandardMaterial( { color: 0x00FF00 });
+        visualizer = new THREE.InstancedMesh(geometry, material, 32  );
+        visualizer.instanceMatrix.setUsage( THREE.DynamicDrawUsage );
+        scene.add(visualizer);
 
         window.addEventListener( 'resize', onWindowResize );
 
@@ -159,19 +131,16 @@
 
         analyser.getFrequencyData();
 
-        const pos = visualizer.userData.positions;
+        const dummy = new THREE.Object3D();
 
-        for(let i=0; i<analyser.data.length; i++){
-            const a = analyser.data[i + 0];
-            const b = analyser.data[i + 1];
-            const c = analyser.data[i + 2];
-            const d = ((((a + b + c)/3)/255)-0.5) * 0.25 + 1;
-            tmpVec.copy(visualizer.userData.normals[i]).multiplyScalar(d);
-            pos[i] = tmpVec.x;
-            pos[i+1] = tmpVec.y;
-            pos[i+2] = tmpVec.z;
-            console.log(`Vertex: ${i}: ${tmpVec.x.toFixed(1)}, ${tmpVec.y.toFixed(1)}, ${tmpVec.z.toFixed(1)}` );
+        for ( let i = 0; i < 32; i ++ ) {
+            dummy.position.set( (i-16) * 0.2, ((analyser.data[i]/255)-0.5)*3.0, 0 );
+            dummy.updateMatrix();
+            visualizer.setMatrixAt( i, dummy.matrix );
         }
+
+        visualizer.instanceMatrix.needsUpdate = true;
+        visualizer.computeBoundingSphere();
 
         renderer.render( scene, camera );
 

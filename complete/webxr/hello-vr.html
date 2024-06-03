@@ -80,7 +80,7 @@
     createText( str, size=1, height=0.1 ){
         const loader = new FontLoader();
 
-        loader.load( '../../libs/three140/examples/fonts/helvetiker_regular.typeface.json', font => {
+        loader.load( '../../libs/three/examples/fonts/helvetiker_regular.typeface.json', font => {
 
             const geometry = new TextGeometry( str, {
                 font,
@@ -116,19 +116,6 @@
         this.scene.add( this.room );
         
         this.createText('Hello VR World', 0.5, 0.05);
-        /*const geometry = new THREE.IcosahedronBufferGeometry( this.radius, 2 );
-
-        for ( let i = 0; i < 200; i ++ ) {
-
-            const object = new THREE.Mesh( geometry, new THREE.MeshLambertMaterial( { color: Math.random() * 0xffffff } ) );
-
-            object.position.x = this.random( -2, 2 );
-            object.position.y = this.random( -2, 2 );
-            object.position.z = this.random( -2, 2 );
-
-            this.room.add( object );
-
-        }*/
     }
     
     setupVR(){
