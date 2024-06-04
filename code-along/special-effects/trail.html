@@ -79,9 +79,7 @@
 
     setEnvironment();
     createStar();
-
     path = new Curves.GrannyKnot();
-
     options = {
         shape: 'flat',
         textured: false,
@@ -96,57 +94,7 @@
         depthWrite: false
     }
 
-    const gui = new GUI();
-    /*gui.add( options, 'shape', [ 'flat', 'circle', 'star' ]).onChange( initializeTrail );
-    gui.add( options, 'textured' ).onChange( value => {
-        texCtrls.forEach( ctrl => {
-            ctrl.enable( value );
-        })
-        initializeTrail();
-     } );
-    const texCtrls = [];
-    texCtrls.push(gui.add( options, 'dragTexture').onChange( initializeTrail ).disable());
-    texCtrls.push(gui.add( options, 'texTileS', 0, 25).onChange( value => {
-        trail.material.uniforms.textureTileFactor.value.set(options.texTileS, options.texTileT);
-    }).disable());
-   texCtrls.push( gui.add( options, 'texTileT', 0, 25).onChange( value => {
-        trail.material.uniforms.textureTileFactor.value.set(options.texTileS, options.texTileT);
-    }).disable());
-    gui.addColor( options, 'headColor' ).onChange( value => { updateTrailColor( true ) } );
-    gui.add( options, 'headAlpha', 0, 1 ).onChange( value => { updateTrailColor( true ) } );
-    gui.addColor( options, 'tailColor' ).onChange( value => { updateTrailColor( false ) } );
-    gui.add( options, 'tailAlpha', 0, 1  ).onChange( value => { updateTrailColor( false ) } );
-    gui.add( options, 'trailLength', 10, 300, 1).onChange( initializeTrail );
-    gui.add( options, 'depthWrite').onChange( value => {
-        trail.material.depthWrite = value;
-    });*/
-    
-    createTrail();
-
     update();
-  }
-
-  function parseColor( color ){
-    const red = (color >> 16) / 255;
-    const green = ((color & 0xFF00) >> 8) / 255;
-    const blue = (color & 0xFF) / 255;
-    return { red, green, blue };
-  }
-
-  function createTrail(){
-    //TO DO: 1
-  }
-
-  function initializeTrail(){
-    //TO DO: 2
-  }
-
-  function updateTrailColor( head ){
-    //TO DO: 3
-  }
-
-  function updateTrail(time){
-    //TO DO: 4
   }
 
   function setEnvironment(){
@@ -176,6 +124,70 @@
     star = new THREE.Mesh(geometry, material);
     
     scene.add(star);
+  }
+
+  function parseColor( color ){
+    const red = (color >> 16) / 255;
+    const green = ((color & 0xFF00) >> 8) / 255;
+    const blue = (color & 0xFF) / 255;
+    return { red, green, blue };
+  }
+
+  function addGUI(){
+    options = {
+        shape: 'flat',
+        textured: false,
+        dragTexture: false,
+        texTileS: 4,
+        texTileT: 1,
+        headColor: 0xFF0000,
+        headAlpha: 0.75,
+        tailColor: 0x330000,
+        tailAlpha: 0.33,
+        trailLength: 150,
+        depthWrite: false
+    }
+
+    const gui = new GUI();
+    gui.add( options, 'shape', [ 'flat', 'circle', 'star' ]).onChange( initializeTrail );
+    gui.add( options, 'textured' ).onChange( value => {
+        texCtrls.forEach( ctrl => {
+            ctrl.enable( value );
+        })
+        initializeTrail();
+     } );
+    const texCtrls = [];
+    texCtrls.push(gui.add( options, 'dragTexture').onChange( initializeTrail ).disable());
+    texCtrls.push(gui.add( options, 'texTileS', 0, 25).onChange( value => {
+        trail.material.uniforms.textureTileFactor.value.set(options.texTileS, options.texTileT);
+    }).disable());
+   texCtrls.push( gui.add( options, 'texTileT', 0, 25).onChange( value => {
+        trail.material.uniforms.textureTileFactor.value.set(options.texTileS, options.texTileT);
+    }).disable());
+    gui.addColor( options, 'headColor' ).onChange( value => { updateTrailColor( true ) } );
+    gui.add( options, 'headAlpha', 0, 1 ).onChange( value => { updateTrailColor( true ) } );
+    gui.addColor( options, 'tailColor' ).onChange( value => { updateTrailColor( false ) } );
+    gui.add( options, 'tailAlpha', 0, 1  ).onChange( value => { updateTrailColor( false ) } );
+    gui.add( options, 'trailLength', 10, 300, 1).onChange( initializeTrail );
+    gui.add( options, 'depthWrite').onChange( value => {
+        trail.material.depthWrite = value;
+    });
+  }
+
+  function createTrail(){
+    //TO DO: 1
+  }
+
+  function initializeTrail(){
+    //TO DO: 2
+  }
+
+  function updateTrailColor( head ){
+    //TO DO: 3
+  }
+
+  function updateTrail(time){
+    //TO DO: 4
   }
 
   function moveStar(time){
