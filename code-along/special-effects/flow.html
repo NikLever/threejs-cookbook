@@ -34,7 +34,7 @@
   import { LoadingBar } from '../../libs/LoadingBar.js';
   import { Flow } from 'three/addons/modifiers/CurveModifier.js';
 
-  let scene, camera, renderer, controls, shark, flow, curve, pathCtrl, params;
+  let scene, camera, renderer, controls, shark, flow, curve, offsetCtrl, options;
 
   init();
 
@@ -64,10 +64,10 @@
     loadGLTF();
     createCurve();
 
-    params = {
+    options = {
       flow: true,
       play: true,
-      path: 0,
+      offset: 0,
       wireframe: false
     }
     
@@ -77,10 +77,10 @@
   function addGUI(){
     const gui = new GUI();
     
-    gui.add( params, 'flow').onChange( value => flow.uniforms.flow.value = value );
-    gui.add( params, 'play');
-    pathCtrl = gui.add( params, 'path', 0, 1).onChange( value => flow.uniforms.pathOffset.value = value );
-    gui.add( params, 'wireframe').onChange( value => {
+    gui.add( options, 'flow').onChange( value => flow.uniforms.flow.value = value );
+    gui.add( options, 'play');
+    offsetCtrl = gui.add( options, 'offset', 0, 1).onChange( value => flow.uniforms.pathOffset.value = value );
+    gui.add( options, 'wireframe').onChange( value => {
       flow.object3D.material.wireframe = value;
       scene.background = (value) ? scene.background.set( 0xbbbbbb ) : scene.background.set( 0x000099 );
     });
@@ -170,7 +170,7 @@
 
   function update(){
     requestAnimationFrame( update );
-    if (flow && params.play){
+    if (flow && options.play){
       //TO DO: 2
     }
     renderer.render( scene, camera );  
