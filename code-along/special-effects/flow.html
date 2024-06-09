@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>The Three.JS Cookbook: Foundations - Template</title>
+  <title>The Three.JS Cookbook: Special Effects - Flow</title>
   <link rel="apple-touch-icon" sizes="180x180" href="../../images/favicon/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="../../images/favicon/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="../../images/favicon/favicon-16x16.png">
@@ -16,11 +16,6 @@
   </style>
 </head>
 <body>
-<!--
-  "three": "https://unpkg.com/three@0.150.0/build/three.module.js",             
-  "three/addons/":"https://unpkg.com/three@0.150.0/examples/jsm/"
--->
-<script async src="https://unpkg.com/es-module-shims@1.3.6/dist/es-module-shims.js"></script>
 <script type="importmap">
 {
   "imports": {
@@ -69,13 +64,19 @@
     loadGLTF();
     createCurve();
 
-    const gui = new GUI();
     params = {
       flow: true,
       play: true,
       path: 0,
       wireframe: false
     }
+    
+    update();
+  }
+
+  function addGUI(){
+    const gui = new GUI();
+    
     gui.add( params, 'flow').onChange( value => flow.uniforms.flow.value = value );
     gui.add( params, 'play');
     pathCtrl = gui.add( params, 'path', 0, 1).onChange( value => flow.uniforms.pathOffset.value = value );
@@ -83,8 +84,6 @@
       flow.object3D.material.wireframe = value;
       scene.background = (value) ? scene.background.set( 0xbbbbbb ) : scene.background.set( 0x000099 );
     });
-    
-    update();
   }
 
   function setEnvironment(){
@@ -127,10 +126,6 @@
         shark.scale.set( scale, scale, scale );
                
         setFlow();
-                
-        //loadingBar.visible = false;
-        
-        //update();
       },
       // called while loading is progressing
       xhr => {
@@ -167,23 +162,16 @@
       );
 
       scene.add( line );
-
-      setFlow();
   }
 
   function setFlow(){
-    if (shark==undefined || curve==undefined || flow!=undefined) return;
-    flow = new Flow( shark );
-		flow.updateCurve( 0, curve );
-		scene.add( flow.object3D );
+    //TO DO: 1
   }
 
   function update(){
     requestAnimationFrame( update );
     if (flow && params.play){
-      flow.moveAlongCurve(0.001);
-      params.path = flow.uniforms.pathOffset.value % 1;
-      pathCtrl.updateDisplay();
+      //TO DO: 2
     }
     renderer.render( scene, camera );  
   }
