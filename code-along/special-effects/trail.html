@@ -124,13 +124,26 @@
 
     trail = new TrailRenderer( scene, false );
 
-    const trailMaterial = TrailRenderer.createBaseMaterial();	
+    let trailMaterial;
+
+    if (false){
+      trailMaterial = TrailRenderer.createBaseMaterial();
+    }else{ 
+      trailMaterial = TrailRenderer.createTexturedMaterial();
+      const loader = new THREE.TextureLoader()
+        .setPath('../../assets/')
+        .load("stars.png", (tex) => {
+            tex.wrapS = THREE.RepeatWrapping;
+            tex.wrapT = THREE.RepeatWrapping;
+            trail.material.uniforms.trailTexture.value = tex;
+            trail.material.uniforms.textureTileFactor.value.set(8, 2);
+            //trail.material.needsUpdate = true;
+        });	
+    }
     trailMaterial.uniforms.headColor.value.set(1.0, 0, 0, 0.75);
     trailMaterial.uniforms.tailColor.value.set(0.33, 0, 0, 0.33);
 
-    const trailLength = 150;
-
-    trail.initialize( trailMaterial, trailLength, false, 0, starPoints, star );
+    trail.initialize( trailMaterial, 150, false, 6, starPoints, star );
 
     trail.activate();
   }

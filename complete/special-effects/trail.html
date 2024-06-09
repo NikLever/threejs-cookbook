@@ -81,6 +81,8 @@
     createStar();
     path = new Curves.GrannyKnot();
 
+    const wireframeMat = new THREE.MeshBasicMaterial( { wireframe: true } );
+
     options = {
         shape: 'flat',
         textured: false,
@@ -92,7 +94,8 @@
         tailColor: 0x330000,
         tailAlpha: 0.33,
         trailLength: 150,
-        depthWrite: false
+        depthWrite: false,
+        wireframe: false
     }
 
     const gui = new GUI();
@@ -119,6 +122,9 @@
     gui.add( options, 'depthWrite').onChange( value => {
         trail.material.depthWrite = value;
     });
+    gui.add( options, 'wireframe').onChange( value => {
+      scene.overrideMaterial = value ? wireframeMat : null;
+    })
     
     createTrail();
 
@@ -127,6 +133,7 @@
 
   function initializeTrail(){
     const material = options.textured ? materials.textured : materials.basic;
+    //trail.setAdvanceFrequency(100);
     trail.initialize( material, options.trailLength, options.dragTexture, 0, shapes[options.shape], star );
     material.uniforms.textureTileFactor.value.set(options.texTileS, options.texTileT);
     updateTrailColor(true);
@@ -186,7 +193,6 @@
     const flat = [];
     flat.push( 
         new THREE.Vector3( -3.0, 0.0, 0.0 ), 
-        new THREE.Vector3( 0.0, 0.0, 0.0 ), 
         new THREE.Vector3( 3.0, 0.0, 0.0 ) 
     );
 
