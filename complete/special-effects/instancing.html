@@ -35,9 +35,10 @@
   import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
   import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
   import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
-  import { GUI } from "three/addons/libs/lil-gui.module.min.js"
+  import { GUI } from "three/addons/libs/lil-gui.module.min.js";
+  import Stats from "three/addons/libs/stats.module.js";
 
-  let scene, camera, renderer, controls, mesh;
+  let scene, camera, renderer, controls, mesh, stats;
 
   init();
 
@@ -65,6 +66,10 @@
 
     setEnvironment();
     loadModel();
+
+    stats = new Stats();
+    stats.showPanel(1);
+    document.body.appendChild( stats.dom );
   }
 
   function setEnvironment(){
@@ -96,12 +101,14 @@
         });
 
         if (obj){
+          obj.geometry.rotateZ(  Math.PI/2 );
+          obj.geometry.rotateX( -Math.PI/2 );
           const amount = 12;
           const count = amount * amount * amount;
           const size = 3;
           const offset = amount/2 * size;
           mesh = new THREE.InstancedMesh( obj.geometry, obj.material, count);
-          const mat = new THREE.Matrix4().makeRotationX( -Math.PI/2 );
+          const mat = new THREE.Matrix4();
           let i=0;
           for(let x=0; x<amount; x++){
             for(let y=0; y<amount; y++){
@@ -122,7 +129,8 @@
 
   function update(){
     requestAnimationFrame( update );
-    renderer.render( scene, camera );  
+    renderer.render( scene, camera ); 
+    stats.update(); 
   }
 
   function resize(){
