@@ -47,7 +47,7 @@
     scene.background = new THREE.Color( 0x00aaff )
     
     camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 0.1, 1000 );
-    camera.position.set(0, 0, 60);
+    camera.position.set(0, 0, 80);
     
     const ambient = new THREE.HemisphereLight(0xffffbb, 0x080820);
     scene.add(ambient);
@@ -103,9 +103,9 @@
         if (obj){
           obj.geometry.rotateZ(  Math.PI/2 );
           obj.geometry.rotateX( -Math.PI/2 );
-          const amount = 12;
+          const amount = 20;
           const count = amount * amount * amount;
-          const size = 3;
+          const size = 4;
           const offset = amount/2 * size;
           mesh = new THREE.InstancedMesh( obj.geometry, obj.material, count);
           const mat = new THREE.Matrix4();
