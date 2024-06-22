@@ -82,37 +82,6 @@
     loader.setDRACOLoader( dracoLoader );
 
     loader.load( 'shark.glb',  gltf => {
-        let obj;
-
-        gltf.scene.traverse( child => {
-          if (child.isMesh){
-            obj = child;
-          }
-        });
-
-        if (obj){
-          obj.geometry.rotateZ( Math.PI/2 );
-          obj.geometry.rotateX( -Math.PI/2 );
-
-          const amount = 12;
-          const count = amount * amount * amount;
-          const size = 3;
-          const offset = amount/2 * size;
-          mesh = new THREE.InstancedMesh( obj.geometry, obj.material, count);
-          const mat = new THREE.Matrix4();
-          let i=0;
-          for(let x=0; x<amount; x++){
-            for(let y=0; y<amount; y++){
-              for(let z=0; z<amount; z++){
-                mat.setPosition( x*size-offset, y*size-offset, z*size-offset);
-                mesh.setMatrixAt(i++, mat);
-              }
-            }
-          }
-          scene.add(mesh);
-          //scene.add(obj);
-        }
-
         update();
 
     } );
