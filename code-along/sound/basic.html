@@ -124,27 +124,7 @@
   }
 
   function addSound(){
-    const overlay = document.getElementById( 'overlay' );
-    overlay.remove();
-    playPressed = true;
-    clock.start();
-
-    listener = new THREE.AudioListener();
-    camera.add( listener );
-
-    const path = '../../assets/sfx/';
-
-    // create the Audio object (passing in the listener)
-    const sound = new THREE.Audio( listener );
-
-    // load a sound and set it as the PositionalAudio object's buffer
-    const audioLoader = new THREE.AudioLoader();
-    audioLoader.setPath( path )
-      .load( `beach.mp3`, buffer => {
-        sound.setBuffer( buffer );
-        sound.setLoop(true);
-        sound.play();
-      });
+    
   }
 
   function setEnvironment(){
