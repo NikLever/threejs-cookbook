@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>The Three.JS Cookbook: Sound - Basic</title>
+  <link rel="apple-touch-icon" sizes="180x180" href="../../images/favicon/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="../../images/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="../../images/favicon/favicon-16x16.png">
+  <link rel="manifest" href="../../site.webmanifest">
+  <style>
+    body{
+      padding: 0;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+<script type="importmap">
+{
+  "imports": {
+    "three": "../../libs/three/build/three.module.js",
+    "three/addons/": "../../libs/three/examples/jsm/"
+  }
+}
+</script>
+<script  type="module"> 
+  import * as THREE from "three"
+  import { OrbitControls } from "three/addons/controls/OrbitControls.js"
+  import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+  import { PositionalAudioHelper } from 'three/addons/helpers/PositionalAudioHelper.js';
+  import { GUI } from "three/addons/libs/lil-gui.module.min.js";
+  import { CanvasText } from '../../libs/CanvasText.js';
+
+  let scene, camera, clock,renderer, controls, boomBoxes, listener, playPressed = false;
+
+  init();
+
+  function init(){
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color( 0xaaaaaa );
+    scene.fog = new THREE.Fog( 0xAAAAAA, 5, 10);
+    
+    camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 0.1, 100 );
+    camera.position.set(0, 1, -2);
+    camera.lookAt(0,0.3,0);
+
+    clock = new THREE.Clock(false);
+ 
+    const ambient = new THREE.HemisphereLight(0xffffbb, 0x080820);
+    scene.add(ambient);
+    
+    const light = new THREE.DirectionalLight(0xFFFFFF, 3);
+    light.position.set( 1, 10, -6);
+    light.castShadow = true;
+    light.shadow.radius = 7;
+    light.shadow.blurSamples = 8;
+    const size = 4;
+    light.shadow.camera.top = size;
+    light.shadow.camera.bottom = -size;
+    light.shadow.camera.left = -size;
+    light.shadow.camera.right = size;
+    light.shadow.camera.near = 0.1;
+    light.shadow.camera.far = 20;
+    scene.add(light);
+
+    const floorgeo = new THREE.PlaneGeometry( 25, 25 );
+    floorgeo.rotateX( -Math.PI/2  );
+    const floormat = new THREE.MeshStandardMaterial( { color: 0xFFFFFF } );
+    const floor = new THREE.Mesh( floorgeo, floormat );
+    floor.position.y = -0.01;
+    scene.add( floor );
+    floor.receiveShadow = true;
+
+    const gridHelper = new THREE.GridHelper( 25, 25 );
+    scene.add( gridHelper );
+    
+    renderer = new THREE.WebGLRenderer({antialias: true});
+    renderer.setSize( window.innerWidth, window.innerHeight );
+    document.body.appendChild( renderer.domElement );
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.VSMShadowMap; 
+    
+    //controls = new OrbitControls(camera, renderer.domElement);
+
+    setEnvironment();
+    loadModel();
+      
+    addBoomBoxClicked();
+
+    window.addEventListener( 'resize', resize, false);
+    
+    update();
+  }
+
+  function addBoomBoxClicked(){
+    document.addEventListener('mousedown', onMouseDown, false);
+
+    function onMouseDown(e) {
+        if (!boomBoxes || boomBoxes.length<1) return;
+
+        const vectorMouse = new THREE.Vector3( //vector from camera to mouse
+            -(window.innerWidth/2-e.clientX)*2/window.innerWidth,
+            (window.innerHeight/2-e.clientY)*2/window.innerHeight,
+            -1/Math.tan(30*Math.PI/180)); //30 is half of camera frustum angle 45 degree
+        vectorMouse.applyQuaternion(camera.quaternion);
+        vectorMouse.normalize();        
+
+        const vectorObject = new THREE.Vector3(); //vector from camera to object
+        vectorObject.copy(boomBoxes[0].position).sub(camera.position).normalize();
+
+        const theta = vectorMouse.angleTo(vectorObject) * 180/Math.PI;
+
+        //console.log(`Click ${theta.toFixed(1)}`);
+
+        if (theta < 3) {
+            //mouse's position is near object's position
+            addSound();
+            playPressed = true;
+            clock.start();
+            document.removeEventListener( 'mousedown', onMouseDown, false );
+        }
+    }
+  }
+
+  function addSound(){
+    listener = new THREE.AudioListener();
+    camera.add( listener );
+
+    const path = '../../assets/sfx/';
+
+    [{ sfx:'bugle', index:0 }, { sfx:'organ', index:1 }, { sfx:'snare', index:2 }].forEach( data => {
+      // create the PositionalAudio object (passing in the listener)
+      const sound = new THREE.PositionalAudio( listener );
+      sound.setDirectionalCone( 60, 90, 0 );
+      const helper = new PositionalAudioHelper( sound, 0.1 );
+      sound.add( helper );
+
+      // load a sound and set it as the PositionalAudio object's buffer
+      const audioLoader = new THREE.AudioLoader();
+      audioLoader.setPath( path )
+        .load( `${data.sfx}.mp3`, buffer => {
+          sound.setBuffer( buffer );
+          sound.setLoop(true);
+          sound.setRefDistance( 2 );
+          sound.play();
+          boomBoxes[data.index].add(sound);
+        });
+      });
+  }
+
+  function setEnvironment(){
+    scene.environment = new THREE.CubeTextureLoader()
+      .setPath( '../../libs/three/examples/textures/cube/SwedishRoyalCastle/' )
+      .load( [ 'px.jpg', 'nx.jpg', 'py.jpg', 'ny.jpg', 'pz.jpg', 'nz.jpg' ] );
+  }
+
+  function random( min, max ){
+    if (min>max) [ max, min ] = [ min, max ];
+    const range = max - min;
+    return Math.random() * range + min;
+  }
+
+  function loadModel(){
+    const gltfLoader = new GLTFLoader();
+
+    gltfLoader.load( '../../libs/three/examples/models/gltf/BoomBox.glb',  gltf => {
+
+      const boomBox = gltf.scene;
+      boomBox.position.set( 0, 0.3, 0 );
+      boomBox.scale.set( 30, 30, 30 );
+      boomBox.traverse( child => {
+        if (child.isMesh){
+          child.geometry.rotateY( - Math.PI );
+          child.castShadow = true;
+        }
+      })
+      boomBox.rotateY( Math.PI );
+      scene.add( boomBox );
+
+      const boxgeo = new THREE.BoxGeometry( 0.01, 0.005, 0.00001 );
+      const material = new THREE.MeshStandardMaterial( { map: new CanvasText('Bugle').texture } );
+      const card = new THREE.Mesh( boxgeo, material );
+      card.name = 'card';
+      card.position.set(0, -0.005, 0.013 );
+      boomBox.add( card );
+
+      const boomBox2 = boomBox.clone();
+      boomBox2.position.set( -3, 0.3, 0 );
+      const card2 = boomBox2.getObjectByName('card');
+      card2.material = new THREE.MeshStandardMaterial( { map: new CanvasText('Organ').texture } );
+      scene.add( boomBox2 );
+
+      const boomBox3 = boomBox.clone();
+      boomBox3.position.set( 3, 0.3, 0);
+      const card3 = boomBox3.getObjectByName('card');
+      card3.material = new THREE.MeshStandardMaterial( { map: new CanvasText('Drum').texture } );
+      scene.add( boomBox3 );
+
+      boomBoxes = [ boomBox, boomBox2, boomBox3 ];
+
+      update();
+
+    } );
+  }
+
+  function update(){
+    const t = clock.getElapsedTime();
+
+    if (playPressed) camera.position.x = Math.sin(t*0.2) * 3;
+
+    requestAnimationFrame( update );
+    renderer.render( scene, camera ); 
+  }
+
+  function resize(){
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize( window.innerWidth, window.innerHeight );
+  }
+</script>
+</body>
+</html>
