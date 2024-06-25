@@ -23,6 +23,14 @@
       z-index: 1000;
       background: rgba(0,0,0,0.5);
     }
+
+    #attribution{
+      position: fixed;
+      color: white;
+      font: medium Arial;
+      bottom: 20px;
+      left: 30px;
+    }
     
     button{
       background-color: blue;
@@ -43,6 +51,7 @@
 <body>
 <div id="overlay">
     <button id="startButton">Play</button>
+    <div id="attribution">Music: Bensound.com License code: CDJPHSIDYWZDHGH6</div>
 </div>
 <script type="importmap">
 {
@@ -140,7 +149,7 @@
     // load a sound and set it as the PositionalAudio object's buffer
     const audioLoader = new THREE.AudioLoader();
     audioLoader.setPath( path )
-      .load( `beach.mp3`, buffer => {
+      .load( `hey-music.mp3`, buffer => {
         sound.setBuffer( buffer );
         sound.setLoop(true);
         sound.play();
