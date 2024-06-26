@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>The Three.JS Cookbook: Sound - Basic</title>
+  <title>The Three.JS Cookbook: Sound - Positional</title>
   <link rel="apple-touch-icon" sizes="180x180" href="../../images/favicon/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="../../images/favicon/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="../../images/favicon/favicon-16x16.png">
@@ -103,7 +103,7 @@
         const vectorMouse = new THREE.Vector3( //vector from camera to mouse
             -(window.innerWidth/2-e.clientX)*2/window.innerWidth,
             (window.innerHeight/2-e.clientY)*2/window.innerHeight,
-            -1/Math.tan(30*Math.PI/180)); //30 is half of camera frustum angle 45 degree
+            -1/Math.tan(30*Math.PI/180)); //30 is half of camera frustum angle 60 degree
         vectorMouse.applyQuaternion(camera.quaternion);
         vectorMouse.normalize();        
 
@@ -111,8 +111,6 @@
         vectorObject.copy(boomBoxes[0].position).sub(camera.position).normalize();
 
         const theta = vectorMouse.angleTo(vectorObject) * 180/Math.PI;
-
-        //console.log(`Click ${theta.toFixed(1)}`);
 
         if (theta < 3) {
             //mouse's position is near object's position
@@ -134,7 +132,7 @@
       // create the PositionalAudio object (passing in the listener)
       const sound = new THREE.PositionalAudio( listener );
       sound.setDirectionalCone( 60, 90, 0 );
-      const helper = new PositionalAudioHelper( sound, 0.1 );
+      const helper = new PositionalAudioHelper( sound );//, 0.1 );
       sound.add( helper );
 
       // load a sound and set it as the PositionalAudio object's buffer
