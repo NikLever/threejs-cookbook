@@ -34,15 +34,12 @@
     import * as THREE from 'three';
     import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
     
-    let scene, camera, renderer, analyser, visualizer, tmpVec;
+    let scene, camera, renderer, analyser, visualizer, dummy, tmpVec;
 
     const startButton = document.getElementById( 'startButton' );
     startButton.addEventListener( 'click', init );
 
     function init() {
-
-        const fftSize = 64;
-
         //
 
         const overlay = document.getElementById( 'overlay' );
@@ -98,8 +95,6 @@
 
         }
 
-        analyser = new THREE.AudioAnalyser( audio, fftSize );
-
         const geometry = new THREE.SphereGeometry( 0.1, 12, 6 );
         const material = new THREE.MeshStandardMaterial( { color: 0x00FF00 });
         visualizer = new THREE.InstancedMesh(geometry, material, 32  );
@@ -107,6 +102,11 @@
         scene.add(visualizer);
 
         window.addEventListener( 'resize', onWindowResize );
+
+        dummy = new THREE.Object3D();
+
+        const fftSize = 64;
+        analyser = new THREE.AudioAnalyser( audio, fftSize );
 
         animate();
 
@@ -129,8 +129,6 @@
     function render() {
 
         analyser.getFrequencyData();
-
-        const dummy = new THREE.Object3D();
 
         for ( let i = 0; i < 32; i ++ ) {
             dummy.position.set( (i-16) * 0.2, ((analyser.data[i]/255)-0.5)*3.0, 0 );
