@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>The Three.JS Cookbook: WebXR - HitTest</title>
+  <link rel="apple-touch-icon" sizes="180x180" href="../../images/favicon/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="../../images/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="../../images/favicon/favicon-16x16.png">
+  <link rel="manifest" href="../../site.webmanifest">
+  <style>
+    body{
+      padding: 0;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+<script type="importmap">
+  {
+    "imports": {
+      "three": "../../libs/three/build/three.module.js",
+    "three/addons/": "../../libs/three/examples/jsm/"
+    }
+  }
+</script>
+<script src="../../libs/fas.js"></script>
+<script  type="module"> 
+  import * as THREE from "three"
+  import { OrbitControls } from "three/addons/controls/OrbitControls.js"
+  import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+  import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
+  import { ARButton } from '../../libs/ARButton.js';
+  import { LoadingBar } from '../../libs/LoadingBar.js';
+  import Stats from "three/addons/libs/stats.module.js"
+
+  class App{
+	constructor(){
+		const container = document.createElement( 'div' );
+		document.body.appendChild( container );
+        
+        this.clock = new THREE.Clock();
+        
+        this.loadingBar = new LoadingBar();
+
+		this.assetsPath = '../../assets/';
+        
+		this.camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 0.01, 20 );
+		this.camera.position.set( 0, 1.6, 3 );
+        
+		this.scene = new THREE.Scene();
+
+		const ambient = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 2);
+        ambient.position.set( 0.5, 1, 0.25 );
+		this.scene.add(ambient);
+        
+        const light = new THREE.DirectionalLight();
+        light.position.set( 0.2, 1, 1);
+        this.scene.add(light);
+			
+		this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true } );
+		this.renderer.setPixelRatio( window.devicePixelRatio );
+		this.renderer.setSize( window.innerWidth, window.innerHeight );
+		this.renderer.outputColorSpace = THREE.SRGBColorSpace;
+		container.appendChild( this.renderer.domElement );
+        this.setEnvironment();
+        
+        this.workingVec3 = new THREE.Vector3();
+        
+        this.initScene();
+        this.setupXR();
+		
+		window.addEventListener('resize', this.resize.bind(this));
+        
+	}
+    
+    setEnvironment(){
+        const loader = new RGBELoader();
+        const pmremGenerator = new THREE.PMREMGenerator( this.renderer );
+        pmremGenerator.compileEquirectangularShader();
+        
+        loader.setPath('../../assets/hdr/').load( 'venice_sunset_1k.hdr', ( texture ) => {
+          const envMap = pmremGenerator.fromEquirectangular( texture ).texture;
+          pmremGenerator.dispose();
+
+          this.scene.environment = envMap;
+
+        }, undefined, (err)=>{
+            console.error( 'An error occurred setting the environment');
+        } );
+    }
+	
+    resize(){ 
+        this.camera.aspect = window.innerWidth / window.innerHeight;
+    	this.camera.updateProjectionMatrix();
+    	this.renderer.setSize( window.innerWidth, window.innerHeight );  
+    }
+    
+    loadModel(name){
+	    const loader = new GLTFLoader().setPath(this.assetsPath);
+		const self = this;
+		
+		// Load a GLTF resource
+		loader.load(
+			// resource URL
+			name,
+			// called when the resource is loaded
+			( gltf ) => {
+				this.chair = gltf.scene;
+                this.chair.visible = false;
+                this.scene.add(this.chair);
+                this.renderer.setAnimationLoop( this.render.bind(this) );
+                this.loadingBar.visible = false;
+			},
+			// called while loading is progressing
+			( xhr ) => {
+
+				this.loadingBar.progress = (xhr.loaded / xhr.total);
+
+			},
+			// called when loading has errors
+			 ( err ) => {
+
+				console.log( `An error happened ${err.message}` );
+
+			}
+		);
+	}		
+    
+    initScene(){
+        this.reticle = new THREE.Mesh(
+            new THREE.RingGeometry( 0.15, 0.2, 32 ).rotateX( - Math.PI / 2 ),
+            new THREE.MeshBasicMaterial()
+        );
+        
+        this.reticle.matrixAutoUpdate = false;
+        this.reticle.visible = false;
+        this.scene.add( this.reticle );
+        
+        this.loadModel('chair.glb');
+    }
+    
+    setupXR(){
+        this.renderer.xr.enabled = true;
+        
+        const btn = new ARButton( this.renderer, { sessionInit: { requiredFeatures: [ 'hit-test' ], optionalFeatures: [ 'dom-overlay' ], domOverlay: { root: document.body } } } );
+        
+        const self = this;
+
+        this.hitTestSourceRequested = false;
+        this.hitTestSource = null;
+        
+        function onSelect() {
+            if (self.chair===undefined) return;
+            
+            if (self.reticle.visible){
+                if (self.chair.visible){
+                    self.workingVec3.setFromMatrixPosition( self.reticle.matrix );
+                }else{
+                    self.chair.position.setFromMatrixPosition( self.reticle.matrix );
+                    self.chair.visible = true;
+                }
+            }
+        }
+
+        this.controller = this.renderer.xr.getController( 0 );
+        this.controller.addEventListener( 'select', onSelect );
+        
+        this.scene.add( this.controller );    
+    }
+    
+    requestHitTestSource(){
+        const self = this;
+        
+        const session = this.renderer.xr.getSession();
+
+        session.requestReferenceSpace( 'viewer' ).then( function ( referenceSpace ) {
+            
+            session.requestHitTestSource( { space: referenceSpace } ).then( function ( source ) {
+
+                self.hitTestSource = source;
+
+            } );
+
+        } );
+
+        session.addEventListener( 'end', function () {
+
+            self.hitTestSourceRequested = false;
+            self.hitTestSource = null;
+            self.referenceSpace = null;
+
+        } );
+
+        this.hitTestSourceRequested = true;
+
+    }
+    
+    getHitTestResults( frame ){
+        const hitTestResults = frame.getHitTestResults( this.hitTestSource );
+
+        if ( hitTestResults.length ) {
+            
+            const referenceSpace = this.renderer.xr.getReferenceSpace();
+            const hit = hitTestResults[ 0 ];
+            const pose = hit.getPose( referenceSpace );
+
+            this.reticle.visible = true;
+            this.reticle.matrix.fromArray( pose.transform.matrix );
+
+        } else {
+
+            this.reticle.visible = false;
+
+        }
+
+    }
+
+    render( timestamp, frame ) {
+        const dt = this.clock.getDelta();
+        
+        if ( frame ) {
+
+            if ( this.hitTestSourceRequested === false ) this.requestHitTestSource( )
+
+            if ( this.hitTestSource ) this.getHitTestResults( frame );
+
+        }
+
+        this.renderer.render( this.scene, this.camera );
+    }
+}
+
+document.addEventListener("DOMContentLoaded", function(){
+    const app = new App();
+    window.app = app;
+});
+</script>
+
+</body>
+</html>
