@@ -18,7 +18,7 @@
 </head>
 <body>
 <div id="overlay">
-    <button id="startButton">Play</button>
+    <button id="playButton">Play</button>
 </div>
 <div id="container"></div>
 <reference path='../../libs/three/three.js' />
@@ -36,8 +36,8 @@
     
     let scene, camera, renderer, analyser, visualizer, dummy, tmpVec;
 
-    const startButton = document.getElementById( 'startButton' );
-    startButton.addEventListener( 'click', init );
+    const playButton = document.getElementById( 'playButton' );
+    playButton.addEventListener( 'click', init );
 
     function init() {
         //
@@ -74,7 +74,7 @@
         const listener = new THREE.AudioListener();
 
         const audio = new THREE.Audio( listener );
-        const file = '../../assets/sfx/organ.mp3';
+        const file = '../../assets/sfx/hey-music.mp3';
 
         if ( /(iPad|iPhone|iPod)/g.test( navigator.userAgent ) ) {
 
@@ -131,7 +131,7 @@
         analyser.getFrequencyData();
 
         for ( let i = 0; i < 32; i ++ ) {
-            dummy.position.set( (i-16) * 0.2, ((analyser.data[i]/255)-0.5)*3.0, 0 );
+            dummy.position.set( (i-16) * 0.2, (analyser.data[i]/255.0)*3 - 2, 0 );
             dummy.updateMatrix();
             visualizer.setMatrixAt( i, dummy.matrix );
         }
