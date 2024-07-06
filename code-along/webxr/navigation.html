@@ -2,7 +2,7 @@
 <html lang="en" >
 <head>
   <meta charset="UTF-8">
-  <title>The Three.JS Cookbook: Geometry - Extrude</title>
+  <title>The Three.JS Cookbook: WebXR - Navigation</title>
   <link rel="apple-touch-icon" sizes="180x180" href="../../images/favicon/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="../../images/favicon/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="../../images/favicon/favicon-16x16.png">
@@ -169,13 +169,8 @@
             this.controllers.push( controller );
         }
 
-        this.dolly = new THREE.Object3D();
-        this.dolly.position.z = 5;
-        this.dolly.add( this.camera );
-        this.scene.add( this.dolly );
-        
-        this.dummyCam = new THREE.Object3D();
-        this.camera.add( this.dummyCam );
+
+        //TO DO: 1 - add dolly and dummy
 
     }
     
@@ -205,62 +200,7 @@
     }
     
     handleController( controller, dt ){
-        if (controller.userData.selectPressed ){
-            
-            const wallLimit = 1.3;
-            const speed = 2;
-            let pos = this.dolly.position.clone();
-            pos.y += 1;
-
-            let dir = new THREE.Vector3();
-            //Store original dolly rotation
-            const quaternion = this.dolly.quaternion.clone();
-            //Get rotation for movement from the headset pose
-            this.dolly.quaternion.copy( this.dummyCam.getWorldQuaternion(this.workingQuat) );
-            this.dolly.getWorldDirection(dir);
-            dir.negate();
-            this.raycaster.set(pos, dir);
-
-            let blocked = false;
-
-            let intersect = this.raycaster.intersectObjects(this.colliders);
-            if (intersect.length>0){
-                if (intersect[0].distance < wallLimit) blocked = true;
-            }
-
-            if (!blocked){
-                this.dolly.translateZ(-dt*speed);
-                pos = this.dolly.getWorldPosition( this.origin );
-            }
-
-            //cast left
-            dir.set(-1,0,0);
-            dir.applyMatrix4(this.dolly.matrix);
-            dir.normalize();
-            this.raycaster.set(pos, dir);
-
-            intersect = this.raycaster.intersectObjects(this.colliders);
-            if (intersect.length>0){
-                if (intersect[0].distance<wallLimit) this.dolly.translateX(wallLimit-intersect[0].distance);
-            }
-
-            //cast right
-            dir.set(1,0,0);
-            dir.applyMatrix4(this.dolly.matrix);
-            dir.normalize();
-            this.raycaster.set(pos, dir);
-
-            intersect = this.raycaster.intersectObjects(this.colliders);
-            if (intersect.length>0){
-                if (intersect[0].distance<wallLimit) this.dolly.translateX(intersect[0].distance-wallLimit);
-            }
-
-            this.dolly.position.y = 0;
-
-            //Restore the original rotation
-            this.dolly.quaternion.copy( quaternion );
-   
-        }
+        //TO DO: 2
     }
     
     resize(){
