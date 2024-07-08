@@ -53,7 +53,7 @@
         ambient.position.set( 0.5, 1, 0.25 );
 		this.scene.add(ambient);
         
-        const light = new THREE.DirectionalLight();
+        const light = new THREE.DirectionalLight(0xFFFFFF, 3);
         light.position.set( 0.2, 1, 1);
         this.scene.add(light);
 			
