@@ -2,7 +2,7 @@
 <html lang="en" >
 <head>
   <meta charset="UTF-8">
-  <title>The Three.JS Cookbook: Geometry - Extrude</title>
+  <title>The Three.JS Cookbook: WebXR - Simple AR</title>
   <link rel="apple-touch-icon" sizes="180x180" href="../../images/favicon/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="../../images/favicon/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="../../images/favicon/favicon-16x16.png">
@@ -43,7 +43,7 @@
         
       this.scene.add( new THREE.HemisphereLight( 0x606060, 0x404040 ) );
 
-      const light = new THREE.DirectionalLight( 0xffffff );
+      const light = new THREE.DirectionalLight( 0xffffff, 3 );
       light.position.set( 1, 1, 1 ).normalize();
       this.scene.add( light );
         
@@ -72,27 +72,9 @@
       }
       
       setupVR(){
-          this.renderer.xr.enabled = true; 
-          
-          const self = this;
-          let controller;
-          
-          function onSelect() {
-              const material = new THREE.MeshPhongMaterial( { color: 0xffffff * Math.random() } );
-              const mesh = new THREE.Mesh( self.geometry, material );
-              mesh.position.set( 0, 0, - 0.3 ).applyMatrix4( controller.matrixWorld );
-              mesh.quaternion.setFromRotationMatrix( controller.matrixWorld );
-              self.scene.add( mesh );
-              self.meshes.push( mesh );
-          }
+        //TO DO
 
-          const btn = new ARButton( this.renderer );
-          
-          controller = this.renderer.xr.getController( 0 );
-          controller.addEventListener( 'select', onSelect );
-          this.scene.add( controller );
-          
-          this.renderer.setAnimationLoop( this.render.bind(this) );
+        this.renderer.setAnimationLoop( this.render.bind(this) );
       }
       
       resize(){
