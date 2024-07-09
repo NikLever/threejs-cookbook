@@ -97,7 +97,6 @@
     
     loadModel(name){
 	    const loader = new GLTFLoader().setPath(this.assetsPath);
-		const self = this;
 		
 		// Load a GLTF resource
 		loader.load(
@@ -153,12 +152,8 @@
             if (self.chair===undefined) return;
             
             if (self.reticle.visible){
-                if (self.chair.visible){
-                    self.workingVec3.setFromMatrixPosition( self.reticle.matrix );
-                }else{
-                    self.chair.position.setFromMatrixPosition( self.reticle.matrix );
-                    self.chair.visible = true;
-                }
+                self.chair.position.setFromMatrixPosition( self.reticle.matrix );
+                self.chair.visible = true;
             }
         }
 
