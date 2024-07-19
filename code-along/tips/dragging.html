@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>The Three.JS Cookbook: Techniques - Dragging</title>
+  <title>The Three.JS Cookbook: Tips - Dragging</title>
   <link rel="apple-touch-icon" sizes="180x180" href="../../images/favicon/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="../../images/favicon/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="../../images/favicon/favicon-16x16.png">
@@ -50,13 +50,7 @@
   import { GUI } from "three/addons/libs/lil-gui.module.min.js"
 
   let scene, camera, renderer, loadingBar, controls, magnifyingGlass, mouse, raycaster;
-  let plane = new THREE.Plane();
-  let pNormal = new THREE.Vector3(); // plane's normal
-  let planeIntersect = new THREE.Vector3(); // point of intersection with the plane
-  let pIntersect = new THREE.Vector3(); // point of intersection with an object (plane's point)
-  let shift = new THREE.Vector3(); // distance between position of an object and points of intersection with the object
-  let isDragging = false;
-  let dragObject;
+  //TO DO: 1. Add variables
 
   init();
 
@@ -85,39 +79,8 @@
 
     window.addEventListener( 'resize', resize, false);
 
-    // events
-    document.addEventListener("pointermove", event => {
-
-        mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-        mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
-
-        raycaster.setFromCamera(mouse, camera);
-
-        if (isDragging) {
-            raycaster.ray.intersectPlane(plane, planeIntersect);
-            dragObject.position.addVectors(planeIntersect, shift);
-        }
-    });
-
-    document.addEventListener("pointerdown", () => {
-        let intersects = raycaster.intersectObjects([magnifyingGlass]);
-        if (intersects.length > 0) {
-            controls.enabled = false;
-            pIntersect.copy(intersects[0].point);
-            //pNormal.copy(camera.position).sub(pIntersect).normalize();
-            pNormal.set(0,0,1).applyMatrix4( magnifyingGlass.matrixWorld );
-            plane.setFromNormalAndCoplanarPoint(pNormal, pIntersect);
-            shift.subVectors(magnifyingGlass.position, intersects[0].point);
-            isDragging = true;
-            dragObject = magnifyingGlass;
-        }
-    } );
-
-    document.addEventListener("pointerup", () => {
-        isDragging = false;
-        dragObject = null;
-        controls.enabled = true;
-    } );
+    //TO DO: 2. Add events
+    
 
     loadingBar = new LoadingBar(); 
 
