@@ -60,7 +60,7 @@ function init(){
   const ambient = new THREE.HemisphereLight(0xffffbb, 0x080820);
   scene.add(ambient);
   
-  const light = new THREE.DirectionalLight(0xFFFFFF, 1);
+  const light = new THREE.DirectionalLight(0xFFFFFF, 3);
   light.position.set( 1, 10, 6);
   scene.add(light);
   
@@ -73,8 +73,57 @@ function init(){
   window.addEventListener( 'resize', resize, false);
 
   material = new THREE.MeshStandardMaterial();
+
+  const extrudeSettings1 = {
+    depth: 10
+  };
+
+  const extrudeSettings = [ extrudeSettings1 ];
+  const options = {
+    extrudeIndex: 0,
+    lines: true
+  }
+
+  const gui = new GUI();
+  gui.add( options, 'extrudeIndex', 0, 0, 1 ).onChange( value => {
+    createMesh( extrudeSettings[ value ], options.lines );
+  });
+
+  gui.add( options, 'lines' ).onChange( value => {
+    createMesh( extrudeSettings[ options.extrudeIndex ], value );
+  })
+
+  createMesh( extrudeSettings[ options.extrudeIndex ], options.lines );
   
   update();
+}
+
+function createMesh( extrudeSettings, lines = false ){
+  if (mesh !== undefined){
+    scene.remove( mesh );
+    mesh.geometry.dispose();
+  }
+
+  if (outline !== undefined){
+    scene.remove( outline );
+    outline.geometry.dispose();
+    outline.material.dispose();
+  }
+
+  const shape = new StarShape( 5, 6, 15 );
+  const geometry = new THREE.ExtrudeGeometry( shape, extrudeSettings );
+  material.side = THREE.DoubleSide;
+
+  mesh = new THREE.Mesh( geometry, material );
+
+  scene.add( mesh );
+
+  if (lines){
+    const edges = new THREE.EdgesGeometry( geometry, 100 );
+    outline = new THREE.LineSegments( edges, new THREE.LineBasicMaterial( { color: 0x000000 }));
+    scene.add( outline );
+  }
+
 }
 
 function update(){
