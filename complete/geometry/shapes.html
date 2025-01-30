@@ -59,7 +59,7 @@ function init(){
         type: 'extrude'
   };
   const gui = new GUI();
-  gui.add(options, 'name', ['california', 'triangle', 'heart', 'square', 'rectangle', 'rounded rectangle', 'track', 'circle', 'fish', 'arc circle', 'smiley', 'spline']).onChange(value=>createMesh(value, options.type));
+  gui.add(options, 'name', ['california', 'triangle', 'heart', 'square', 'rectangle', 'rounded rectangle', 'track', 'circle', 'fish', 'arc circle', 'smiley', 'spline', 'editor']).onChange(value=>createMesh(value, options.type));
   gui.add(options, 'type', ['shape', 'extrude', 'points', 'lines']).onChange( value => createMesh(options.name, value ));
   
   createMesh(options.name, options.type);
@@ -238,11 +238,42 @@ function createMesh(name, type){
     pos.x = -30;
     pos.y = -40;
     break;
+    case 'editor':
+    //const shape = new THREE.Shape();
+    shape.moveTo( -0.000 , -1.003);
+    shape.lineTo( 0.999, -0.744);
+    shape.lineTo( 0.993, -0.281);
+    shape.lineTo( 0.480, 0.094);
+    shape.lineTo( 0.233, 0.442);
+    shape.lineTo( 0.399, 0.817);
+    shape.lineTo( 0.015, 1.004);
+    shape.lineTo( -0.356, 0.791);
+    shape.lineTo( -0.155, 0.446);
+    shape.lineTo( -0.417, 0.141);
+    shape.lineTo( -1.016, -0.240);
+    shape.lineTo( -0.937, -0.758);
+    shape.lineTo( -0.002, -1.009);
+    const path1 = new THREE.Path()
+    path1.absarc( 0.455, -0.446, 0.167, 0, -6.283, true );
+    path1.moveTo( 0.622, -0.446 );
+    shape.holes.push(path1);
+    const path2 = new THREE.Path()
+    path2.moveTo( -0.297 , -0.591);
+    path2.lineTo( -0.248, -0.318);
+    path2.quadraticCurveTo( -0.319, -0.094, -0.569, -0.200);
+    path2.lineTo( -0.681, -0.494);
+    path2.lineTo( -0.307, -0.591);
+    shape.holes.push(path2);
+    break;
   }
   
   const extrudeSettings = { 
-    depth: 8
+    depth: (name=='editor') ? 0.2 : 8,
+    bevelEnabled: false
   };
+
+  camera.position.z = (name=='editor') ? -3 : -150;
+  controls.update();
   
   let geometry;
   material.side = THREE.FrontSide;
