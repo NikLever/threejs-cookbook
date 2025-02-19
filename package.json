@@ -9,7 +9,7 @@
   "author": "Nik Lever",
   "license": "ISC",
   "dependencies": {
-    "@types/three": "^0.172.0",
-    "three": "^0.172.0"
+    "three": "^0.173.0",
+    "@types/three": "^0.173.0"
   }
 }
