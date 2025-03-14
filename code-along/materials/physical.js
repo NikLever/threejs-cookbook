@@ -63,7 +63,7 @@ import * as THREE from "three"
     function setEnvironment(){
         new RGBELoader()
             .setPath( '../../assets/hdr/' )
-            .load( 'venice_sunset_1k.hdr', texture => {
+            .load( 'museum.hdr', texture => {
 
                 texture.mapping = THREE.EquirectangularReflectionMapping;
 
