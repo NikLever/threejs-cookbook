@@ -132,6 +132,12 @@
       const z = R*st - r*st*cu - h*r*ct*su/n;
             
       target.set( x, y, z );
+    },
+    plane: function(u, v, target){
+      const size = 80;
+      u *= size;
+      v *= size;
+      target.set(u-size*0.5, v-size*0.5, 0);
     }
   }
 
@@ -162,23 +168,27 @@ function init(){
   window.addEventListener( 'resize', resize, false);
   
   const options = {
-    func: 'helix'
+    func: 'helix', 
+    u: 25,
+    v: 50
   }
   
   const gui = new GUI();
   gui.add(options, 'func', Object.keys(ParametricGeometries)).onChange(value => createMesh(ParametricGeometries[value]));
-  createMesh(ParametricGeometries[options.func]);
+  createMesh(ParametricGeometries[options.func], options.u, options.v);
+  gui.add(options, "u", 1, 25, 1).onChange( value => createMesh(ParametricGeometries[options.func], value, options.v ) );
+  gui.add(options, "v", 1, 50, 1).onChange( value => createMesh(ParametricGeometries[options.func], options.u, value ) );
   
   update();
 }
 
-function createMesh(func){
+function createMesh(func, u=25, v=50){
   if (mesh!==undefined){
     scene.remove(mesh);
     mesh.geometry.dispose();
     mesh.material.dispose();
   }
-  const geometry = new ParametricGeometry( func, 25, 50 );
+  const geometry = new ParametricGeometry( func, u, v );
   const material = new THREE.MeshStandardMaterial( { color: 0x00ffff, wireframe:true } );
   mesh = new THREE.Mesh( geometry, material );
   scene.add( mesh );

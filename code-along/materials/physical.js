@@ -1,31 +1,4 @@
-<!DOCTYPE html>
-<html lang="en" >
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>The Three.JS Cookbook: Materials - MeshPhysicalMaterial</title>
-  <link rel="apple-touch-icon" sizes="180x180" href="../../images/favicon/apple-touch-icon.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="../../images/favicon/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="../../images/favicon/favicon-16x16.png">
-  <link rel="manifest" href="../../site.webmanifest">
-  <style>
-    body{
-      padding: 0;
-      margin: 0;
-    }
-  </style>
-</head>
-<body>
-<script type="importmap">
-  {
-    "imports": {
-        "three": "../../libs/three/build/three.module.js",
-        "three/addons/": "../../libs/three/examples/jsm/"
-    }
-  }
-</script>
-<script  type="module"> 
-    import * as THREE from "three"
+import * as THREE from "three"
     import { OrbitControls } from "three/addons/controls/OrbitControls.js"
     import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
     import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
@@ -49,7 +22,7 @@
         const ambient = new THREE.HemisphereLight(0xffffbb, 0x080820);
         scene.add(ambient);
     
-        const light = new THREE.DirectionalLight(0xFFFFFF, 3);
+        const light = new THREE.DirectionalLight(0xFFFFFF, 1);
         light.position.set( 1, 10, 6);
         scene.add(light);
 
@@ -107,12 +80,6 @@
             roughness: 0,
             transmission: 1,
             thickness: 2,
-            ior: 1.5,
-            normalMap: 'none',
-            normalScale: 1,
-            metalness: 0,
-            envMapIntensity: 1,
-            clearcoat: 0,
         };
         gui = new GUI();
 
@@ -136,50 +103,6 @@
             render();
         } );
 
-        gui.add( params, 'ior', 1, 2 ).onChange( value => {
-            material.ior = value;
-            render();
-        } );
-
-        gui.add( params, 'normalMap', ['none', 'golf-ball', 'packed-dirt', 'rugged'] ).onChange( value => {
-            if ( material.normalMap != null ) material.normalMap.dispose();
-
-            if ( value == 'none' ){
-                material.normalMap = null;
-                return;
-            }
-
-            const textureLoader = new THREE.TextureLoader()
-                                        .setPath( '../../assets/maps/normal/' )
-                                        .load( `${value}.jpg`, texture => {
-                                            material.normalMap = texture;
-                                            render();
-                                        }) 
-
-        } );
-        
-        gui.add( params, 'normalScale', 0, 2 ).onChange( value => {
-            material.normalScale.set( value, value );
-            render();
-        } );
-
-        gui.add( params, 'metalness', 0, 1 ).onChange( value => {
-            material.metalness = value;
-            render();
-        } );
-
-        gui.add( params, 'envMapIntensity', 0, 1 )
-            .name( 'envMap intensity' )
-            .onChange( value => {
-                material.envMapIntensity = value;
-                render();
-            } );
-
-        gui.add( params, 'clearcoat', 0, 1 ).onChange( value => {
-            material.clearcoat = value;
-            render();
-        } );
-
         render();
 
     }
@@ -193,8 +116,8 @@
 
                 material = new THREE.MeshPhysicalMaterial( {
                     color: params.color,
-                    transmission: params.transmission,
                     roughness: params.roughness,
+                    transmission: params.transmission,
                     thickness: params.thickness,
                 } );
 
@@ -217,7 +140,3 @@
         renderer.render( scene, camera );
 
     } 
-</script>
-
-</body>
-</html>
