@@ -2,7 +2,7 @@
 <html lang="en" >
 <head>
   <meta charset="UTF-8">
-  <title>The Three.JS Cookbook: Physics - Basics</title>
+  <title>The Three.JS Cookbook: Physics - Joints</title>
   <link rel="apple-touch-icon" sizes="180x180" href="../../images/favicon/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="../../images/favicon/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="../../images/favicon/favicon-16x16.png">
@@ -26,9 +26,9 @@
 <script  type="module"> 
   import * as THREE from "three";
   import { OrbitControls } from "three/addons/controls/OrbitControls.js"
-  import { RapierPhysics } from 'three/addons/physics/RapierPhysics.js';
+  import { RapierPhysics, RapierDebugRenderer } from '../../libs/RapierPhysics.js';
   
-  let scene, camera, renderer, controls, physics;
+  let scene, camera, renderer, controls, pivot, physics, debugRender;
 
 init();
 
@@ -66,16 +66,15 @@ async function init(){
   controls.target = new THREE.Vector3(0, 2, 0);
   controls.update();
 
-  const geometry = new THREE.BoxGeometry( 10, 0.5, 10 );
-  const material = new THREE.MeshStandardMaterial( { color: 0xFFFF99 } );
+  const geometry = new THREE.SphereGeometry( 0.5 );
+  const material = new THREE.MeshStandardMaterial( { color: 0xFF0000 } );
   
-  const floor = new THREE.Mesh( geometry, material );
-  floor.receiveShadow = true;
+  pivot = new THREE.Mesh( geometry, material );
 
-  floor.position.y = -0.25;
-  floor.userData.physics = { mass: 0 };
+  pivot.position.y = 6;
+  pivot.userData.physics = { mass: 0 };
 
-  scene.add( floor );
+  scene.add( pivot );
   
   initPhysics();
   
@@ -89,25 +88,41 @@ async function init(){
 async function initPhysics(){
 	physics = await RapierPhysics();
 
-  physics.addScene( scene );
+  physics.addMesh( pivot, 0 );
 
-  addBody( );
+  debugRender = new RapierDebugRenderer( scene, physics.world );
 
-  setInterval( addBody, 1000 );
+  const link1 = addLink( pivot, 0 );
+  const link2 = addLink( link1, 2 );
+  const link3 = addLink( link2, 4 );
+
 }
 
-function addBody( ){
-  const geometry = (Math.random() > 0.5) ? new THREE.SphereGeometry( 0.5 ) : new THREE.BoxGeometry( 1, 1, 1 );
-  const material = new THREE.MeshStandardMaterial( { color: Math.floor( Math.random() * 0xFFFFFF ) } );
+function addLink( link, x ){
+
+  const geometry = new THREE.CapsuleGeometry( 0.25, 1.8 );
+  const material = new THREE.MeshStandardMaterial( { color: 0xCCCC00 } );
   
   const mesh = new THREE.Mesh( geometry, material );
-  mesh.castShadow = true;
+  mesh.rotateZ( Math.PI * 0.5 )
 
-  mesh.position.set( Math.random()*2-1, Math.random()*3 + 6, Math.random()*2-1 );
+  mesh.position.set( x + 0.9, 5.8, 0 );
 
   scene.add(mesh);
 
   physics.addMesh( mesh, 1, 0.5 );
+
+  const jointParams = physics.RAPIER.JointData.spherical(
+        (link == pivot) ? new physics.RAPIER.Vector3(0, -0.5, 0 ) : new physics.RAPIER.Vector3(0, -1.15, 0 ), // Joint position in world space
+        new physics.RAPIER.Vector3(0, 1.15, 0)   // Corresponding attachment on sphere
+    );
+  const body1 = physics.getBody( link );
+  const body2 = physics.getBody( mesh );
+  body2.setAngularDamping(10.0);
+
+  physics.world.createImpulseJoint(jointParams, body1, body2, true); 
+
+  return mesh;
 }
 
 function onWindowResize( event ) {
@@ -118,6 +133,7 @@ function onWindowResize( event ) {
 
 function update() {
   requestAnimationFrame( update );
+  if (debugRender) debugRender.update();
   renderer.render( scene, camera );
 } 
   

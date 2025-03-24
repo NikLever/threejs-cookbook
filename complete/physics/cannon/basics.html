@@ -18,21 +18,22 @@
 <script type="importmap">
   {
     "imports": {
-      "three": "../../node_modules/three/build/three.module.js",
-      "three/addons/": "../../node_modules/three/examples/jsm/"
+      "three": "../../libs/three/build/three.module.js",
+    "three/addons/": "../../libs/three/examples/jsm/"
     }
   }
 </script>
 <script  type="module"> 
   import * as THREE from "three";
+  import * as CANNON from '../../libs/cannon-es.js';
   import { OrbitControls } from "three/addons/controls/OrbitControls.js"
-  import { RapierPhysics } from 'three/addons/physics/RapierPhysics.js';
+  import { CannonHelper } from '../../libs/CannonHelper.js';
   
-  let scene, camera, renderer, controls, physics;
+  let scene, camera, renderer, controls, world, helper, dt, damping, groundMaterial;
 
 init();
 
-async function init(){
+function init(){
   scene = new THREE.Scene();
   camera = new THREE.PerspectiveCamera( 60, window.innerWidth/window.innerHeight, 0.1, 100 );
   camera.position.set(0, 3, 10);
@@ -56,26 +57,20 @@ async function init(){
   light.shadow.camera.far = 50;
 
   scene.add(light);
-  
+
+  //helper = new THREE.CameraHelper(light.shadow.camera);
+  //scene.add(helper);
+
   renderer = new THREE.WebGLRenderer();
   renderer.setSize( window.innerWidth, window.innerHeight );
   renderer.shadowMap.enabled = true;
+  //renderer.shadowMap.type = THREE.VSMShadowMap; 
   document.body.appendChild( renderer.domElement );
+
 
   controls = new OrbitControls(camera, renderer.domElement);
   controls.target = new THREE.Vector3(0, 2, 0);
   controls.update();
-
-  const geometry = new THREE.BoxGeometry( 10, 0.5, 10 );
-  const material = new THREE.MeshStandardMaterial( { color: 0xFFFF99 } );
-  
-  const floor = new THREE.Mesh( geometry, material );
-  floor.receiveShadow = true;
-
-  floor.position.y = -0.25;
-  floor.userData.physics = { mass: 0 };
-
-  scene.add( floor );
   
   initPhysics();
   
@@ -86,28 +81,45 @@ async function init(){
   update();
 }
 
-async function initPhysics(){
-	physics = await RapierPhysics();
-
-  physics.addScene( scene );
-
-  addBody( );
-
-  setInterval( addBody, 1000 );
+function initPhysics(){
+	world = new CANNON.World();
+		
+  dt = 1.0/60.0;
+	damping = 0.01;
+		
+	world.broadphase = new CANNON.NaiveBroadphase();
+	world.gravity.set(0, -10, 0);
+  
+  helper = new CannonHelper( scene, world );
+		
+	const groundShape = new CANNON.Plane();
+  groundMaterial = new CANNON.Material();
+	const groundBody = new CANNON.Body({ mass: 0, material: groundMaterial });
+	groundBody.quaternion.setFromAxisAngle( new CANNON.Vec3(1,0,0), -Math.PI/2);
+	groundBody.addShape(groundShape);
+	world.addBody(groundBody);
+  helper.addVisual(groundBody, 0xffaa00);
+  
+  setInterval(addBody, 1000);
 }
 
-function addBody( ){
-  const geometry = (Math.random() > 0.5) ? new THREE.SphereGeometry( 0.5 ) : new THREE.BoxGeometry( 1, 1, 1 );
-  const material = new THREE.MeshStandardMaterial( { color: Math.floor( Math.random() * 0xFFFFFF ) } );
-  
-  const mesh = new THREE.Mesh( geometry, material );
-  mesh.castShadow = true;
-
-  mesh.position.set( Math.random()*2-1, Math.random()*3 + 6, Math.random()*2-1 );
-
-  scene.add(mesh);
-
-  physics.addMesh( mesh, 1, 0.5 );
+function addBody(){
+  let shape;
+  if (Math.random()>0.5){
+	  shape = new CANNON.Sphere(0.5);
+  }else{
+	  shape = new CANNON.Box(new CANNON.Vec3(0.5,0.5,0.5));
+  }
+  const material = new CANNON.Material();
+	const body = new CANNON.Body({ mass: 5, material: material });
+  body.addShape(shape);
+  const x = Math.random()*0.3 + 1;
+		
+  body.position.set(x, 5, 0);
+	body.linearDamping = damping;
+	world.addBody(body);
+        
+  helper.addVisual(body);
 }
 
 function onWindowResize( event ) {
@@ -118,6 +130,8 @@ function onWindowResize( event ) {
 
 function update() {
   requestAnimationFrame( update );
+  world.step(dt);
+  helper.update( );
   renderer.render( scene, camera );
 } 
   
