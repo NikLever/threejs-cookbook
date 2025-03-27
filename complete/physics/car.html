@@ -2,7 +2,7 @@
 <html lang="en" >
 <head>
   <meta charset="UTF-8">
-  <title>The Three.JS Cookbook: Physics - Joints</title>
+  <title>The Three.JS Cookbook: Physics - VehicleController</title>
   <link rel="apple-touch-icon" sizes="180x180" href="../../images/favicon/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="../../images/favicon/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="../../images/favicon/favicon-16x16.png">
@@ -12,9 +12,23 @@
       padding: 0;
       margin: 0;
     }
+
+    #keys{
+      position: absolute;
+      font-family: Arial, Helvetica, sans-serif;
+      top: 0;
+      left: 0;
+      padding: 10px 20px;
+      color: rgb(0, 0, 0);
+    }
   </style>
 </head>
 <body>
+  <div id="keys" >
+    <p>WASD or Arrow keys to move</p>
+    <p>Space to brake</p>
+    <p>R to reset</p>
+  </div>
 <script type="importmap">
   {
     "imports": {
@@ -28,7 +42,7 @@
   import { OrbitControls } from "three/addons/controls/OrbitControls.js"
   import { RapierPhysics, RapierDebugRenderer } from '../../libs/RapierPhysics.js';
   
-  let scene, camera, renderer, controls, movement, physics, debugRender, vehicleController, chassis, wheels;
+  let scene, camera, renderer, controls, movement, physics, debugRender, vehicleController, car, chassis, wheels;
 
 init();
 
@@ -47,9 +61,9 @@ async function init(){
   light.castShadow = true;
   light.shadow.radius = 7;
   light.shadow.blurSamples = 8;
-  light.shadow.mapSize.width = 1024; 
-  light.shadow.mapSize.height = 1024; 
-  const size = 10;
+  light.shadow.mapSize.width = 2048; 
+  light.shadow.mapSize.height = 2048; 
+  const size = 30;
   light.shadow.camera.left = -size;
   light.shadow.camera.bottom = -size;
   light.shadow.camera.right = size;
@@ -68,7 +82,7 @@ async function init(){
   controls.target = new THREE.Vector3(0, 2, 0);
   controls.update();
 
-  const geometry = new THREE.BoxGeometry( 20, 0.5, 50 );
+  const geometry = new THREE.BoxGeometry( 100, 0.5, 100 );
   const material = new THREE.MeshStandardMaterial( { color: 0xFFFFAA } );
   
   const ground = new THREE.Mesh( geometry, material );
@@ -86,7 +100,14 @@ async function init(){
   window.addEventListener( 'resize', onWindowResize, false );
 
   // Movement input
-  movement = { forward: 0, right: 0, brake: 0 };
+  movement = {
+    forward: 0, 
+    right: 0, 
+    brake: 0,
+    reset: false,
+    accelerateForce: { value: 0, min: -30, max: 30, step: 1 },
+    brakeForce: { value: 0, min: 0, max: 1, step: 0.05 }
+  };
 
   window.addEventListener("keydown", (event) => {
     //console.log( event.key );
@@ -94,13 +115,15 @@ async function init(){
     if (event.key === "s" || event.key === "ArrowDown") movement.forward = 1;
     if (event.key === "a" || event.key === "ArrowLeft") movement.right = 1;
     if (event.key === "d" || event.key === "ArrowRight") movement.right = -1;
-    if (event.key === "Space") movement.brake = 1;
+    if (event.key === "r" ) movement.reset = true;
+    if (event.key === " ") movement.brake = 1;
   });
 
   window.addEventListener("keyup", (event) => {
     if (event.key === "w" || event.key === "s" || event.key === "ArrowUp" || event.key === "ArrowDown") movement.forward = 0;
     if (event.key === "a" || event.key === "d" || event.key === "ArrowLeft" || event.key === "ArrowRight") movement.right = 0;
-    if (event.key === "Space") movement.brake = 0;
+    if (event.key === "r" ) movement.reset = false;
+    if (event.key === " ") movement.brake = 0;
   });
 
   update();
@@ -124,6 +147,7 @@ function createCar( ){
   const mesh = new THREE.Mesh( geometry, material );
   mesh.castShadow = true;
   scene.add( mesh );
+  car = mesh;
 
   mesh.position.y = 1;
   chassis = physics.addMesh( mesh, 10, 0.8 );
@@ -132,10 +156,10 @@ function createCar( ){
 
   wheels = [];
 
-  addWheel( 0, { x: -1, y: -0.5, z: -1.5 }, mesh );
-  addWheel( 1, { x: 1, y: -0.5, z: -1.5 }, mesh );
-  addWheel( 2, { x: -1, y: -0.5, z: 1.5 }, mesh );
-  addWheel( 3, { x: 1, y: -0.5, z: 1.5 }, mesh );
+  addWheel( 0, { x: -1, y: 0, z: -1.5 }, mesh );
+  addWheel( 1, { x: 1, y: 0, z: -1.5 }, mesh );
+  addWheel( 2, { x: -1, y: 0, z: 1.5 }, mesh );
+  addWheel( 3, { x: 1, y: 0, z: 1.5 }, mesh );
 
   vehicleController.setWheelSteering(0, Math.PI/4);
   vehicleController.setWheelSteering(1, Math.PI/4);
@@ -147,6 +171,7 @@ function addWheel( index, pos, carMesh ){
   // Define wheel properties
   const wheelRadius = 0.3;
   const wheelWidth = 0.4;
+  const suspensionRestLength = 0.8;
   const wheelPosition = pos // Position relative to chassis
   const wheelDirection = { x: 0.0, y: -1.0, z: 0.0 }; // Downward direction
   const wheelAxle = { x: -1.0, y: 0.0, z: 0.0 }; // Axle direction
@@ -156,13 +181,12 @@ function addWheel( index, pos, carMesh ){
       wheelPosition,
       wheelDirection,
       wheelAxle,
-      wheelRadius,
-      wheelWidth,
-      pos.z<0 // Indicates if this is a front wheel
+      suspensionRestLength,
+      wheelRadius
   );
 
   // Set suspension stiffness for wheel
-  vehicleController.setWheelSuspensionStiffness(index, 20.0);
+  vehicleController.setWheelSuspensionStiffness(index, 24.0);
 
   // Set wheel friction
   vehicleController.setWheelFrictionSlip(index, 1000.0);
@@ -179,9 +203,6 @@ function addWheel( index, pos, carMesh ){
   wheel.castShadow = true;
 
   wheel.position.copy( pos );
-
-  // Rotate the wheel so it's aligned correctly
-  //wheel.rotation.z = Math.PI / 2;
 
   wheels.push( wheel );
   carMesh.add( wheel );
@@ -222,7 +243,48 @@ function onWindowResize( event ) {
 
 function updateCarControl(){
 
-  const engineForce = movement.forward * 10;
+  if ( movement.reset ){
+
+    chassis.setTranslation(new physics.RAPIER.Vector3(0, 1, 0), true);
+    chassis.setRotation(new physics.RAPIER.Quaternion(0, 0, 0, 1), true);
+    chassis.setLinvel(new physics.RAPIER.Vector3(0, 0, 0), true);
+    chassis.setAngvel(new physics.RAPIER.Vector3(0, 0, 0), true); 
+
+    movement.accelerateForce.value = 0;
+    movement.brakeForce.value = 0;
+
+    return;
+
+  }
+
+  let accelerateForce = 0;
+
+  if ( movement.forward < 0){
+    //if (movement.accelerateForce.value === 0) chassis.wakeUp();
+    accelerateForce = movement.accelerateForce.value - movement.accelerateForce.step;
+    if (accelerateForce < movement.accelerateForce.min) accelerateForce = movement.accelerateForce.min;
+  }else if (movement.forward > 0 ){
+    //if (movement.accelerateForce.value === 0) chassis.wakeUp();
+    accelerateForce = movement.accelerateForce.value + movement.accelerateForce.step;
+    if (accelerateForce > movement.accelerateForce.max) accelerateForce = movement.accelerateForce.max;
+  }else{
+    if (chassis.isSleeping()) chassis.wakeUp();
+  }
+
+  movement.accelerateForce.value = accelerateForce;
+
+  //console.log(accelerateForce);
+
+  let brakeForce = 0;
+
+  if ( movement.brake > 0){
+    brakeForce = movement.brakeForce.value + movement.brakeForce.step;
+    if (brakeForce > movement.brakeForce.max) brakeForce = movement.brakeForce.max;
+  }
+
+  movement.brakeForce.value = brakeForce;
+
+  const engineForce = accelerateForce;
 
   vehicleController.setWheelEngineForce(0, engineForce);
   vehicleController.setWheelEngineForce(1, engineForce);
@@ -231,12 +293,12 @@ function updateCarControl(){
   const steerDirection = movement.right;
   const steerAngle = Math.PI/4;
 
-  const steering = THREE.MathUtils.lerp(currentSteering, steerAngle * steerDirection, 0.5)
+  const steering = THREE.MathUtils.lerp(currentSteering, steerAngle * steerDirection, 0.25)
 
   vehicleController.setWheelSteering(0, steering);
   vehicleController.setWheelSteering(1, steering);
 
-  const wheelBrake = movement.brake * 5;
+  const wheelBrake = movement.brake * brakeForce;
   vehicleController.setWheelBrake(0, wheelBrake);
   vehicleController.setWheelBrake(1, wheelBrake);
   vehicleController.setWheelBrake(2, wheelBrake);
@@ -252,6 +314,10 @@ function update() {
     updateWheels();
   }
   if (debugRender) debugRender.update();
+  if( controls && car ){
+    controls.target.copy( car.position );
+    controls.update();
+  }
   renderer.render( scene, camera );
 } 
   
