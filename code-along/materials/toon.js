@@ -45,7 +45,7 @@ import * as THREE from "three";
     function loadModel(){
         const loader = new GLTFLoader( ).setPath('../../assets/');
         const dracoLoader = new DRACOLoader();
-        dracoLoader.setDecoderPath( '../../libs/three/examples/jsm/libs/draco/' );
+        dracoLoader.setDecoderPath( '../../node_modules/three/examples/jsm/libs/draco/' );
         loader.setDRACOLoader( dracoLoader );
                 
         const loadingBar = new LoadingBar();

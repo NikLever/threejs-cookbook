@@ -19,8 +19,8 @@
 <script type="importmap">
   {
     "imports": {
-        "three": "../../libs/three/build/three.module.js",
-        "three/addons/": "../../libs/three/examples/jsm/"
+        "three": "../../node_modules/three/build/three.module.js",
+        "three/addons/": "../../node_modules//three/examples/jsm/"
     }
   }
 </script>
@@ -100,7 +100,7 @@
     function loadModel(){
         const loader = new GLTFLoader( ).setPath('../../assets/');
         const dracoLoader = new DRACOLoader();
-        dracoLoader.setDecoderPath( '../../libs/three/examples/jsm/libs/draco/' );
+        dracoLoader.setDecoderPath( '../../node_modules/three/examples/jsm/libs/draco/' );
         loader.setDRACOLoader( dracoLoader );
                 
         const loadingBar = new LoadingBar();

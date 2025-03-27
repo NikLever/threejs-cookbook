@@ -68,7 +68,7 @@ import * as THREE from "three";
 
   function loadModel(){
 
-      const loader = new GLTFLoader().setPath( '../../libs/three/examples/models/gltf/' );
+      const loader = new GLTFLoader().setPath( '../../assets/' );
       loader.load( 'ShaderBall.glb',  gltf => {
           const scale = 3;
 
