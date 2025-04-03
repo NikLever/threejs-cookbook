@@ -12,9 +12,41 @@
       padding: 0;
       margin: 0;
     }
+    #strength{
+      display: none;
+      position: fixed;
+      width: 10px;
+      height: 80%;
+      z-index: 1000;
+      right: 40px;
+      bottom: 40px;
+      background: darkgreen;
+      border-radius: 5px;
+    }
+    #progress{
+      position: absolute;
+      bottom: 0;
+      width: 10px;
+      height: 0;
+      border-radius: 5px;
+      background: white;
+    }
+    #sidebar{
+      position: fixed;
+      right: 0;
+      top: 0;
+      width: 20%;
+      height: 100%;
+      z-index: 1001;
+    }
   </style>
 </head>
 <body>
+  <div id="strength">
+    <div id="progress"></div>
+  </div>
+  <div id="sidebar"></div>
+
 <script type="importmap">
   {
     "imports": {
@@ -26,34 +58,40 @@
 <script  type="module"> 
   import * as THREE from "three";
   import { OrbitControls } from "three/addons/controls/OrbitControls.js"
-  import { RapierPhysics, RapierDebugRenderer } from '../../libs/RapierPhysics.js';
+  import { RapierPhysics } from 'three/addons/physics/RapierPhysics.js';
+  import { RapierHelper } from 'three/addons/helpers/RapierHelper.js';
   
-  let scene, camera, renderer, controls, whiteBall, physics, debugRender;
+  let scene, camera, renderer, controls, balls, whiteBall, physics, physicsHelper;
+  let pointer = { value: 0, 
+                  down: false, 
+                  domElement: document.getElementById( 'strength' ), 
+                  progressElement: document.getElementById( 'progress' ) 
+                };
 
 init();
 
 async function init(){
   scene = new THREE.Scene();
   camera = new THREE.PerspectiveCamera( 60, window.innerWidth/window.innerHeight, 0.1, 10 );
-  camera.position.set(0, 0.2, 1);
+  camera.position.set(0, 0.3, 1);
 
   const ambient = new THREE.HemisphereLight(0x555555, 0xFFFFFF);
   scene.add(ambient);
 
   const light = new THREE.DirectionalLight(0xffffff, 3);
-  light.position.set(0,1,0);
+  light.position.set(0,4,0);
   light.castShadow = true;
-  light.shadow.radius = 7;
-  light.shadow.blurSamples = 8;
+  light.shadow.radius = 3;
+  light.shadow.blurSamples = 6;
   light.shadow.mapSize.width = 1024; 
   light.shadow.mapSize.height = 1024; 
-  const size = 2;
+  const size = 1;
   light.shadow.camera.left = -size;
   light.shadow.camera.bottom = -size;
   light.shadow.camera.right = size;
   light.shadow.camera.top = size;
-  light.shadow.camera.near = 1;
-  light.shadow.camera.far = 50;
+  light.shadow.camera.near = 0.1;
+  light.shadow.camera.far = 10;
 
   scene.add(light);
   
@@ -63,6 +101,8 @@ async function init(){
   document.body.appendChild( renderer.domElement );
 
   controls = new OrbitControls(camera, renderer.domElement);
+  controls.minDistance = 0.7;
+  controls.maxDistance = 0.7;
   
   const RADIUS = 0.05715 / 2;
 
@@ -79,6 +119,9 @@ async function init(){
   whiteBall.position.set( 0, RADIUS + 0.002, halfLength/2 );
   whiteBall.userData.physics = { mass: 0.17, restitution: 0.9 };
   scene.add( whiteBall );
+
+  balls = [];
+  balls.push( whiteBall );
 
   const rowInc = 1.74 * RADIUS;
   let row = { x: RADIUS * 2, z:-(halfLength/2)+rowInc, count:6, total:6 };
@@ -99,6 +142,8 @@ async function init(){
       ball.userData.physics = { mass: 0.17, restitution: 0.9 };
       ball.castShadow = true;
       scene.add( ball );
+
+      balls.push( ball );
 
       row.total++;
   }
@@ -149,6 +194,34 @@ async function init(){
 
   window.addEventListener( 'resize', onWindowResize, false );
 
+  const sidebar = document.getElementById( 'sidebar' );
+
+  sidebar.addEventListener( 'pointerdown', event => {
+    if ( whiteBall && physics ){
+      const body = physics.getBody( whiteBall );
+      if ( !body.isSleeping() ) return;
+    }
+    pointer.value = 0;
+    pointer.down = true;
+    pointer.domElement.style.display = 'block';
+  });
+
+  sidebar.addEventListener( 'pointerup', event => {
+
+    const body = physics.getBody( whiteBall );
+    const strength = (pointer.value / 100) * 1.0;
+    const dir = new THREE.Vector3();
+    camera.getWorldDirection( dir );
+    dir.y = 0;
+    dir.normalize();
+    const force = dir.multiplyScalar( strength );
+    body.applyImpulse( force, true );
+
+    pointer.value = 0;
+    pointer.down = false;
+    pointer.domElement.style.display = 'none';
+  });
+
   update();
 }
 
@@ -157,7 +230,13 @@ async function initPhysics(){
 
   physics.addScene( scene );
 
-  //debugRender = new RapierDebugRenderer( scene, physics.world );
+  //physicsHelper = new RapierHelper( physics.world );
+  //scene.add( physicsHelper );
+
+  balls.forEach( ( ball, index ) => {
+    const body = physics.getBody( ball );
+    body.setLinearDamping( (index == 0) ? 0.9 : 0.6);
+  })
 
 }
 
@@ -169,11 +248,20 @@ function onWindowResize( event ) {
 
 function update() {
   requestAnimationFrame( update );
-  if (debugRender) debugRender.update();
+
+  if (physicsHelper) physicsHelper.update();
+
   if ( controls && whiteBall ){
-    controls.target.copy( whiteBall.position );
+    controls.target.set( whiteBall.position.x, whiteBall.position.y + 0.1, whiteBall.position.z );
     controls.update();
   }
+
+  if ( pointer.down ){
+    pointer.value += 1;
+    if (pointer.value>100) pointer.value = 100;
+    pointer.progressElement.style.height = `${pointer.value}%`;
+  }
+
   renderer.render( scene, camera );
 } 
   

@@ -40,15 +40,16 @@
 <script  type="module"> 
   import * as THREE from "three";
   import { OrbitControls } from "three/addons/controls/OrbitControls.js"
-  import { RapierPhysics, RapierDebugRenderer } from '../../libs/RapierPhysics.js';
+  import { RapierPhysics } from 'three/addons/physics/RapierPhysics.js';
+  import { RapierHelper } from 'three/addons/helpers/RapierHelper.js';
   
-  let scene, camera, renderer, controls, movement, physics, debugRender, vehicleController, car, chassis, wheels;
+  let scene, camera, renderer, controls, movement, physics, physicsHelper, vehicleController, car, chassis, wheels;
 
 init();
 
 async function init(){
   scene = new THREE.Scene();
-  scene.background = new THREE.Color( 0xAAAAFF );
+  scene.background = new THREE.Color( 0xbfd1e5 );
 
   camera = new THREE.PerspectiveCamera( 60, window.innerWidth/window.innerHeight, 0.1, 100 );
   camera.position.set(0, 4, 10);
@@ -83,7 +84,16 @@ async function init(){
   controls.update();
 
   const geometry = new THREE.BoxGeometry( 100, 0.5, 100 );
-  const material = new THREE.MeshStandardMaterial( { color: 0xFFFFAA } );
+  const material = new THREE.MeshStandardMaterial( { color: 0xFFFFFF } );
+  new THREE.TextureLoader().load( '../../assets/grid.png',  ( texture ) => {
+
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set( 60, 60 );
+    material.map = texture;
+    material.needsUpdate = true;
+
+  } );
   
   const ground = new THREE.Mesh( geometry, material );
   ground.receiveShadow = true;
@@ -136,7 +146,8 @@ async function initPhysics(){
 
   createCar();
 
-  debugRender = new RapierDebugRenderer( scene, physics.world );
+  physicsHelper = new RapierHelper( physics.world );
+  scene.add( physicsHelper );
 
 }
 
@@ -150,7 +161,8 @@ function createCar( ){
   car = mesh;
 
   mesh.position.y = 1;
-  chassis = physics.addMesh( mesh, 10, 0.8 );
+  physics.addMesh( mesh, 10, 0.8 );
+  chassis = mesh.userData.physics.body;
 
   vehicleController = physics.world.createVehicleController( chassis );
 
@@ -308,12 +320,15 @@ function updateCarControl(){
 
 function update() {
   requestAnimationFrame( update );
+
   if ( vehicleController ){
     updateCarControl();
     vehicleController.updateVehicle(1/60);
     updateWheels();
   }
-  if (debugRender) debugRender.update();
+
+  if (physicsHelper) physicsHelper.update();
+
   if( controls && car ){
     controls.target.copy( car.position );
     controls.update();

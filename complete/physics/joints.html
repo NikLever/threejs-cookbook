@@ -26,14 +26,17 @@
 <script  type="module"> 
   import * as THREE from "three";
   import { OrbitControls } from "three/addons/controls/OrbitControls.js"
-  import { RapierPhysics, RapierDebugRenderer } from '../../libs/RapierPhysics.js';
+  import { RapierPhysics } from 'three/addons/physics/RapierPhysics.js';
+  import { RapierHelper } from 'three/addons/helpers/RapierHelper.js';
   
-  let scene, camera, renderer, controls, pivot, physics, debugRender;
+  let scene, camera, renderer, controls, pivot, physics, physicsHelper;
 
 init();
 
 async function init(){
   scene = new THREE.Scene();
+  scene.background = new THREE.Color( 0xbfd1e5 );
+
   camera = new THREE.PerspectiveCamera( 60, window.innerWidth/window.innerHeight, 0.1, 100 );
   camera.position.set(0, 3, 10);
 
@@ -90,7 +93,8 @@ async function initPhysics(){
 
   physics.addMesh( pivot, 0 );
 
-  debugRender = new RapierDebugRenderer( scene, physics.world );
+  physicsHelper = new RapierHelper( physics.world );
+  scene.add( physicsHelper );
 
   const link1 = addLink( pivot, 0 );
   const link2 = addLink( link1, 2 );
@@ -116,8 +120,8 @@ function addLink( link, x ){
         (link == pivot) ? new physics.RAPIER.Vector3(0, -0.5, 0 ) : new physics.RAPIER.Vector3(0, -1.15, 0 ), // Joint position in world space
         new physics.RAPIER.Vector3(0, 1.15, 0)   // Corresponding attachment on sphere
     );
-  const body1 = physics.getBody( link );
-  const body2 = physics.getBody( mesh );
+  const body1 = link.userData.physics.body;
+  const body2 = mesh.userData.physics.body;
   body2.setAngularDamping(10.0);
 
   physics.world.createImpulseJoint(jointParams, body1, body2, true); 
@@ -133,7 +137,7 @@ function onWindowResize( event ) {
 
 function update() {
   requestAnimationFrame( update );
-  if (debugRender) debugRender.update();
+  if (physicsHelper) physicsHelper.update();
   renderer.render( scene, camera );
 } 
   

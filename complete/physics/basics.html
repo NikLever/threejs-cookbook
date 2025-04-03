@@ -27,13 +27,16 @@
   import * as THREE from "three";
   import { OrbitControls } from "three/addons/controls/OrbitControls.js"
   import { RapierPhysics } from 'three/addons/physics/RapierPhysics.js';
+  import { RapierHelper } from 'three/addons/helpers/RapierHelper.js';
   
-  let scene, camera, renderer, controls, physics;
+  let scene, camera, renderer, controls, physics, physicsHelper;
 
 init();
 
 async function init(){
   scene = new THREE.Scene();
+  scene.background = new THREE.Color( 0xbfd1e5 );
+
   camera = new THREE.PerspectiveCamera( 60, window.innerWidth/window.innerHeight, 0.1, 100 );
   camera.position.set(0, 3, 10);
 
@@ -43,7 +46,7 @@ async function init(){
   const light = new THREE.DirectionalLight(0xffffff, 4);
   light.position.set(0,12.5,12.5);
   light.castShadow = true;
-  light.shadow.radius = 7;
+  light.shadow.radius = 4;
   light.shadow.blurSamples = 8;
   light.shadow.mapSize.width = 1024; 
   light.shadow.mapSize.height = 1024; 
@@ -67,7 +70,16 @@ async function init(){
   controls.update();
 
   const geometry = new THREE.BoxGeometry( 10, 0.5, 10 );
-  const material = new THREE.MeshStandardMaterial( { color: 0xFFFF99 } );
+  const material = new THREE.MeshStandardMaterial( { color: 0xFFFFFF } );
+  new THREE.TextureLoader().load( '../../assets/grid.png',  ( texture ) => {
+
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set( 20, 20 );
+    material.map = texture;
+    material.needsUpdate = true;
+
+  } );
   
   const floor = new THREE.Mesh( geometry, material );
   floor.receiveShadow = true;
@@ -90,6 +102,9 @@ async function initPhysics(){
 	physics = await RapierPhysics();
 
   physics.addScene( scene );
+
+  physicsHelper = new RapierHelper( physics.world );
+  scene.add( physicsHelper );
 
   addBody( );
 
@@ -118,6 +133,9 @@ function onWindowResize( event ) {
 
 function update() {
   requestAnimationFrame( update );
+
+  if ( physicsHelper ) physicsHelper.update();
+
   renderer.render( scene, camera );
 } 
   
