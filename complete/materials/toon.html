@@ -29,6 +29,7 @@
     import { OrbitControls } from "three/addons/controls/OrbitControls.js";
     import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
     import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+    import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
     import { OutlineEffect } from 'three/addons/effects/OutlineEffect.js';
     import { LoadingBar } from "../../libs/LoadingBar.js";
 
@@ -75,7 +76,7 @@
         camera.position.set( 1, 0.8, 2.5 );
         camera.lookAt(0,0.8,0);
         
-        const col = 0xAAAAAA;
+        const col = 0x77AAFF;
         scene = new THREE.Scene();
         scene.background = new THREE.Color( col );
 
@@ -93,11 +94,60 @@
         const controls = new OrbitControls( camera, renderer.domElement );
         controls.target.set( 0, 0.8, 0 );
         controls.update();
+
+        setEnvironment();
         
-        loadModel();
+        loadCastle();
+
+        loadKnight();
     }
 
-    function loadModel(){
+    function setEnvironment(){
+        new RGBELoader()
+            .setPath( '../../assets/hdr/' )
+            .load( 'museum.hdr', texture => {
+
+                texture.mapping = THREE.EquirectangularReflectionMapping;
+
+                scene.environment = texture;
+
+                render();
+            });
+    }
+
+    function loadCastle(){
+        const loader = new GLTFLoader( ).setPath('../../assets/');
+        const dracoLoader = new DRACOLoader();
+        dracoLoader.setDecoderPath( '../../node_modules/three/examples/jsm/libs/draco/' );
+        loader.setDRACOLoader( dracoLoader );
+            
+        // Load a glTF resource
+        loader.load(
+            // resource URL
+            'castle.glb',
+            // called when the resource is loaded
+            gltf => {
+            
+                gltf.scene.position.set( -2, -0.1, -12 );
+                gltf.scene.rotateY( -Math.PI/2 );
+
+                scene.add( gltf.scene );
+
+            },
+            // called while loading is progressing
+            xhr => {
+                       
+            },
+            // called when loading has errors
+            err => {
+
+                console.error( err );
+
+            }
+        );
+    }
+
+    function loadKnight(){
         const loader = new GLTFLoader( ).setPath('../../assets/');
         const dracoLoader = new DRACOLoader();
         dracoLoader.setDecoderPath( '../../node_modules/three/examples/jsm/libs/draco/' );
@@ -118,7 +168,7 @@
                 knight.children[1].visible = false;
 
                 mixer = new THREE.AnimationMixer( knight );
-                const action = mixer.clipAction( gltf.animations[2] );
+                const action = mixer.clipAction( gltf.animations[0] );
                 if ( action ) action.play();
             
                 knight.traverse( child => {
