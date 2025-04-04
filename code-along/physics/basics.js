@@ -1,35 +1,9 @@
-<!DOCTYPE html>
-<html lang="en" >
-<head>
-  <meta charset="UTF-8">
-  <title>The Three.JS Cookbook: Physics - Basics</title>
-  <link rel="apple-touch-icon" sizes="180x180" href="../../images/favicon/apple-touch-icon.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="../../images/favicon/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="../../images/favicon/favicon-16x16.png">
-  <link rel="manifest" href="../../site.webmanifest">
-  <style>
-    body{
-      padding: 0;
-      margin: 0;
-    }
-  </style>
-</head>
-<body>
-<script type="importmap">
-  {
-    "imports": {
-      "three": "../../node_modules/three/build/three.module.js",
-      "three/addons/": "../../node_modules/three/examples/jsm/"
-    }
-  }
-</script>
-<script  type="module">
-  import * as THREE from 'three';
-  import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-  import { RapierPhysics } from 'three/addons/physics/RapierPhysics.js';
-  import { RapierHelper } from 'three/addons/helpers/RapierHelper.js';
-  
-  let scene, camera, renderer, controls, physics, physicsHelper;
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RapierPhysics } from 'three/addons/physics/RapierPhysics.js';
+import { RapierHelper } from 'three/addons/helpers/RapierHelper.js';
+
+let scene, camera, renderer, controls, physics, physicsHelper;
 
 init();
 
@@ -60,7 +34,7 @@ async function init() {
 	light.shadow.camera.far = 50;
 
 	scene.add( light );
-  
+
 	renderer = new THREE.WebGLRenderer();
 	renderer.setSize( window.innerWidth, window.innerHeight );
 	renderer.shadowMap.enabled = true;
@@ -81,17 +55,16 @@ async function init() {
   		material.needsUpdate = true;
 
 	} );
-  
+
 	const floor = new THREE.Mesh( geometry, material );
 	floor.receiveShadow = true;
 
 	floor.position.y = - 0.25;
-	floor.userData.physics = { mass: 0 };
 
 	scene.add( floor );
-  
+
 	initPhysics();
-  
+
 	onWindowResize();
 
 	window.addEventListener( 'resize', onWindowResize, false );
@@ -100,34 +73,11 @@ async function init() {
 
 }
 
-async function initPhysics() {
-
-	physics = await RapierPhysics();
-
-	physics.addScene( scene );
-
-	physicsHelper = new RapierHelper( physics.world );
-	scene.add( physicsHelper );
-
-	addBody( );
-
-	setInterval( addBody, 1000 );
+function initPhysics() {
 
 }
 
 function addBody( ) {
-
-	const geometry = ( Math.random() > 0.5 ) ? new THREE.SphereGeometry( 0.5 ) : new THREE.BoxGeometry( 1, 1, 1 );
-	const material = new THREE.MeshStandardMaterial( { color: Math.floor( Math.random() * 0xFFFFFF ) } );
-  
-	const mesh = new THREE.Mesh( geometry, material );
-	mesh.castShadow = true;
-
-	mesh.position.set( Math.random() * 2 - 1, Math.random() * 3 + 6, Math.random() * 2 - 1 );
-
-	scene.add( mesh );
-
-	physics.addMesh( mesh, 1, 0.5 );
 
 }
 
@@ -141,13 +91,8 @@ function onWindowResize( ) {
 
 function update() {
 
-	if ( physicsHelper ) physicsHelper.update();
+	//requestAnimationFrame( update );
 
 	renderer.render( scene, camera );
 
 }
-  
-</script>
-
-</body>
-</html>
