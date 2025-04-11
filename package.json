@@ -11,5 +11,17 @@
   "dependencies": {
     "@types/three": "^0.174.0",
     "three": "^0.174.0"
+  },
+  "eslintConfig": {
+    "extends": "mdcs"
+  },
+  "eslint.workingDirectories": [ "./complete", "./code-along" ],
+  "devDependencies": {
+    "eslint": "^8.37.0",
+    "eslint-config-mdcs": "^5.0.0",
+    "eslint-plugin-compat": "^6.0.0",
+    "eslint-plugin-html": "^8.0.0",
+    "eslint-plugin-import": "^2.27.5",
+    "globals": "^16.0.0"
   }
 }

@@ -1,3 +1,4 @@
+<!-- eslint-disable compat/compat -->
 <!DOCTYPE html>
 <html lang="en" >
 <head>
@@ -19,75 +20,11 @@
   {
     "imports": {
       "three": "../../node_modules/three/build/three.module.js",
-    "three/addons/": "../../node_modules//three/examples/jsm/"
+      "three/addons/": "../../node_modules/three/examples/jsm/"
     }
   }
 </script>
-<script  type="module"> 
-  import * as THREE from "three";
-  import * as CANNON from '../../libs/cannon-es.js';
-  import { OrbitControls } from "three/addons/controls/OrbitControls.js"
-  import { CannonHelper } from '../../libs/CannonHelper.js';
-  
-  let scene, camera, renderer, controls, world, helper, dt, damping, groundMaterial;
-
-init();
-
-function init(){
-  scene = new THREE.Scene();
-  camera = new THREE.PerspectiveCamera( 60, window.innerWidth/window.innerHeight, 0.1, 100 );
-  camera.position.set(0, 3, 10);
-
-  const ambient = new THREE.HemisphereLight(0x555555, 0xFFFFFF);
-  scene.add(ambient);
-
-  const light = new THREE.DirectionalLight(0xffffff, 3);
-  light.position.set(0,12.5,12.5);
-  light.castShadow = true;
-  light.shadow.radius = 7;
-  light.shadow.blurSamples = 8;
-  light.shadow.mapSize.width = 1024; 
-  light.shadow.mapSize.height = 1024; 
-  const size = 10;
-  light.shadow.camera.left = -size;
-  light.shadow.camera.bottom = -size;
-  light.shadow.camera.right = size;
-  light.shadow.camera.top = size;
-  light.shadow.camera.near = 1;
-  light.shadow.camera.far = 50;
-
-  scene.add(light);
-
-  renderer = new THREE.WebGLRenderer();
-  renderer.setSize( window.innerWidth, window.innerHeight );
-  renderer.shadowMap.enabled = true;
-  document.body.appendChild( renderer.domElement );
-
-  controls = new OrbitControls(camera, renderer.domElement);
-  controls.target = new THREE.Vector3(0, 2, 0);
-  controls.update();
-  
-  onWindowResize();
-
-  window.addEventListener( 'resize', onWindowResize, false );
-
-  update();
-}
-
-function onWindowResize( event ) {
-  camera.aspect = window.innerWidth/window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize( window.innerWidth, window.innerHeight );
-}
-
-function update() {
-  requestAnimationFrame( update );
-  if (world) world.step(dt);
-  if (helper) helper.update( );
-  renderer.render( scene, camera );
-} 
-  
-</script>
+<script  type="module" src="basics.js"></script>
 
 </body>
 </html>
