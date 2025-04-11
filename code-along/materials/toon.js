@@ -21,7 +21,7 @@ import * as THREE from "three";
         camera.position.set( 1, 0.8, 2.5 );
         camera.lookAt(0,0.8,0);
         
-        const col = 0xAAAAAA;
+        const col = 0x77AAFF;
         scene = new THREE.Scene();
         scene.background = new THREE.Color( col );
 
@@ -30,7 +30,7 @@ import * as THREE from "three";
         const ambient = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 0.2);
 		scene.add(ambient);
 
-        light = new THREE.DirectionalLight( 0xFFFFFF, 1 );
+        light = new THREE.DirectionalLight( 0xFFFFFF, 3 );
         light.position.set( 4, 20, 20);
         scene.add( light );
 
