@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <meta property="og:image" content="images/course-image.jpg" />
+  <meta property="og:description" content="A recipe from The ThreeJS Cookbook. See https://niklever.com/courses for more information" />
+  <title>The Three.JS Cookbook: Lighting - Targets</title>
+  <link rel="apple-touch-icon" sizes="180x180" href="../../images/favicon/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="../../images/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="../../images/favicon/favicon-16x16.png">
+  <link rel="manifest" href="../../site.webmanifest">
+  <style>
+    body{
+      padding: 0;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+<script type="importmap">
+  {
+    "imports": {
+      "three": "../../node_modules/three/build/three.module.js",
+      "three/addons/": "../../node_modules//three/examples/jsm/"
+    }
+  }
+</script>
+<script  type="module"> 
+  import * as THREE from "three"
+  import { OrbitControls } from "three/addons/controls/OrbitControls.js"
+  import { GUI } from "three/addons/libs/lil-gui.module.min.js"
+ 
+  let scene, camera, renderer, light1, light2, helper1, helper2, clock;
+
+  init();
+
+  function init(){
+    const assetPath = "../../assets/";
+    
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color( 0x999999 );
+
+    clock = new THREE.Clock();
+    
+    camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 0.1, 1000 );
+    camera.position.set(0, 10, 20);//wide position
+    camera.lookAt(0,0,0);
+    
+    renderer = new THREE.WebGLRenderer({antialias: true});
+    renderer.setSize( window.innerWidth, window.innerHeight );
+    document.body.appendChild( renderer.domElement );
+    
+    const controls = new OrbitControls(camera, renderer.domElement);
+    
+    const geometry = new THREE.SphereGeometry(2, 20, 15);
+    const material = new THREE.MeshPhongMaterial( { color: 0xFFFF00 });
+    const sphere = new THREE.Mesh(geometry, material);
+
+    for( let x = -20; x<20; x+=5 ){
+      const ball = sphere.clone();
+      ball.position.set( x, 2, 0 );
+      scene.add( ball );
+    }
+    
+    const ambient = new THREE.AmbientLight(0xffffff, 0.2);
+    scene.add(ambient);
+    
+    light1 = new THREE.DirectionalLight(0xFFFFFF, 3);
+    light1.position.set(1,15,1);
+    
+    helper1 = new THREE.DirectionalLightHelper( light1 );
+
+    scene.add( helper1 );
+    scene.add( light1 );
+    scene.add( light1.target );
+
+    light2 = new THREE.DirectionalLight(0xFFFFFF, 3);
+    light2.position.set(-1,15,1);
+    
+    helper2 = new THREE.DirectionalLightHelper( light2 );
+
+    scene.add( helper2 );
+    scene.add( light2 );
+    
+    window.addEventListener( 'resize', resize, false);
+    
+    update();
+  }
+
+  function update(){
+    requestAnimationFrame( update );
+
+    const tm = clock.getElapsedTime();
+    const x = Math.sin( tm ) * 20;
+
+    light1.target.position.x = x;
+    light2.target.position.x = x;
+
+    helper1.update();
+    //helper2.update();
+
+    renderer.render( scene, camera ); 
+  }
+
+  function resize(){
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize( window.innerWidth, window.innerHeight );
+  }
+
+</script>
+
+</body>
+</html>
