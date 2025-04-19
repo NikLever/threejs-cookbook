@@ -86,7 +86,7 @@ async function init() {
 	floor.receiveShadow = true;
 
 	floor.position.y = - 0.25;
-	floor.userData.physics = { mass: 0 };
+	floor.userData.physics = { mass: 0, restitution: 0 };
 
 	scene.add( floor );
   

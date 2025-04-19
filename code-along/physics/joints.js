@@ -3,7 +3,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RapierPhysics } from 'three/addons/physics/RapierPhysics.js';
 import { RapierHelper } from 'three/addons/helpers/RapierHelper.js';
 
-let scene, camera, renderer, controls, physics, physicsHelper;
+let scene, camera, renderer, controls, pivot, physics, physicsHelper;
 
 init();
 
@@ -21,7 +21,7 @@ async function init() {
 	const light = new THREE.DirectionalLight( 0xffffff, 4 );
 	light.position.set( 0, 12.5, 12.5 );
 	light.castShadow = true;
-	light.shadow.radius = 4;
+	light.shadow.radius = 7;
 	light.shadow.blurSamples = 8;
 	light.shadow.mapSize.width = 1024;
 	light.shadow.mapSize.height = 1024;
@@ -40,28 +40,21 @@ async function init() {
 	renderer.shadowMap.enabled = true;
 	document.body.appendChild( renderer.domElement );
 
+	renderer.setAnimationLoop( update );
+
 	controls = new OrbitControls( camera, renderer.domElement );
 	controls.target = new THREE.Vector3( 0, 2, 0 );
 	controls.update();
 
-	const geometry = new THREE.BoxGeometry( 10, 0.5, 10 );
-	const material = new THREE.MeshStandardMaterial( { color: 0xFFFFFF } );
-	new THREE.TextureLoader().load( '../../assets/grid.png', ( texture ) => {
+	const geometry = new THREE.SphereGeometry( 0.5 );
+	const material = new THREE.MeshStandardMaterial( { color: 0xFF0000 } );
 
-  		texture.wrapS = THREE.RepeatWrapping;
-  		texture.wrapT = THREE.RepeatWrapping;
-  		texture.repeat.set( 20, 20 );
-  		material.map = texture;
-  		material.needsUpdate = true;
+	pivot = new THREE.Mesh( geometry, material );
 
-	} );
+	pivot.position.y = 6;
+	pivot.userData.physics = { mass: 0 };
 
-	const floor = new THREE.Mesh( geometry, material );
-	floor.receiveShadow = true;
-
-	floor.position.y = - 0.25;
-
-	scene.add( floor );
+	scene.add( pivot );
 
 	initPhysics();
 
@@ -69,15 +62,25 @@ async function init() {
 
 	window.addEventListener( 'resize', onWindowResize, false );
 
-	renderer.setAnimationLoop( update );
+}
+
+async function initPhysics() {
+
+	physics = await RapierPhysics();
+
+	physics.addMesh( pivot, 0 );
+
+	physicsHelper = new RapierHelper( physics.world );
+	scene.add( physicsHelper );
+
+	//Add links here
 
 }
 
-function initPhysics() {
+// eslint-disable-next-line no-unused-vars
+function addLink( link, x ) {
 
-}
 
-function addBody( ) {
 
 }
 
