@@ -125,6 +125,7 @@ function addLink( link, x ) {
   		( link == pivot ) ? new physics.RAPIER.Vector3( 0, - 0.5, 0 ) : new physics.RAPIER.Vector3( 0, - 1.15, 0 ), // Joint position in world space
   		new physics.RAPIER.Vector3( 0, 1.15, 0 ) // Corresponding attachment on sphere
   	);
+  
 	const body1 = link.userData.physics.body;
 	const body2 = mesh.userData.physics.body;
 	body2.setAngularDamping( 10.0 );
