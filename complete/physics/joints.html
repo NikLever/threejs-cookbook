@@ -101,29 +101,36 @@ async function initPhysics() {
 	physicsHelper = new RapierHelper( physics.world );
 	scene.add( physicsHelper );
 
-	const link1 = addLink( pivot, 0 );
-	const link2 = addLink( link1, 2 );
-	addLink( link2, 4 );
+	let link;
+	const length = 1.6;
+
+	for ( let i = 0; i < 5; i ++ ) {
+
+		link = addLink( ( link ) ? link : pivot, i * length, length );
+
+	}
 
 }
 
-function addLink( link, x ) {
+function addLink( link, x, length = 2.3 ) {
 
-	const geometry = new THREE.CapsuleGeometry( 0.25, 1.8 );
+	const geometry = new THREE.CapsuleGeometry( 0.25, length - 0.5 );
 	const material = new THREE.MeshStandardMaterial( { color: 0xCCCC00 } );
   
 	const mesh = new THREE.Mesh( geometry, material );
 	mesh.rotateZ( Math.PI * 0.5 );
 
-	mesh.position.set( x + 0.9, 5.8, 0 );
+	mesh.position.set( x + 1.15, 5.5, 0 );
 
 	scene.add( mesh );
 
 	physics.addMesh( mesh, 1, 0.5 );
 
+	const offset = length / 2 + 0.01;
+
 	const jointParams = physics.RAPIER.JointData.spherical(
-  		( link == pivot ) ? new physics.RAPIER.Vector3( 0, - 0.5, 0 ) : new physics.RAPIER.Vector3( 0, - 1.15, 0 ), // Joint position in world space
-  		new physics.RAPIER.Vector3( 0, 1.15, 0 ) // Corresponding attachment on sphere
+  		( link == pivot ) ? new physics.RAPIER.Vector3( 0, - 0.5, 0 ) : new physics.RAPIER.Vector3( 0, - offset, 0 ), // Local Joint position of first RigidBody
+  		new physics.RAPIER.Vector3( 0, offset, 0 ) // Local Joint position of second RigidBody
   	);
   
 	const body1 = link.userData.physics.body;
