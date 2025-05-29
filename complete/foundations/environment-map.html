@@ -69,7 +69,7 @@
     window.addEventListener( 'resize', resize, false);
 
     const options = {
-      outputColorSpace: 'Linear',
+      outputColorSpace: 'SRGB',
       physicallyCorrectLights: false
     }
 
@@ -77,11 +77,11 @@
     gui.add( options, 'outputColorSpace', [ 'Linear', 'SRGB' ]).onChange( value => {
       switch(value){
         case 'Linear':
-          renderer.outputColorSpace = THREE.linearColorSpace;
+          renderer.outputColorSpace = THREE.LinearSRGBColorSpace;
           break;
         case 'SRGB':
-          renderer.ColorSpace = THREE.SRGBColorSpace;
-          break
+          renderer.outputColorSpace = THREE.SRGBColorSpace;
+          break;
       }
     });
     gui.add( options, 'physicallyCorrectLights').onChange( value => {
@@ -114,7 +114,7 @@
   function loadGLTF(){
     const loader = new GLTFLoader( ).setPath('../../assets/');
     const dracoLoader = new DRACOLoader();
-    dracoLoader.setDecoderPath( '../../libs/three/examples/jsm/libs/draco/' );
+    dracoLoader.setDecoderPath( '../../node_modules/three/examples/jsm/libs/draco/' );
     loader.setDRACOLoader( dracoLoader );
 
     // Load a glTF resource

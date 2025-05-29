@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+s<!DOCTYPE html>
 <html lang="en" >
 <head>
   <meta charset="UTF-8">
@@ -116,7 +116,7 @@ function setEnvironment(){
 function loadModel(){
   const loader = new GLTFLoader( ).setPath('../../assets/');
   const dracoLoader = new DRACOLoader();
-  dracoLoader.setDecoderPath( '../../libs/three/examples/jsm/libs/draco/' );
+  dracoLoader.setDecoderPath( '../../node_modules/libs/three/examples/jsm/libs/draco/' );
   loader.setDRACOLoader( dracoLoader );
         
   loadingBar = new LoadingBar();

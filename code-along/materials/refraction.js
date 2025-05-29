@@ -50,7 +50,7 @@ import * as THREE from "three"
   function loadDiamond(){
     const loader = new GLTFLoader( ).setPath('../../assets/');
     const dracoLoader = new DRACOLoader();
-    dracoLoader.setDecoderPath( '../../libs/three/examples/jsm/libs/draco/' );
+    dracoLoader.setDecoderPath( '../../node_modules/libs/three/examples/jsm/libs/draco/' );
     loader.setDRACOLoader( dracoLoader );
         
     // Load a glTF resource
