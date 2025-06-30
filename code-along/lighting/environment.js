@@ -82,31 +82,6 @@ function loadModel(name){
 
 function  setEnvironment(name, bg=false){
     //TO DO
-    if ( name == 'none' ){
-        if ( bg ){
-            if ( scene.background ) scene.background.dispose();
-            scene.background = null;
-        }else{
-            if (scene.environment ) scene.environment.dispose();
-            scene.environment = null;
-        }
-        return;
-    }
-
-    const loader = new RGBELoader();
-    loader.setPath( '../../assets/hdr/' )
-        .load( `${name}.hdr`, texture => {
-            if (params.equirectangularMapping )
-                texture.mapping = THREE.EquirectangularReflectionMapping;
-
-            if (bg){
-                scene.background = texture;
-            }else{
-                scene.environment = texture;
-            }
-        }, undefined, err => {
-            console.error( err.message );
-        });
 }
 
 function update(){
