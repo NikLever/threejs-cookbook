@@ -1,68 +1,23 @@
-<!DOCTYPE html>
-<html lang="en" >
-<head>
-  <meta charset="UTF-8">
-  <meta property="og:image" content="images/course-image.jpg" />
-  <meta property="og:description" content="A recipe from The ThreeJS Cookbook. See https://niklever.com/courses for more information" />
-  <title>The Three.JS Cookbook: Lighting - Shadows</title>
-  <link rel="apple-touch-icon" sizes="180x180" href="../../images/favicon/apple-touch-icon.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="../../images/favicon/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="../../images/favicon/favicon-16x16.png">
-  <link rel="manifest" href="../../site.webmanifest">
-  <style>
-    body{
-      padding: 0;
-      margin: 0;
-    }
-    #camera-btn{
-      position: absolute;
-      right: 20px;
-      bottom: 20px;
-      color: #ffffff;
-      background: #0000aa;
-      font-size: 30px;
-      text-align: center;
-      line-height: 45px;
-      vertical-align: middle;
-      width: 45px;
-      height: 45px;
-      border-radius: 50%;
-    }
-  </style>
-</head>
-<body>
-  <a id="camera-btn"><div>
-    <i class="fas fa-camera"></i>
-  </div></a>
-<script type="importmap">
-  {
-    "imports": {
-      "three": "../../node_modules/three/build/three.module.js",
-      "three/addons/": "../../node_modules//three/examples/jsm/"
-    }
-  }
-</script>
-<script src="https://kit.fontawesome.com/86f3d02ba1.js"></script>
-<script  type="module">
-  import * as THREE from 'three';
-  
-  let scene, camera, renderer, clock, light, lightOffset, helper, player, cameras, cameraIndex;
+import * as THREE from 'three';
 
-  init();
+// eslint-disable-next-line no-unused-vars
+let scene, camera, renderer, clock, light, lightOffset, helper, player, cameras, cameraIndex;
 
-  function init() {
+init();
+
+function init() {
 
   	clock = new THREE.Clock();
 
   	scene = new THREE.Scene();
-  	const col = 0x807070;
+  	const col = 0xaaaaaa;
   	scene.background = new THREE.Color( col );
   	scene.fog = new THREE.Fog( col, 10, 100 );
-  
+
   	camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 0.1, 1000 );
   	camera.position.set( 0, 4, 7 );//wide position
   	camera.lookAt( 0, 1.5, 0 );
-  
+
   	renderer = new THREE.WebGLRenderer( { antialias: true } );
   	renderer.setSize( window.innerWidth, window.innerHeight );
   	renderer.shadowMap.enabled = true;
@@ -72,44 +27,29 @@
 
   	const ambient = new THREE.HemisphereLight( 0xffffbb, 0x080820, 1.25 );
   	scene.add( ambient );
-  
+
   	light = new THREE.DirectionalLight( 0xFFFFFF, 3 );
   	light.position.set( 1, 10, - 6 );
-  	light.castShadow = true;
-  	light.shadow.radius = 7;
-  	light.shadow.blurSamples = 8;
-  	const size = 4;
-  	light.shadow.camera.left = - size;
-  	light.shadow.camera.bottom = - size;
-  	light.shadow.camera.right = size;
-  	light.shadow.camera.top = size;
-  	light.shadow.camera.near = 1;
-  	light.shadow.camera.far = 50;
+	light.castShadow = true;
 
   	scene.add( light );
 
-  	helper = new THREE.CameraHelper( light.shadow.camera );
-
-  	scene.add( helper );
-
+  	//Add helper here
 
   	const planeGeometry = new THREE.PlaneGeometry( 200, 200 );
-  	const planeMaterial = new THREE.MeshStandardMaterial( { color: 0x444444 } );
+  	const planeMaterial = new THREE.MeshStandardMaterial( { color: 0xaaaaaa } );
   	planeGeometry.rotateX( - Math.PI / 2 );
   	const plane = new THREE.Mesh( planeGeometry, planeMaterial );
   	plane.receiveShadow = true;
   	scene.add( plane );
-  
-  	const grid = new THREE.GridHelper( 200, 80, 0x444444, 0xaaaaaa );
+
+  	const grid = new THREE.GridHelper( 200, 80, 0xaaaaaa, 0xffffff );
   	scene.add( grid );
-  
+
   	//Add Playermeshes here
   	player = new THREE.Group();
   	scene.add( player );
-  	light.target = player;
-  	lightOffset = light.position.clone().sub( player.position );
 
-  
   	const bodyGeometry = new THREE.CylinderGeometry( 0.5, 0.3, 1.6, 20 );
   	const material = new THREE.MeshStandardMaterial( { color: 0xffff00 } );
   	const body = new THREE.Mesh( bodyGeometry, material );
@@ -122,54 +62,54 @@
   	head.position.y = 2.0;
   	head.castShadow = true;
   	player.add( head );
-  
+
   	cameras = [];
   	cameraIndex = 0;
-  
+
   	const followCam = new THREE.Object3D();
   	followCam.position.copy( camera.position );
   	player.add( followCam );
   	cameras.push( followCam );
-  
+
   	const frontCam = new THREE.Object3D();
   	frontCam.position.set( 0, 3, - 15 );
   	player.add( frontCam );
   	cameras.push( frontCam );
-  
+
   	const overheadCam = new THREE.Object3D();
   	overheadCam.position.set( 0, 20, 0 );
   	cameras.push( overheadCam );
-  
+
   	addKeyboardControl();
-  
+
   	const btn = document.getElementById( 'camera-btn' );
   	btn.addEventListener( 'click', changeCamera );
-  
+
   	window.addEventListener( 'resize', resize, false );
-  
+
   	update();
 
 }
 
-  function changeCamera() {
+function changeCamera() {
 
   	cameraIndex ++;
   	if ( cameraIndex >= cameras.length ) cameraIndex = 0;
 
 }
 
-  function addKeyboardControl() {
+function addKeyboardControl() {
 
   	document.addEventListener( 'keydown', keyDown );
   	document.addEventListener( 'keyup', keyUp );
 
 }
-  
-  function keyDown( evt ) {
+
+function keyDown( evt ) {
 
   	let forward = ( player.userData !== undefined && player.userData.move !== undefined ) ? player.userData.move.forward : 0;
   	let turn = ( player.userData != undefined && player.userData.move !== undefined ) ? player.userData.move.turn : 0;
-  
+
   	switch ( evt.keyCode ) {
 
   		case 87://W
@@ -184,18 +124,18 @@
   		case 68://D
   			turn = - 1;
   			break;
-  
+
 	}
-  
+
   	playerControl( forward, turn );
 
 }
-  
-  function keyUp( evt ) {
+
+function keyUp( evt ) {
 
   	let forward = ( player.userData !== undefined && player.userData.move !== undefined ) ? player.userData.move.forward : 0;
   	let turn = ( player.move != undefined && player.userData.move !== undefined ) ? player.userData.move.turn : 0;
-  
+
   	switch ( evt.keyCode ) {
 
   		case 87://W
@@ -210,63 +150,57 @@
   		case 68://D
   			turn = 0;
   			break;
-  
+
 	}
-  
+
   	playerControl( forward, turn );
 
 }
 
-  function playerControl( forward, turn ) {
+function playerControl( forward, turn ) {
 
   	if ( forward == 0 && turn == 0 ) {
 
   		delete player.userData.move;
-  
+
 	} else {
 
   		if ( player.userData === undefined ) player.userData = {};
   		player.userData.move = { forward, turn };
-  
+
 	}
 
 }
 
-  function update() {
+function update() {
 
   	const dt = clock.getDelta();
-
+  	//requestAnimationFrame( update );
   	if ( player.userData !== undefined && player.userData.move !== undefined ) {
 
   		player.translateZ( player.userData.move.forward * dt * 5 );
   		player.rotateY( player.userData.move.turn * dt );
-  		light.position.copy( player.position ).add( lightOffset );
-  
+
 	}
 
   	if ( helper !== undefined ) helper.update();
-  
+
   	const target = cameras[ cameraIndex ].getWorldPosition( new THREE.Vector3() );
   	camera.position.lerp( target, 0.05 );
-  
+
   	const pos = player.position.clone();
   	pos.y += 3;
-  
+
   	if ( camera.position.distanceTo( target ) > 0.1 || cameraIndex < 2 ) camera.lookAt( pos );
 
   	renderer.render( scene, camera );
 
 }
 
-  function resize() {
+function resize() {
 
   	camera.aspect = window.innerWidth / window.innerHeight;
   	camera.updateProjectionMatrix();
   	renderer.setSize( window.innerWidth, window.innerHeight );
 
 }
-
-</script>
-
-</body>
-</html>

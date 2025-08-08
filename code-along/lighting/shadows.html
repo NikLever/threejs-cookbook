@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <meta property="og:image" content="images/course-image.jpg" />
+  <meta property="og:description" content="A recipe from The ThreeJS Cookbook. See https://niklever.com/courses for more information" />
+  <title>The Three.JS Cookbook: Lighting - Shadows</title>
+  <link rel="apple-touch-icon" sizes="180x180" href="../../images/favicon/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="../../images/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="../../images/favicon/favicon-16x16.png">
+  <link rel="manifest" href="../../site.webmanifest">
+  <style>
+    body{
+      padding: 0;
+      margin: 0;
+    }
+    #camera-btn{
+      position: absolute;
+      right: 20px;
+      bottom: 20px;
+      color: #ffffff;
+      background: #0000aa;
+      font-size: 30px;
+      text-align: center;
+      line-height: 45px;
+      vertical-align: middle;
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+    }
+  </style>
+</head>
+<body>
+  <a id="camera-btn"><div>
+    <i class="fas fa-camera"></i>
+  </div></a>
+<script type="importmap">
+  {
+    "imports": {
+      "three": "../../node_modules/three/build/three.module.js",
+      "three/addons/": "../../node_modules//three/examples/jsm/"
+    }
+  }
+</script>
+<script src="https://kit.fontawesome.com/86f3d02ba1.js"></script>
+<script type="module" src="shadows.js"></script>
+
+</body>
+</html>
