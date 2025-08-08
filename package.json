@@ -9,8 +9,8 @@
   "author": "Nik Lever",
   "license": "ISC",
   "dependencies": {
-    "@types/three": "^0.174.0",
-    "three": "^0.174.0"
+    "@types/three": "^0.179.0",
+    "three": "^0.179.0"
   },
   "eslintConfig": {
     "extends": "mdcs"
