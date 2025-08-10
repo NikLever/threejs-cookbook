@@ -1,154 +1,174 @@
-import * as THREE from "three";
-    import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-    import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
-    import { OutlineEffect } from 'three/addons/effects/OutlineEffect.js';
-    import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
-    import { LoadingBar } from "../../libs/LoadingBar.js";
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+// eslint-disable-next-line no-unused-vars
+import { OutlineEffect } from 'three/addons/effects/OutlineEffect.js';
+import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
+import { LoadingBar } from '../../libs/LoadingBar.js';
 
-    let camera, scene, renderer, clock, light, knight, mixer, outline;
+// eslint-disable-next-line no-unused-vars
+let camera, scene, renderer, clock, light, knight, mixer, outline;
 
-    init();
-    
-    function init() {
-        renderer = new THREE.WebGLRenderer({antialias: true, stencil: false});
-        renderer.setPixelRatio( Math.min(2, window.devicePixelRatio ));
-        renderer.setSize( window.innerWidth, window.innerHeight );
-        document.body.appendChild( renderer.domElement );
-        renderer.outputColorSpace = THREE.SRGBColorSpace;
-        
-        camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 0.1, 50 );
-        camera.position.set( 1, 0.8, 2.5 );
-        camera.lookAt(0,0.8,0);
-        
-        const col = 0x77AAFF;
-        scene = new THREE.Scene();
-        scene.background = new THREE.Color( col );
+init();
 
-        clock = new THREE.Clock();
+function init() {
 
-        const ambient = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 0.2);
-		scene.add(ambient);
+	renderer = new THREE.WebGLRenderer( { antialias: true, stencil: false } );
+	renderer.setPixelRatio( Math.min( 2, window.devicePixelRatio ) );
+	renderer.setSize( window.innerWidth, window.innerHeight );
+	document.body.appendChild( renderer.domElement );
+	renderer.outputColorSpace = THREE.SRGBColorSpace;
 
-        light = new THREE.DirectionalLight( 0xFFFFFF, 3 );
-        light.position.set( 4, 20, 20);
-        scene.add( light );
+	camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 0.1, 50 );
+	camera.position.set( 1, 0.8, 2.5 );
+	camera.lookAt( 0, 0.8, 0 );
 
-        window.addEventListener( 'resize', onWindowResize, false );
-        
-        const controls = new OrbitControls( camera, renderer.domElement );
-        controls.target.set( 0, 0.8, 0 );
-        controls.update();
-        
-        loadCastle();
+	const col = 0x77AAFF;
+	scene = new THREE.Scene();
+	scene.background = new THREE.Color( col );
 
-        loadKnight();
+	clock = new THREE.Clock();
 
-    }
+	const ambient = new THREE.HemisphereLight( 0xffffff, 0xbbbbff, 0.2 );
+	scene.add( ambient );
 
-    function setEnvironment(){
-        new RGBELoader()
-            .setPath( '../../assets/hdr/' )
-            .load( 'museum.hdr', texture => {
+	light = new THREE.DirectionalLight( 0xFFFFFF, 3 );
+	light.position.set( 4, 20, 20 );
+	scene.add( light );
 
-                texture.mapping = THREE.EquirectangularReflectionMapping;
+	window.addEventListener( 'resize', onWindowResize, false );
 
-                scene.environment = texture;
+	const controls = new OrbitControls( camera, renderer.domElement );
+	controls.target.set( 0, 0.8, 0 );
+	controls.update();
 
-                render();
-            });
-    }
+	loadCastle();
 
-    function loadCastle(){
-        const loader = new GLTFLoader( ).setPath('../../assets/');
-        const dracoLoader = new DRACOLoader();
-        dracoLoader.setDecoderPath( '../../node_modules/three/examples/jsm/libs/draco/' );
-        loader.setDRACOLoader( dracoLoader );
-            
-        // Load a glTF resource
-        loader.load(
-            // resource URL
-            'castle.glb',
-            // called when the resource is loaded
-            gltf => {
-            
-                gltf.scene.position.set( -2, -0.1, -12 );
-                gltf.scene.rotateY( -Math.PI/2 );
+	loadKnight();
 
-                scene.add( gltf.scene );
+}
 
-            },
-            // called while loading is progressing
-            xhr => {
-                       
-            },
-            // called when loading has errors
-            err => {
+// eslint-disable-next-line no-unused-vars
+function setEnvironment() {
 
-                console.error( err );
+	new RGBELoader()
+		.setPath( '../../assets/hdr/' )
+		.load( 'museum.hdr', texture => {
 
-            }
-        );
-    }
+			texture.mapping = THREE.EquirectangularReflectionMapping;
 
-    function loadKnight(){
-        const loader = new GLTFLoader( ).setPath('../../assets/');
-        const dracoLoader = new DRACOLoader();
-        dracoLoader.setDecoderPath( '../../node_modules/three/examples/jsm/libs/draco/' );
-        loader.setDRACOLoader( dracoLoader );
-                
-        const loadingBar = new LoadingBar();
-        loadingBar.visible = true;
-            
-        // Load a glTF resource
-        loader.load(
-            // resource URL
-            'knight3.glb',
-            // called when the resource is loaded
-            gltf => {
-                let material;
+			scene.environment = texture;
 
-                knight = gltf.scene;
-                knight.children[1].visible = false;
+			render();
 
-                mixer = new THREE.AnimationMixer( knight );
-                const action = mixer.clipAction( gltf.animations[3] );
-                if ( action ) action.play();
+		} );
 
-                //Add material replacement code here
-            
-                loadingBar.visible = false;
-            
-                scene.add( knight );
-            
-                render(); 
-            },
-            // called while loading is progressing
-            xhr => {
-                loadingBar.update(name, xhr.loaded, xhr.total);        
-            },
-            // called when loading has errors
-            err => {
+}
 
-                console.error( err );
+function loadCastle() {
 
-            }
-        );
-    }
+	const loader = new GLTFLoader( ).setPath( '../../assets/' );
+	const dracoLoader = new DRACOLoader();
+	dracoLoader.setDecoderPath( '../../node_modules/three/examples/jsm/libs/draco/' );
+	loader.setDRACOLoader( dracoLoader );
 
-    function onWindowResize() {
+	// Load a glTF resource
+	loader.load(
+		// resource URL
+		'castle.glb',
+		// called when the resource is loaded
+		gltf => {
 
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
+			gltf.scene.position.set( - 2, - 0.1, - 12 );
+			gltf.scene.rotateY( - Math.PI / 2 );
 
-        renderer.setSize( window.innerWidth, window.innerHeight );
+			scene.add( gltf.scene );
 
-    }
+		},
+		// called while loading is progressing
+		// eslint-disable-next-line no-unused-vars
+		xhr => {
 
-    function render() {
-        requestAnimationFrame( render );
-        const dt = clock.getDelta();
-        if (mixer) mixer.update(dt);
+		},
+		// called when loading has errors
+		err => {
 
-        renderer.render( scene, camera );
-    } 
+			console.error( err );
+
+		}
+	);
+
+}
+
+function loadKnight() {
+
+	const loader = new GLTFLoader( ).setPath( '../../assets/' );
+	const dracoLoader = new DRACOLoader();
+	dracoLoader.setDecoderPath( '../../node_modules/three/examples/jsm/libs/draco/' );
+	loader.setDRACOLoader( dracoLoader );
+
+	const loadingBar = new LoadingBar();
+	loadingBar.visible = true;
+
+	// Load a glTF resource
+	loader.load(
+		// resource URL
+		'knight3.glb',
+		// called when the resource is loaded
+		gltf => {
+
+			// eslint-disable-next-line no-unused-vars
+			let material;
+
+			knight = gltf.scene;
+			knight.children[ 1 ].visible = false;
+
+			mixer = new THREE.AnimationMixer( knight );
+			const action = mixer.clipAction( gltf.animations[ 3 ] );
+			if ( action ) action.play();
+
+			//Add material replacement code here
+
+			loadingBar.visible = false;
+
+			scene.add( knight );
+
+			render();
+
+		},
+		// called while loading is progressing
+		xhr => {
+
+			loadingBar.update( name, xhr.loaded, xhr.total );
+
+		},
+		// called when loading has errors
+		err => {
+
+			console.error( err );
+
+		}
+	);
+
+}
+
+function onWindowResize() {
+
+	camera.aspect = window.innerWidth / window.innerHeight;
+	camera.updateProjectionMatrix();
+
+	renderer.setSize( window.innerWidth, window.innerHeight );
+
+}
+
+function render() {
+
+	// eslint-disable-next-line compat/compat
+	requestAnimationFrame( render );
+	const dt = clock.getDelta();
+	if ( mixer ) mixer.update( dt );
+
+	renderer.render( scene, camera );
+
+}
