@@ -79,14 +79,14 @@
             gltf => {
             baked = gltf.scene;
             
-            baked.traverse( child => {
+            /*baked.traverse( child => {
                 if (child.isMesh){
                     const material = new THREE.MeshBasicMaterial( { map: child.material.emissiveMap });
                     const oldmat = child.material;
                     child.material = material;
                     oldmat.dispose();
                 }
-            });
+            });*/
         
         loadingBar.visible = false;
         
