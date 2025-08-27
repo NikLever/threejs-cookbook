@@ -1,0 +1,154 @@
+/* eslint-disable no-undef */
+/* eslint-disable no-unused-vars */
+import * as THREE from 'three';
+
+let scene, camera, renderer, clock, player, lightOffset, light, dolly, target;
+
+init();
+
+function init() {
+
+	clock = new THREE.Clock();
+
+	scene = new THREE.Scene();
+	const col = 0x605050;
+	scene = new THREE.Scene();
+	scene.background = new THREE.Color( col );
+	scene.fog = new THREE.Fog( col, 10, 100 );
+
+	camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 0.1, 1000 );
+	camera.position.set( 0, 4, 7 );
+	camera.lookAt( 0, 1.5, 0 );
+
+	const ambient = new THREE.HemisphereLight( 0xffffbb, 0x080820 );
+	scene.add( ambient );
+
+	light = new THREE.DirectionalLight( 0xFFFFFF, 3 );
+	light.position.set( 1, 10, 6 );
+	lightOffset = light.position.clone();
+	light.castShadow = true;
+	const size = 3;
+	light.shadow.camera.left = - size;
+	light.shadow.camera.bottom = - size;
+	light.shadow.camera.right = size;
+	light.shadow.camera.top = size;
+	light.shadow.camera.near = 1;
+	light.shadow.camera.far = 50;
+	scene.add( light );
+
+	renderer = new THREE.WebGLRenderer( { antialias: true } );
+	renderer.shadowMap.enabled = true;
+	renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+	renderer.setSize( window.innerWidth, window.innerHeight );
+	renderer.setAnimationLoop( update );
+	document.body.appendChild( renderer.domElement );
+
+	const planeGeometry = new THREE.PlaneGeometry( 200, 200 );
+	const planeMaterial = new THREE.MeshStandardMaterial( { color: 0x444444 } );
+	const plane = new THREE.Mesh( planeGeometry, planeMaterial );
+	plane.receiveShadow = true;
+	plane.rotation.x = - Math.PI / 2;
+	scene.add( plane );
+
+	const grid = new THREE.GridHelper( 200, 80, 0x444444, 0xaaaaaa );
+	scene.add( grid );
+
+	//Add meshes here
+	player = new THREE.Group();
+	scene.add( player );
+	light.target = player;
+
+	const bodyGeometry = new THREE.CylinderGeometry( 0.5, 0.3, 1.6, 20 );
+	const material = new THREE.MeshStandardMaterial( { color: 0xffff00 } );
+	const body = new THREE.Mesh( bodyGeometry, material );
+	body.position.y = 0.8;
+	body.scale.z = 0.5;
+	body.castShadow = true;
+
+	player.add( body );
+	const headGeometry = new THREE.SphereGeometry( 0.3, 20, 15 );
+	const head = new THREE.Mesh( headGeometry, material );
+	head.position.y = 2.0;
+	head.castShadow = true;
+
+	player.add( head );
+
+	dolly = new THREE.Object3D();
+	dolly.position.copy( camera.position );
+	dolly.quaternion.copy( camera.quaternion );
+	player.attach( dolly );
+
+	target = new THREE.Vector3();
+
+	//showPlayer(false);
+
+	addKeyboardControl();
+
+	window.addEventListener( 'resize', resize, false );
+
+	update();
+
+}
+
+function addKeyboardControl() {
+
+	document.addEventListener( 'keydown', keyDown );
+	document.addEventListener( 'keyup', keyUp );
+
+}
+
+function keyDown( evt ) {
+
+	//TO DO: 1
+
+	setPlayerMove( forward, turn );
+
+}
+
+function keyUp( evt ) {
+
+	//TO DO: 2
+
+	setPlayerMove( forward, turn );
+
+}
+
+function setPlayerMove( forward, turn ) {
+   	//TO DO: 3
+}
+
+function showPlayer( mode ) {
+
+	player.children.forEach( child => child.visible = mode );
+
+}
+
+function update() {
+
+	renderer.render( scene, camera );
+
+	const dt = clock.getDelta();
+
+	if ( player.userData.move !== undefined ) {
+		//TO DO 4
+	}
+
+	light.position.copy( player.position ).add( lightOffset );
+
+	dolly.getWorldPosition( target );
+	camera.position.lerp( target, 0.05 );
+
+	const pos = player.position.clone();
+	pos.y += 3;
+
+	camera.lookAt( pos );
+
+}
+
+function resize() {
+
+	camera.aspect = window.innerWidth / window.innerHeight;
+	camera.updateProjectionMatrix();
+	renderer.setSize( window.innerWidth, window.innerHeight );
+
+}

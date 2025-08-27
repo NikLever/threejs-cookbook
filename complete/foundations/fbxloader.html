@@ -30,131 +30,151 @@
   }
 }
 </script>
-<script  type="module"> 
-  import * as THREE from "three"
-  import { OrbitControls } from "three/addons/controls/OrbitControls.js"
-  import { GUI } from "three/addons/libs/lil-gui.module.min.js"
+<script  type="module">
+  import * as THREE from 'three';
+  import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+  // eslint-disable-next-line no-unused-vars
+  import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
   import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
   import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
   import { LoadingBar } from 'libs/LoadingBar.js';
 
+  // eslint-disable-next-line no-unused-vars
   let scene, camera, renderer, loadingBar, controls, clock, wrench, mixer;
 
   init();
 
-  function init(){
-    scene = new THREE.Scene();
-    scene.background = new THREE.Color( 0x111100 );
+  function init() {
 
-    clock = new THREE.Clock();
-    
-    camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 0.1, 100 );
-    //camera.position.set(0, 0.05, 0.22);
-    camera.position.set(0, 2.5, 3.0);
-    
-    const ambient = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 0.5);8
-    scene.add(ambient);
-    
-    const light = new THREE.DirectionalLight(0xFFFFFF, 2.5);
-    light.position.set( 0.2, 1, 1 );
-    scene.add(light);
-    
-    renderer = new THREE.WebGLRenderer({antialias: true});
-    renderer.setSize( window.innerWidth, window.innerHeight );
-    document.body.appendChild( renderer.domElement );
-    
-    controls = new OrbitControls(camera, renderer.domElement);
-    controls.target.y = 0.8;
-    //controls.target.y = 0.06;
-    controls.update();
+  	scene = new THREE.Scene();
+  	scene.background = new THREE.Color( 0x111100 );
 
-   // setEnvironment();
+  	clock = new THREE.Clock();
+  
+  	camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 0.1, 100 );
+  	//camera.position.set(0, 0.05, 0.22);
+  	camera.position.set( 0, 2.5, 3.0 );
+  
+  	const ambient = new THREE.HemisphereLight( 0xffffff, 0xbbbbff, 0.5 ); 8;
+  	scene.add( ambient );
+  
+  	const light = new THREE.DirectionalLight( 0xFFFFFF, 2.5 );
+  	light.position.set( 0.2, 1, 1 );
+  	scene.add( light );
+  
+  	renderer = new THREE.WebGLRenderer( { antialias: true } );
+  	renderer.setSize( window.innerWidth, window.innerHeight );
+  	document.body.appendChild( renderer.domElement );
+  
+  	controls = new OrbitControls( camera, renderer.domElement );
+  	controls.target.y = 0.8;
+  	//controls.target.y = 0.06;
+  	controls.update();
 
-    window.addEventListener( 'resize', resize, false);
+  	// setEnvironment();
 
-    loadingBar = new LoadingBar(); 
-        
-    loadFBX();
-  }
-    
-  function setEnvironment(){
-    const loader = new RGBELoader();
-    const pmremGenerator = new THREE.PMREMGenerator( renderer );
-    pmremGenerator.compileEquirectangularShader();
-    
-    loader.load( '../../assets/hdr/venice_sunset_1k.hdr', ( texture ) => {
-      const envMap = pmremGenerator.fromEquirectangular( texture ).texture;
-      pmremGenerator.dispose();
+  	window.addEventListener( 'resize', resize, false );
 
-      scene.environment = envMap;
+  	loadingBar = new LoadingBar();
+  
+  	loadFBX();
 
-    }, undefined, (err)=>{
-        console.error( 'An error occurred setting the environment.' + err.message );
-    } );
-  }
+}
+  
+  // eslint-disable-next-line no-unused-vars
+  function setEnvironment() {
 
-  function loadFBX(){
-    const loader = new FBXLoader( ).setPath('../../assets/');
-    
-    // Load a glTF resource
-    loader.load(
-      // resource URL
-      'PipeWrench.fbx',
-      // called when the resource is loaded
-      object => {        
-        mixer = new THREE.AnimationMixer( object );
-        wrench = object;
+  	const loader = new RGBELoader();
+  	const pmremGenerator = new THREE.PMREMGenerator( renderer );
+  	pmremGenerator.compileEquirectangularShader();
+  
+  	loader.load( '../../assets/hdr/venice_sunset_1k.hdr', ( texture ) => {
 
-				const action = mixer.clipAction( object.animations[ 0 ] );
-				action.play();
+  		const envMap = pmremGenerator.fromEquirectangular( texture ).texture;
+  		pmremGenerator.dispose();
 
-        const scale = 1;
-        object.scale.set( scale, scale, scale );
+  		scene.environment = envMap;
 
-				object.traverse( ( child ) => {
+  	}, undefined, ( err )=>{
 
-					if ( child.isMesh ) {
+  		console.error( 'An error occurred setting the environment.' + err.message );
+  
+	} );
 
-						child.castShadow = true;
-						child.receiveShadow = true;
-					}
+}
 
-				} );
+  function loadFBX() {
 
-				scene.add( object );
-                
-        loadingBar.visible = false;
-        
-        update();
-      },
-      // called while loading is progressing
-      xhr => {
+  	const loader = new FBXLoader( ).setPath( '../../assets/' );
+  
+  	// Load a glTF resource
+  	loader.load(
+  		// resource URL
+  		'PipeWrench.fbx',
+  		// called when the resource is loaded
+  		object => {
+  
+  			mixer = new THREE.AnimationMixer( object );
+  			wrench = object;
 
-        loadingBar.progress = (xhr.loaded / xhr.total);
-        
-      },
-      // called when loading has errors
-      err => {
+			const action = mixer.clipAction( object.animations[ 0 ] );
+			action.play();
 
-        console.error( err.message );
+  			const scale = 1;
+  			object.scale.set( scale, scale, scale );
 
-      }  
-    );
-  }
+			object.traverse( ( child ) => {
 
-  function update(){
-    requestAnimationFrame( update );
-    //if (stove) stove.rotateY( 0.005 );
-    const dt = clock.getDelta();
-    if (mixer) mixer.update( dt );
-    renderer.render( scene, camera );  
-  }
+				if ( child.isMesh ) {
 
-  function resize(){
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize( window.innerWidth, window.innerHeight );
-  }
+					child.castShadow = true;
+					child.receiveShadow = true;
+
+				}
+
+			} );
+
+			scene.add( object );
+  
+  			loadingBar.visible = false;
+  
+  			update();
+  
+		},
+  		// called while loading is progressing
+  		xhr => {
+
+  			loadingBar.progress = ( xhr.loaded / xhr.total );
+  
+  		},
+  		// called when loading has errors
+  		err => {
+
+  			console.error( err.message );
+
+  		}
+  	);
+
+}
+
+  function update() {
+
+  	// eslint-disable-next-line compat/compat
+  	requestAnimationFrame( update );
+  	//if (stove) stove.rotateY( 0.005 );
+  	const dt = clock.getDelta();
+  	if ( mixer ) mixer.update( dt );
+  	renderer.render( scene, camera );
+
+}
+
+  function resize() {
+
+  	camera.aspect = window.innerWidth / window.innerHeight;
+  	camera.updateProjectionMatrix();
+  	renderer.setSize( window.innerWidth, window.innerHeight );
+
+}
 </script>
 </body>
 </html>
