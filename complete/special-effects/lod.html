@@ -1,4 +1,4 @@
-s<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" >
 <head>
   <meta charset="UTF-8">
@@ -29,159 +29,189 @@ s<!DOCTYPE html>
   }
 }
 </script>
-<script  type="module"> 
+<script  type="module">
   import * as THREE from 'three';
-import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
-import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
-import {DRACOLoader} from 'three/addons/loaders/DRACOLoader.js';
-import {RGBELoader} from 'three/addons/loaders/RGBELoader.js';
-import {LoadingBar} from '../../libs/LoadingBar.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
+import { LoadingBar } from '../../libs/LoadingBar.js';
 import GUI from 'three/addons/libs/lil-gui.module.min.js';
 
 //Tip 27: LOD
 
 let camera, scene, renderer, envmap, options;
-let apples, light, clock, loadingBar;
+// eslint-disable-next-line no-unused-vars
+let apples, light, clock, loadingBar, apple;
 
 init();
 
 function init() {
-  renderer = new THREE.WebGLRenderer({antialias: true, stencil: false});
-  renderer.setPixelRatio( Math.min(2, window.devicePixelRatio ));
-  renderer.setSize( window.innerWidth, window.innerHeight );
-  document.body.appendChild( renderer.domElement );
-  renderer.outputColorSpace = THREE.SRGBColorSpace;
-  renderer.physicallyCorrectLights = true;
 
-  //
-  clock = new THREE.Clock();
+	renderer = new THREE.WebGLRenderer( { antialias: true, stencil: false } );
+	renderer.setPixelRatio( Math.min( 2, window.devicePixelRatio ) );
+	renderer.setSize( window.innerWidth, window.innerHeight );
+	document.body.appendChild( renderer.domElement );
+	renderer.outputColorSpace = THREE.SRGBColorSpace;
+	renderer.physicallyCorrectLights = true;
+
+	//
+	clock = new THREE.Clock();
   
-  camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 0.1, 50 );
-  camera.position.set( 0, 0, 0.7 );
+	camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 0.1, 50 );
+	camera.position.set( 0, 0, 0.7 );
   
-  const col = 0x201510;
+	const col = 0x201510;
 	scene = new THREE.Scene();
 	scene.background = new THREE.Color( col );
-	
-  const ambient = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 1);
-		scene.add(ambient);
 
-  light = new THREE.DirectionalLight( );
-  light.position.set( 4, 20, 20);
-  scene.add( light );
+	const ambient = new THREE.HemisphereLight( 0xffffff, 0xbbbbff, 1 );
+	scene.add( ambient );
 
-   window.addEventListener( 'resize', resize, false );
+	light = new THREE.DirectionalLight( );
+	light.position.set( 4, 20, 20 );
+	scene.add( light );
+
+  	window.addEventListener( 'resize', resize, false );
   
-  const controls = new OrbitControls( camera, renderer.domElement );
-  controls.target.y = 0.05;
-  controls.update()
+	const controls = new OrbitControls( camera, renderer.domElement );
+	controls.target.y = 0.05;
+	controls.update();
   
-  controls.addEventListener( 'change', () => {
-    renderer.render( scene, camera );
-  });
+	controls.addEventListener( 'change', () => {
+
+  		renderer.render( scene, camera );
+
+	} );
   
-  options = {
-    wireframe: false,
-    animated: true
-  }
-  const gui = new GUI();
-  gui.add(options, 'wireframe').onChange( value => {
-    apple.levels.forEach( level => {
-      level.object.material.wireframe = value;
-    })
-  });
-  gui.add(options, 'animated');
+	options = {
+  		wireframe: false,
+  		animated: true
+	};
+	const gui = new GUI();
+	gui.add( options, 'wireframe' ).onChange( value => {
+
+  		apple.levels.forEach( level => {
+
+  			level.object.material.wireframe = value;
   
-  setEnvironment();
-  loadModel();
+		} );
+
+	} );
+	gui.add( options, 'animated' );
+  
+	setEnvironment();
+	loadModel();
+
 }
 
-function setEnvironment(){
-  const loader = new RGBELoader();
-  const pmremGenerator = new THREE.PMREMGenerator( renderer );
-  pmremGenerator.compileEquirectangularShader();
+function setEnvironment() {
+
+	const loader = new RGBELoader();
+	const pmremGenerator = new THREE.PMREMGenerator( renderer );
+	pmremGenerator.compileEquirectangularShader();
   
-  loader.load( '../../assets/hdr/venice_sunset_1k.hdr', ( texture ) => {
-    envmap = pmremGenerator.fromEquirectangular( texture ).texture;
-    pmremGenerator.dispose();
+	loader.load( '../../assets/hdr/venice_sunset_1k.hdr', ( texture ) => {
 
-    scene.environment = envmap;
+  		envmap = pmremGenerator.fromEquirectangular( texture ).texture;
+  		pmremGenerator.dispose();
 
-  }, undefined, (err)=>{
-    console.error( 'An error occurred setting the environment');
-    console.error(err);
-  } );
+  		scene.environment = envmap;
+
+	}, undefined, ( err )=>{
+
+  		console.error( 'An error occurred setting the environment' );
+  		console.error( err );
+
+	} );
+
 }
 
-function loadModel(){
-  const loader = new GLTFLoader( ).setPath('../../assets/');
-  const dracoLoader = new DRACOLoader();
-  dracoLoader.setDecoderPath( '../../node_modules/three/examples/jsm/libs/draco/' );
-  loader.setDRACOLoader( dracoLoader );
-        
-  loadingBar = new LoadingBar();
-  loadingBar.visible = true;
-		
-  apples = new THREE.Group();
-  scene.add( apples );
-  const apple = new THREE.LOD();
+function loadModel() {
+
+	const loader = new GLTFLoader( ).setPath( '../../assets/' );
+	const dracoLoader = new DRACOLoader();
+	dracoLoader.setDecoderPath( '../../node_modules/three/examples/jsm/libs/draco/' );
+	loader.setDRACOLoader( dracoLoader );
   
-  loader.load(
-    // resource URL
-    'apple-lod.glb',
-    // called when the resource is loaded
-    gltf => {
-        for(let i=1; i<=4; i++){
-          const mesh = gltf.scene.getObjectByName(`apple${i}`);
-          mesh.position.set(0,0,0);
-          apple.addLevel( mesh, i-1 * 0.9 );
-        }
-        
-        const size = 2;
-        
-        for( let n=0; n<50; n++){
-          const lod = apple.clone();
+	loadingBar = new LoadingBar();
+	loadingBar.visible = true;
 
-          lod.position.x = Math.random()*size - size/2;
-          lod.position.y = Math.random()*size - size/2;
-          lod.position.z = Math.random()*size - size/2;
-          
-          apples.add(lod);
-        }
-        
-        loadingBar.visible = false;
-        update();
-    },
-    // called while loading is progressing
-    xhr => {
-      loadingBar.update(name, xhr.loaded, xhr.total);
-      
-    },
-    // called when loading has errors
-    err => {
+	apples = new THREE.Group();
+	scene.add( apples );
+	apple = new THREE.LOD();
+  
+	loader.load(
+  		// resource URL
+  		'apple-lod.glb',
+  		// called when the resource is loaded
+  		gltf => {
 
-      console.error( err );
+  			for ( let i = 1; i <= 4; i ++ ) {
 
-    }
-  );
+  				const mesh = gltf.scene.getObjectByName( `apple${i}` );
+  				mesh.position.set( 0, 0, 0 );
+  				apple.addLevel( mesh, i - 1 * 0.9 );
+  
+			}
+  
+  			const size = 2;
+  
+  			for ( let n = 0; n < 50; n ++ ) {
+
+  				const lod = apple.clone();
+
+  				lod.position.x = Math.random() * size - size / 2;
+  				lod.position.y = Math.random() * size - size / 2;
+  				lod.position.z = Math.random() * size - size / 2;
+  
+  				apples.add( lod );
+  
+			}
+  
+  			loadingBar.visible = false;
+  			update();
+  
+		},
+  		// called while loading is progressing
+  		xhr => {
+
+  			loadingBar.update( name, xhr.loaded, xhr.total );
+  
+  		},
+  		// called when loading has errors
+  		err => {
+
+  			console.error( err );
+
+  		}
+	);
+
 }
 
-  function update(){
-    requestAnimationFrame( update );
+  function update() {
 
-    if (apples && options.animated){
-      apples.rotation.x += 0.003;
-      apples.rotation.y += 0.003;
-    }
+  	// eslint-disable-next-line compat/compat
+  	requestAnimationFrame( update );
 
-    renderer.render( scene, camera );  
-  }
+  	if ( apples && options.animated ) {
 
-  function resize(){
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize( window.innerWidth, window.innerHeight );
-  }
+  		apples.rotation.x += 0.003;
+  		apples.rotation.y += 0.003;
+  
+	}
+
+  	renderer.render( scene, camera );
+
+}
+
+  function resize() {
+
+  	camera.aspect = window.innerWidth / window.innerHeight;
+  	camera.updateProjectionMatrix();
+  	renderer.setSize( window.innerWidth, window.innerHeight );
+
+}
 </script>
 </body>
 </html>
