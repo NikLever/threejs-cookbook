@@ -90,6 +90,8 @@ function init() {
 	scene.add( lights.areaParent );
 	lights.areaParent.add( lights.area );
 
+	//Add helpers here
+
 	params = {
 		ambient: {
 			enable: true,
