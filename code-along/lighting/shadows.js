@@ -36,7 +36,7 @@ function init() {
 	light.shadow.radius = 7;
 	light.shadow.blurSamples = 8;
 
-	scene.add( light );
+	//scene.add( light );
 
 	//1. Add helper here
 
@@ -69,6 +69,8 @@ function init() {
 	head.position.y = 2.0;
 	head.castShadow = true;
 	player.add( head );
+
+	player.add( light );
 
 	cameras = [];
 	cameraIndex = 0;
