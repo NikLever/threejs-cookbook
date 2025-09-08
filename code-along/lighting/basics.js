@@ -64,7 +64,7 @@ function init() {
 	//Add lights here
 	lights = {};
 
-	lights.directional = new THREE.DirectionalLight();
+	lights.directional = new THREE.DirectionalLight( 0xFFFFFF, 3 );
 	lights.directional.visible = false;
 	lights.directional.position.set( 1, 5, 1 );
 	lights.directional.target = ball;
