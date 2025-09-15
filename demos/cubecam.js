@@ -30,54 +30,36 @@ function init() {
 
   	window.addEventListener( 'resize', resize, false );
 
-  	const options = {
-  		geometry: 'Box'
-  	};
-  	const gui = new GUI();
-  	gui.add( options, 'geometry', [ 'Box', 'Sphere', 'Cone' ] ).onChange( value => {
-
-  		createMesh( value );
-
-	} );
-
-  	createMesh( options.geometry );
+	createCube();
 
   	update();
 
 }
 
-function createMesh( type ) {
+function createCube( ) {
 
-  	let material, geometry;
+  	object = new THREE.Group();
 
-  	if ( object ) {
+	const configs = [
+		{ x: - 0.5, y: 0, z: 0, h: Math.PI / 2, p: 0, b: 0, map: 'nx' },
+		{ x: 0.5, y: 0, z: 0, h: - Math.PI / 2, p: 0, b: 0, map: 'px' },
+		{ x: 0, y: 0, z: - 0.5, h: Math.PI, p: 0, b: 0, map: 'nz' },
+		{ x: 0, y: 0, z: 0.5, h: 0, p: 0, b: 0, map: 'pz' },
+		{ x: 0, y: - 0.5, z: 0, h: 0, p: - Math.PI / 2, b: 0, map: 'ny' },
+		{ x: - 0.5, y: 0, z: 0, h: 0, p: Math.PI / 2, b: 0, map: 'py' }
+	];
 
-  		scene.remove( object );
-  		material = object.material;
-  		object.geometry.dispose();
+	configs.forEach( config => {
 
-	} else {
+	    const quad = new THREE.PlaneGeometry();
+	    const material = new THREE.MeshBasicMaterial( { color: 0xFFFFFF } );
+		material.map = new THREE.TextureLoader().load( `../assets/skybox3/${config.map}.jpg` );
+		const mesh = new THREE.Mesh( quad, material );
+		mesh.position.set( config.x, config.y, config.z );
+		mesh.rotation.set( config.p, config.h, config.b );
+		object.add( mesh );
 
-  		material = new THREE.MeshStandardMaterial( { color: 0xFFFFFF } );
-		material.map = new THREE.TextureLoader().load( '../assets/cubemap_skybox.png' );
-
-	}
-
-  	switch ( type ) {
-
-  		case 'Box':
-  			geometry = new THREE.BoxGeometry();
-  			break;
-  		case 'Sphere':
-  			geometry = new THREE.SphereGeometry( 0.7 );
-  			break;
-  		case 'Cone':
-  			geometry = new THREE.ConeGeometry( 0.7, 1.5 );
-  			break;
-
-	}
-
-  	object = new THREE.Mesh( geometry, material );
+	} );
 
   	scene.add( object );
 
