@@ -161,6 +161,7 @@
 
             cameras.forEach( camera => {
                 if (camera.isOrthographicCamera){
+                    scene.background = null;
                     scene.overrideMaterial = mat;
                 }else{
                     scene.background = envmap;
