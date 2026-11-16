@@ -28,7 +28,7 @@
   import * as THREE from "three";
   import { OrbitControls } from "three/addons/controls/OrbitControls.js";
   import * as Curves from "three/addons/curves/CurveExtras.js";
-  import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
+  import { HDRLoader } from "three/addons/loaders/HDRLoader.js";
   import { GUI } from "three/addons/libs/lil-gui.module.min.js";
   import { TrailRenderer } from '../../libs/TrailRenderer.js';
 
@@ -160,7 +160,7 @@
   }
 
   function setEnvironment(){
-    const loader = new RGBELoader();
+    const loader = new HDRLoader();
     const pmremGenerator = new THREE.PMREMGenerator( renderer );
     pmremGenerator.compileEquirectangularShader();
     

@@ -28,7 +28,7 @@
   import * as THREE from "three"
   import { OrbitControls } from "three/addons/controls/OrbitControls.js"
   import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-  import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
+  import { HDRLoader } from 'three/addons/loaders/HDRLoader.js';
   import { ARButton } from '../../libs/ARButton.js';
   import { LoadingBar } from '../../libs/LoadingBar.js';
   import Stats from "three/addons/libs/stats.module.js"
@@ -74,7 +74,7 @@
 	}
     
     setEnvironment(){
-        const loader = new RGBELoader();
+        const loader = new HDRLoader();
         const pmremGenerator = new THREE.PMREMGenerator( this.renderer );
         pmremGenerator.compileEquirectangularShader();
         

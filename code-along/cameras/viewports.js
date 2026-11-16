@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
+import { HDRLoader } from 'three/addons/loaders/HDRLoader.js';
 
 let cameras, camera, scene, renderer, mesh;
 
@@ -20,7 +20,7 @@ function init() {
 
 	scene = new THREE.Scene();
 
-	new RGBELoader()
+	new HDRLoader()
 		.setPath( '../../assets/hdr/' )
 		.load( 'venice_sunset_1k.hdr', texture => {
 

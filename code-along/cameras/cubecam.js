@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
+import { HDRLoader } from 'three/addons/loaders/HDRLoader.js';
 import Stats from 'three/addons/libs/stats.module.js';
 import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 
@@ -35,7 +35,7 @@ function init() {
 	scene = new THREE.Scene();
 	scene.rotation.y = 0.5; // avoid flying objects occluding the sun
 
-	new RGBELoader()
+	new HDRLoader()
 		.setPath( '../../assets/hdr/' )
 		.load( 'venice_sunset_1k.hdr', function ( texture ) {
 

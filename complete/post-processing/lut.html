@@ -43,7 +43,7 @@
   import { GUI } from "three/addons/libs/lil-gui.module.min.js"
   import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
   import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
-  import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
+  import { HDRLoader } from 'three/addons/loaders/HDRLoader.js';
   import { LoadingBar } from 'libs/LoadingBar.js';
 
   let scene, camera, renderer, loadingBar, controls, composer, room, params, gui, lutPass, lutMaps;
@@ -138,7 +138,7 @@
   }
 
   function setEnvironment(){
-    const loader = new RGBELoader();
+    const loader = new HDRLoader();
     const pmremGenerator = new THREE.PMREMGenerator( renderer );
     pmremGenerator.compileEquirectangularShader();
     

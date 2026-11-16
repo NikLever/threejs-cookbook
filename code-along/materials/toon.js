@@ -4,7 +4,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 // eslint-disable-next-line no-unused-vars
 import { OutlineEffect } from 'three/addons/effects/OutlineEffect.js';
-import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
+import { HDRLoader } from 'three/addons/loaders/HDRLoader.js';
 import { LoadingBar } from '../../libs/LoadingBar.js';
 
 // eslint-disable-next-line no-unused-vars
@@ -52,7 +52,7 @@ function init() {
 // eslint-disable-next-line no-unused-vars
 function setEnvironment() {
 
-	new RGBELoader()
+	new HDRLoader()
 		.setPath( '../../assets/hdr/' )
 		.load( 'museum.hdr', texture => {
 

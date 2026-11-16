@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
-import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
+import { HDRLoader } from 'three/addons/loaders/HDRLoader.js';
 // eslint-disable-next-line no-unused-vars
 import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 
@@ -40,7 +40,7 @@ function init() {
 
 function setEnvironment() {
 
-	const loader = new RGBELoader().setPath( '../../assets/' );
+	const loader = new HDRLoader().setPath( '../../assets/' );
 	loader.load( 'hdr/venice_sunset_1k.hdr', ( texture ) => {
 
 		texture.mapping = THREE.EquirectangularReflectionMapping;

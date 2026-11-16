@@ -3,7 +3,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 // eslint-disable-next-line no-unused-vars
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
-import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
+import { HDRLoader } from 'three/addons/loaders/HDRLoader.js';
 import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 
 // eslint-disable-next-line no-unused-vars
@@ -64,7 +64,7 @@ function onWindowResize() {
 
 function setEnvironment() {
 
-	new RGBELoader()
+	new HDRLoader()
 		.setPath( '../../assets/hdr/' )
 		.load( 'museum.hdr', texture => {
 

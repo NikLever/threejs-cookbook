@@ -2,7 +2,7 @@ import * as THREE from "three"
 import { OrbitControls } from "three/addons/controls/OrbitControls.js"
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js"
 import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js"
-import { RGBELoader } from "three/addons/loaders/RGBELoader.js"
+import { HDRLoader } from "three/addons/loaders/HDRLoader.js"
 import { GUI } from "three/addons/libs/lil-gui.module.min.js"
 
 let scene, camera, renderer, clock, params, light;
