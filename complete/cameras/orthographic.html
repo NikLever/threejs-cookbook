@@ -26,9 +26,10 @@
   }
 </script>
     <script type="module">
-        import * as THREE from "three"
-        import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
         import { HDRLoader } from 'three/addons/loaders/HDRLoader.js';
+        import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 
         let cameras, scene, renderer, envmap, mesh, col, mat;
 
@@ -36,147 +37,196 @@
 
         function init() {
 
-            const container = document.createElement('div');
-            document.body.appendChild(container);
+        	const container = document.createElement( 'div' );
+        	document.body.appendChild( container );
 
-            const target = new THREE.Vector3(0, 0, 0);
-            const dist = 8;
+        	const target = new THREE.Vector3( 0, 0, 0 );
+        	const dist = 8;
 
-            const camera1 = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.25, 20);
-            camera1.position.set(0, 0, dist);
+        	const camera1 = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 0.25, 20 );
+        	camera1.position.set( 0, 0, dist );
 
-            const camera2 = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.25, 20);
-            camera2.position.set(0, dist, 0);
-            camera2.lookAt(target);
+        	const camera2 = new THREE.OrthographicCamera( - 1, 1, 1, - 1, 0.25, 20 );
+        	camera2.position.set( 0, dist, 0 );
+        	camera2.lookAt( target );
 
-            const camera3 = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.25, 20);
-            camera3.position.set(dist, 0, 0);
-            camera3.lookAt(target);
+        	const camera3 = new THREE.OrthographicCamera( - 1, 1, 1, - 1, 0.25, 20 );
+        	camera3.position.set( dist, 0, 0 );
+        	camera3.lookAt( target );
 
-            const camera4 = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.25, 20);
-            camera4.position.set(0, 0, -dist);
-            camera4.lookAt(target);
+        	const camera4 = new THREE.OrthographicCamera( - 1, 1, 1, - 1, 0.25, 20 );
+        	camera4.position.set( 0, 0, - dist );
+        	camera4.lookAt( target );
 
-            cameras = [camera1, camera2, camera3, camera4];
-            cameras.forEach(camera => { 
-                camera.viewport = new THREE.Vector4();
-                camera.updateMatrixWorld();
-            });
+        	cameras = [ camera1, camera2, camera3, camera4 ];
+        	cameras.forEach( camera => {
 
-            scene = new THREE.Scene();
+        		camera.viewport = new THREE.Vector4();
+        		camera.updateMatrixWorld();
+        
+	} );
 
-            new HDRLoader()
-                .setPath('../../assets/hdr/')
-                .load('venice_sunset_1k.hdr', texture => {
+        	scene = new THREE.Scene();
 
-                    texture.mapping = THREE.EquirectangularReflectionMapping;
+        	new HDRLoader()
+        		.setPath( '../../assets/hdr/' )
+        		.load( 'venice_sunset_1k.hdr', texture => {
 
-                    scene.background = texture;
-                    scene.environment = texture;
+        			texture.mapping = THREE.EquirectangularReflectionMapping;
 
-                    envmap = texture;
+        			scene.background = texture;
+        			scene.environment = texture;
 
-                    // model
-                    const material = new THREE.MeshStandardMaterial({ color: 0x049ef4 });
-                    const geometry = new THREE.TorusKnotGeometry();
-                    mesh = new THREE.Mesh(geometry, material);
+        			envmap = texture;
 
-                    scene.add(mesh);
+        			// model
+        			const material = new THREE.MeshStandardMaterial( { color: 0x049ef4 } );
+        			const geometry = new THREE.TorusKnotGeometry();
+        			mesh = new THREE.Mesh( geometry, material );
 
-                    render();
-                });
+        			scene.add( mesh );
 
-            renderer = new THREE.WebGLRenderer({ antialias: true });
-            renderer.setPixelRatio(window.devicePixelRatio);
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.toneMapping = THREE.ACESFilmicToneMapping;
-            renderer.toneMappingExposure = 1;
-            renderer.outputColorSpace = THREE.SRGBColorSpace;
-            container.appendChild(renderer.domElement);
+        			render();
+        
+		} );
 
-            const controls = new OrbitControls(camera1, renderer.domElement);
-            
-            controls.minDistance = 2;
-            controls.maxDistance = 10;
-            controls.target.set(0, 0, 0);
-            controls.update();
+        	renderer = new THREE.WebGLRenderer( { antialias: true } );
+        	renderer.setPixelRatio( window.devicePixelRatio );
+        	renderer.setSize( window.innerWidth, window.innerHeight );
+        	renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        	renderer.toneMappingExposure = 1;
+        	renderer.outputColorSpace = THREE.SRGBColorSpace;
+        	container.appendChild( renderer.domElement );
 
-            col = new THREE.Color( 0xAAAAAA );
-            mat = new THREE.MeshBasicMaterial( { color: 0x000000, wireframe: true });
+        	const controls = new OrbitControls( camera1, renderer.domElement );
+        
+        	controls.minDistance = 2;
+        	controls.maxDistance = 10;
+        	controls.target.set( 0, 0, 0 );
+        	controls.update();
 
-            window.addEventListener('resize', onWindowResize);
+        	col = new THREE.Color( 0xAAAAAA );
+        	mat = new THREE.MeshBasicMaterial( { color: 0x000000, wireframe: true } );
 
-            onWindowResize();
+        	window.addEventListener( 'resize', onWindowResize );
+
+        	onWindowResize();
+
+        	const options = {
+        		dist
+        	};
+
+        	const gui = new GUI();
+        	gui.add( options, 'dist', 1, 25 ).onChange( value => {
+
+        		cameras.forEach( ( camera, index ) => {
+
+        			switch ( index ) {
+
+        				case 0:
+        					camera.position.z = value;
+        					camera.lookAt( target );
+        					break;
+        				case 1:
+        					camera.position.x = value;
+        					camera.lookAt( target );
+        					break;
+        				case 2:
+        					camera.position.y = value;
+        					camera.lookAt( target );
+        					break;
+        				case 3:
+        					camera.position.z = value;
+        					camera.lookAt( target );
+        					break;
+        
+			}
+        
+		} );
+        
+	} );
+
         }
 
         function onWindowResize() {
 
-            const AMOUNT = 2;
-            const ASPECT_RATIO = window.innerWidth / window.innerHeight;
-            const WIDTH = (window.innerWidth / AMOUNT);
-            const HEIGHT = (window.innerHeight / AMOUNT);
-            const TOP = 3;
-            const RIGHT = TOP * ASPECT_RATIO;
-           
-            for (let y = 0; y < AMOUNT; y++) {
+        	const AMOUNT = 2;
+        	const ASPECT_RATIO = window.innerWidth / window.innerHeight;
+        	const WIDTH = ( window.innerWidth / AMOUNT );
+        	const HEIGHT = ( window.innerHeight / AMOUNT );
+        	const TOP = 3;
+        	const RIGHT = TOP * ASPECT_RATIO;
+        
+        	for ( let y = 0; y < AMOUNT; y ++ ) {
 
-                for (let x = 0; x < AMOUNT; x++) {
+        		for ( let x = 0; x < AMOUNT; x ++ ) {
 
-                    const index = AMOUNT * y + x;
-                    const camera = cameras[index];
+        			const index = AMOUNT * y + x;
+        			const camera = cameras[ index ];
 
-                    camera.viewport.set(
-                        Math.floor(x * WIDTH),
-                        Math.floor(y * HEIGHT),
-                        Math.ceil(WIDTH),
-                        Math.ceil(HEIGHT));
+        			camera.viewport.set(
+        				Math.floor( x * WIDTH ),
+        				Math.floor( y * HEIGHT ),
+        				Math.ceil( WIDTH ),
+        				Math.ceil( HEIGHT ) );
 
-                    if (index==0){
-                      camera.aspect = ASPECT_RATIO;
-                    }else{
-                      camera.left = -RIGHT;
-                      camera.right = RIGHT;
-                      camera.top = TOP;
-                      camera.bottom = -TOP;
-                    }
+        			if ( index == 0 ) {
 
-                    camera.updateProjectionMatrix();
+        				camera.aspect = ASPECT_RATIO;
+        
+			} else {
 
-                }
+        				camera.left = - RIGHT;
+        				camera.right = RIGHT;
+        				camera.top = TOP;
+        				camera.bottom = - TOP;
+        
+			}
 
-            }
+        			camera.updateProjectionMatrix();
 
-            renderer.setSize(window.innerWidth, window.innerHeight);
+        		}
+
+        	}
+
+        	renderer.setSize( window.innerWidth, window.innerHeight );
 
         }
 
         //
 
         function render() {
-            mesh.rotation.x += 0.005;
-            mesh.rotation.y += 0.005;
 
-            renderer.setClearColor(col, 1);
-            renderer.clearColor();
+        	mesh.rotation.x += 0.005;
+        	mesh.rotation.y += 0.005;
 
-            cameras.forEach( camera => {
-                if (camera.isOrthographicCamera){
-                    scene.background = null;
-                    scene.overrideMaterial = mat;
-                }else{
-                    scene.background = envmap;
-                    scene.overrideMaterial = null;
-                }
+        	renderer.setClearColor( col, 1 );
+        	renderer.clearColor();
 
-                renderer.setViewport( camera.viewport );
-                renderer.setScissor( camera.viewport );
-				renderer.setScissorTest( true );
+        	cameras.forEach( camera => {
 
-                renderer.render( scene, camera );
-            });
+        		if ( camera.isOrthographicCamera ) {
 
-            requestAnimationFrame(render);
-        } 
+        			scene.background = null;
+        			scene.overrideMaterial = mat;
+        
+		} else {
+
+        			scene.background = envmap;
+        			scene.overrideMaterial = null;
+        
+		}
+
+        		renderer.setViewport( camera.viewport );
+        		renderer.setScissor( camera.viewport );
+		renderer.setScissorTest( true );
+
+        		renderer.render( scene, camera );
+        
+	} );
+
+        	requestAnimationFrame( render );
+        }
     </script>
 
 </body>
