@@ -23,8 +23,8 @@
     }
   }
 </script>
-<script  type="module"> 
-  import * as THREE from "three"
+<script  type="module">
+  import * as THREE from 'three';
   
   const vshader = `
 varying vec2 vUv;
@@ -32,7 +32,7 @@ void main() {
   vUv = uv;
   gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
 }
-`
+`;
 const fshader = `
 #define PI 3.141592653589
 #define PI2 6.28318530718
@@ -42,7 +42,7 @@ uniform float u_time;
 
 varying vec2 vUv;
 
-//Based on http://clockworkchilli.com/blog/8_a_fire_shader_in_glsl_for_your_webgl_games
+//Based on http://timerworkchilli.com/blog/8_a_fire_shader_in_glsl_for_your_webgl_games
 
 void main (void)
 {
@@ -78,7 +78,7 @@ void main (void)
 
   gl_FragColor = color;
 }
-`
+`;
 
 
 
@@ -86,33 +86,35 @@ void main (void)
 
 
 const scene = new THREE.Scene();
-const camera = new THREE.OrthographicCamera( -1, 1, 1, -1, 0.1, 10 );
+const camera = new THREE.OrthographicCamera( - 1, 1, 1, - 1, 0.1, 10 );
 
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize( window.innerWidth, window.innerHeight );
 document.body.appendChild( renderer.domElement );
 
-const clock = new THREE.Clock();
+const timer = new THREE.Timer();
 
 const geometry = new THREE.PlaneGeometry( 2, 2 );
 const uniforms = {
   u_tex: { value: null },
   u_time: { value: 0.0 },
-}
+};
 
 const loader = new THREE.TextureLoader()
-                  .setPath('../../assets/')
-                  .load("flame.png", (tex) => {
-                    tex.wrapS = THREE.RepeatWrapping;
-                    tex.wrapT = THREE.RepeatWrapping;
-                    tex.generateMipmaps = false;
-                    uniforms.u_tex.value = tex;
-                  })
+  	.setPath( '../../assets/' )
+  	.load( 'flame.png', ( tex ) => {
+
+  		tex.wrapS = THREE.RepeatWrapping;
+  		tex.wrapT = THREE.RepeatWrapping;
+  		tex.generateMipmaps = false;
+  		uniforms.u_tex.value = tex;
+  
+	} );
 
 const material = new THREE.ShaderMaterial( {
   uniforms: uniforms,
   vertexShader: vshader,
-  fragmentShader: fshader, 
+  fragmentShader: fshader,
   transparent: true
 } );
 
@@ -126,28 +128,36 @@ onWindowResize();
 animate();
 
 function onWindowResize( event ) {
-  const aspectRatio = window.innerWidth/window.innerHeight;
+
+  const aspectRatio = window.innerWidth / window.innerHeight;
   let width, height;
-  if (aspectRatio>=1){
-    width = 1;
-    height = (window.innerHeight/window.innerWidth) * width;
-    
-  }else{
-    width = aspectRatio;
-    height = 1;
+  if ( aspectRatio >= 1 ) {
+
+  		width = 1;
+  		height = ( window.innerHeight / window.innerWidth ) * width;
+  
+  } else {
+
+  		width = aspectRatio;
+  		height = 1;
   }
-  camera.left = -width;
+
+  camera.left = - width;
   camera.right = width;
   camera.top = height;
-  camera.bottom = -height;
+  camera.bottom = - height;
   camera.updateProjectionMatrix();
   renderer.setSize( window.innerWidth, window.innerHeight );
+
 }
 
 function animate() {
+
   requestAnimationFrame( animate );
-  uniforms.u_time.value += clock.getDelta();
+  timer.update();
+  uniforms.u_time.value += timer.getDelta();
   renderer.render( scene, camera );
+
 }
 </script>
 

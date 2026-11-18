@@ -2,13 +2,13 @@
 /* eslint-disable no-unused-vars */
 import * as THREE from 'three';
 
-let scene, camera, renderer, clock, player, lightOffset, light, dolly, target;
+let scene, camera, renderer, timer, player, lightOffset, light, dolly, target;
 
 init();
 
 function init() {
 
-	clock = new THREE.Clock();
+	timer = new THREE.Timer();
 
 	scene = new THREE.Scene();
 	const col = 0x605050;
@@ -127,7 +127,8 @@ function update() {
 
 	renderer.render( scene, camera );
 
-	const dt = clock.getDelta();
+	timer.update();
+	const dt = timer.getDelta();
 
 	if ( player.userData.move !== undefined ) {
 		//TO DO 4

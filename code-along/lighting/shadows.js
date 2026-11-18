@@ -2,7 +2,7 @@ import * as THREE from 'three';
 //import { OrbitControls } from "three/addons/controls/OrbitControls.js"
 //import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 
-let scene, camera, renderer, clock, light, lightOffset, helper, player, cameras, cameraIndex;
+let scene, camera, renderer, timer, light, lightOffset, helper, player, cameras, cameraIndex;
 
 init();
 
@@ -10,7 +10,7 @@ function init() {
 
 	//const assetPath = '../../assets/';
 
-	clock = new THREE.Clock();
+	timer = new THREE.Timer();
 
 	scene = new THREE.Scene();
 	const col = 0x807070;
@@ -183,7 +183,8 @@ function playerControl( forward, turn ) {
 
 function update() {
 
-	const dt = clock.getDelta();
+	timer.update();
+	const dt = timer.getDelta();
 	// eslint-disable-next-line compat/compat
 	requestAnimationFrame( update );
 	if ( player.userData !== undefined && player.userData.move !== undefined ) {

@@ -3,13 +3,13 @@ import * as THREE from 'three';
 // eslint-disable-next-line no-unused-vars
 import * as Curves from 'three/addons/curves/CurveExtras.js';
 
-let scene, camera, renderer, clock, binormal, normal, tube;
+let scene, camera, renderer, timer, binormal, normal, tube;
 
 init();
 
 function init() {
 
-	clock = new THREE.Clock();
+	timer = new THREE.Timer();
 
 	scene = new THREE.Scene();
 	const envMap = new THREE.CubeTextureLoader()

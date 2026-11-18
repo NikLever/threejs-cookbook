@@ -96,7 +96,7 @@ let camera,
 	scene,
 	renderer,
 	assetPath,
-	clock,
+	timer,
 	boid,
 	flock,
 	mixer,
@@ -151,7 +151,7 @@ function init() {
 
 	loadSkybox();
 
-	clock = new THREE.Clock();
+	timer = new THREE.Timer();
 
 	loadGLB( 'sparrow' );
 
@@ -483,7 +483,13 @@ function onWindowResize() {
 
 function render() {
 
-	if ( deltaTime && clock ) deltaTime.value = clock.getDelta();
+	if ( deltaTime && timer ) {
+
+		timer.update();
+		deltaTime.value = timer.getDelta();
+
+	}
+
 	if ( computeTime ) renderer.compute( computeTime );
 	if ( computeVelocity ) renderer.compute( computeVelocity );
 	if ( computePosition ) renderer.compute( computePosition );

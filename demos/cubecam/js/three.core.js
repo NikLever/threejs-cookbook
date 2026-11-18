@@ -5971,7 +5971,7 @@ class Matrix3 {
 	 * @param {number} ty - Offset y.
 	 * @param {number} sx - Repeat x.
 	 * @param {number} sy - Repeat y.
-	 * @param {number} rotation - Rotation, in radians. Positive values rotate counterclockwise.
+	 * @param {number} rotation - Rotation, in radians. Positive values rotate countertimerwise.
 	 * @param {number} cx - Center x of rotation.
 	 * @param {number} cy - Center y of rotation
 	 * @return {Matrix3} A reference to this matrix.
@@ -6080,7 +6080,7 @@ class Matrix3 {
 	 */
 	makeRotation( theta ) {
 
-		// counterclockwise
+		// countertimerwise
 
 		const c = Math.cos( theta );
 		const s = Math.sin( theta );
@@ -7061,7 +7061,7 @@ class Texture extends EventDispatcher {
 
 		/**
 		 * How much the texture is rotated around the center point, in radians.
-		 * Positive values are counter-clockwise.
+		 * Positive values are counter-timerwise.
 		 *
 		 * @type {number}
 		 * @default 0
@@ -26078,7 +26078,7 @@ class Plane {
 
 	/**
 	 * Sets the plane from three coplanar points. The winding order is
-	 * assumed to be counter-clockwise, and determines the direction of
+	 * assumed to be counter-timerwise, and determines the direction of
 	 * the plane normal.
 	 *
 	 * @param {Vector3} a - The first coplanar point.
@@ -30295,7 +30295,7 @@ class CapsuleGeometry extends BufferGeometry {
 /**
  * A simple shape of Euclidean geometry. It is constructed from a
  * number of triangular segments that are oriented around a central point and
- * extend as far out as a given radius. It is built counter-clockwise from a
+ * extend as far out as a given radius. It is built counter-timerwise from a
  * start angle and a given central angle. It can also be used to create
  * regular polygons, where the number of segments determines the number of
  * sides.
@@ -31115,7 +31115,7 @@ class PolyhedronGeometry extends BufferGeometry {
 
 		}
 
-		// Angle around the Y axis, counter-clockwise when looking from above.
+		// Angle around the Y axis, counter-timerwise when looking from above.
 
 		function azimuth( vector ) {
 
@@ -31969,10 +31969,10 @@ class EllipseCurve extends Curve {
 	 * @param {number} [yRadius=1] - The radius of the ellipse in the y direction.
 	 * @param {number} [aStartAngle=0] - The start angle of the curve in radians starting from the positive X axis.
 	 * @param {number} [aEndAngle=Math.PI*2] - The end angle of the curve in radians starting from the positive X axis.
-	 * @param {boolean} [aClockwise=false] - Whether the ellipse is drawn clockwise or not.
-	 * @param {number} [aRotation=0] - The rotation angle of the ellipse in radians, counterclockwise from the positive X axis.
+	 * @param {boolean} [aTimerwise=false] - Whether the ellipse is drawn timerwise or not.
+	 * @param {number} [aRotation=0] - The rotation angle of the ellipse in radians, countertimerwise from the positive X axis.
 	 */
-	constructor( aX = 0, aY = 0, xRadius = 1, yRadius = 1, aStartAngle = 0, aEndAngle = Math.PI * 2, aClockwise = false, aRotation = 0 ) {
+	constructor( aX = 0, aY = 0, xRadius = 1, yRadius = 1, aStartAngle = 0, aEndAngle = Math.PI * 2, aTimerwise = false, aRotation = 0 ) {
 
 		super();
 
@@ -32038,15 +32038,15 @@ class EllipseCurve extends Curve {
 		this.aEndAngle = aEndAngle;
 
 		/**
-		 * Whether the ellipse is drawn clockwise or not.
+		 * Whether the ellipse is drawn timerwise or not.
 		 *
 		 * @type {boolean}
 		 * @default false
 		 */
-		this.aClockwise = aClockwise;
+		this.aTimerwise = aTimerwise;
 
 		/**
-		 * The rotation angle of the ellipse in radians, counterclockwise from the positive X axis.
+		 * The rotation angle of the ellipse in radians, countertimerwise from the positive X axis.
 		 *
 		 * @type {number}
 		 * @default 0
@@ -32088,7 +32088,7 @@ class EllipseCurve extends Curve {
 
 		}
 
-		if ( this.aClockwise === true && ! samePoints ) {
+		if ( this.aTimerwise === true && ! samePoints ) {
 
 			if ( deltaAngle === twoPi ) {
 
@@ -32137,7 +32137,7 @@ class EllipseCurve extends Curve {
 		this.aStartAngle = source.aStartAngle;
 		this.aEndAngle = source.aEndAngle;
 
-		this.aClockwise = source.aClockwise;
+		this.aTimerwise = source.aTimerwise;
 
 		this.aRotation = source.aRotation;
 
@@ -32158,7 +32158,7 @@ class EllipseCurve extends Curve {
 		data.aStartAngle = this.aStartAngle;
 		data.aEndAngle = this.aEndAngle;
 
-		data.aClockwise = this.aClockwise;
+		data.aTimerwise = this.aTimerwise;
 
 		data.aRotation = this.aRotation;
 
@@ -32179,7 +32179,7 @@ class EllipseCurve extends Curve {
 		this.aStartAngle = json.aStartAngle;
 		this.aEndAngle = json.aEndAngle;
 
-		this.aClockwise = json.aClockwise;
+		this.aTimerwise = json.aTimerwise;
 
 		this.aRotation = json.aRotation;
 
@@ -32204,11 +32204,11 @@ class ArcCurve extends EllipseCurve {
 	 * @param {number} [aRadius=1] - The radius of the ellipse in the x direction.
 	 * @param {number} [aStartAngle=0] - The start angle of the curve in radians starting from the positive X axis.
 	 * @param {number} [aEndAngle=Math.PI*2] - The end angle of the curve in radians starting from the positive X axis.
-	 * @param {boolean} [aClockwise=false] - Whether the ellipse is drawn clockwise or not.
+	 * @param {boolean} [aTimerwise=false] - Whether the ellipse is drawn timerwise or not.
 	 */
-	constructor( aX, aY, aRadius, aStartAngle, aEndAngle, aClockwise ) {
+	constructor( aX, aY, aRadius, aStartAngle, aEndAngle, aTimerwise ) {
 
-		super( aX, aY, aRadius, aRadius, aStartAngle, aEndAngle, aClockwise );
+		super( aX, aY, aRadius, aRadius, aStartAngle, aEndAngle, aTimerwise );
 
 		/**
 		 * This flag can be used for type testing.
@@ -34038,16 +34038,16 @@ class Path extends CurvePath {
 	 * @param {number} [aRadius=1] - The radius of the arc.
 	 * @param {number} [aStartAngle=0] - The start angle in radians.
 	 * @param {number} [aEndAngle=Math.PI*2] - The end angle in radians.
-	 * @param {boolean} [aClockwise=false] - Whether to sweep the arc clockwise or not.
+	 * @param {boolean} [aTimerwise=false] - Whether to sweep the arc timerwise or not.
 	 * @return {Path} A reference to this path.
 	 */
-	arc( aX, aY, aRadius, aStartAngle, aEndAngle, aClockwise ) {
+	arc( aX, aY, aRadius, aStartAngle, aEndAngle, aTimerwise ) {
 
 		const x0 = this.currentPoint.x;
 		const y0 = this.currentPoint.y;
 
 		this.absarc( aX + x0, aY + y0, aRadius,
-			aStartAngle, aEndAngle, aClockwise );
+			aStartAngle, aEndAngle, aTimerwise );
 
 		return this;
 
@@ -34061,12 +34061,12 @@ class Path extends CurvePath {
 	 * @param {number} [aRadius=1] - The radius of the arc.
 	 * @param {number} [aStartAngle=0] - The start angle in radians.
 	 * @param {number} [aEndAngle=Math.PI*2] - The end angle in radians.
-	 * @param {boolean} [aClockwise=false] - Whether to sweep the arc clockwise or not.
+	 * @param {boolean} [aTimerwise=false] - Whether to sweep the arc timerwise or not.
 	 * @return {Path} A reference to this path.
 	 */
-	absarc( aX, aY, aRadius, aStartAngle, aEndAngle, aClockwise ) {
+	absarc( aX, aY, aRadius, aStartAngle, aEndAngle, aTimerwise ) {
 
-		this.absellipse( aX, aY, aRadius, aRadius, aStartAngle, aEndAngle, aClockwise );
+		this.absellipse( aX, aY, aRadius, aRadius, aStartAngle, aEndAngle, aTimerwise );
 
 		return this;
 
@@ -34082,16 +34082,16 @@ class Path extends CurvePath {
 	 * @param {number} [yRadius=1] - The radius of the ellipse in the y axis.
 	 * @param {number} [aStartAngle=0] - The start angle in radians.
 	 * @param {number} [aEndAngle=Math.PI*2] - The end angle in radians.
-	 * @param {boolean} [aClockwise=false] - Whether to sweep the ellipse clockwise or not.
-	 * @param {number} [aRotation=0] - The rotation angle of the ellipse in radians, counterclockwise from the positive X axis.
+	 * @param {boolean} [aTimerwise=false] - Whether to sweep the ellipse timerwise or not.
+	 * @param {number} [aRotation=0] - The rotation angle of the ellipse in radians, countertimerwise from the positive X axis.
 	 * @return {Path} A reference to this path.
 	 */
-	ellipse( aX, aY, xRadius, yRadius, aStartAngle, aEndAngle, aClockwise, aRotation ) {
+	ellipse( aX, aY, xRadius, yRadius, aStartAngle, aEndAngle, aTimerwise, aRotation ) {
 
 		const x0 = this.currentPoint.x;
 		const y0 = this.currentPoint.y;
 
-		this.absellipse( aX + x0, aY + y0, xRadius, yRadius, aStartAngle, aEndAngle, aClockwise, aRotation );
+		this.absellipse( aX + x0, aY + y0, xRadius, yRadius, aStartAngle, aEndAngle, aTimerwise, aRotation );
 
 		return this;
 
@@ -34106,13 +34106,13 @@ class Path extends CurvePath {
 	 * @param {number} [yRadius=1] - The radius of the ellipse in the y axis.
 	 * @param {number} [aStartAngle=0] - The start angle in radians.
 	 * @param {number} [aEndAngle=Math.PI*2] - The end angle in radians.
-	 * @param {boolean} [aClockwise=false] - Whether to sweep the ellipse clockwise or not.
-	 * @param {number} [aRotation=0] - The rotation angle of the ellipse in radians, counterclockwise from the positive X axis.
+	 * @param {boolean} [aTimerwise=false] - Whether to sweep the ellipse timerwise or not.
+	 * @param {number} [aRotation=0] - The rotation angle of the ellipse in radians, countertimerwise from the positive X axis.
 	 * @return {Path} A reference to this path.
 	 */
-	absellipse( aX, aY, xRadius, yRadius, aStartAngle, aEndAngle, aClockwise, aRotation ) {
+	absellipse( aX, aY, xRadius, yRadius, aStartAngle, aEndAngle, aTimerwise, aRotation ) {
 
-		const curve = new EllipseCurve( aX, aY, xRadius, yRadius, aStartAngle, aEndAngle, aClockwise, aRotation );
+		const curve = new EllipseCurve( aX, aY, xRadius, yRadius, aStartAngle, aEndAngle, aTimerwise, aRotation );
 
 		if ( this.curves.length > 0 ) {
 
@@ -34372,10 +34372,10 @@ function earcut(data, holeIndices, dim = 2) {
 }
 
 // create a circular doubly linked list from polygon points in the specified winding order
-function linkedList(data, start, end, dim, clockwise) {
+function linkedList(data, start, end, dim, timerwise) {
     let last;
 
-    if (clockwise === (signedArea(data, start, end, dim) > 0)) {
+    if (timerwise === (signedArea(data, start, end, dim) > 0)) {
         for (let i = start; i < end; i += dim) last = insertNode(i / dim | 0, data[i], data[i + 1], last);
     } else {
         for (let i = end - dim; i >= start; i -= dim) last = insertNode(i / dim | 0, data[i], data[i + 1], last);
@@ -34613,7 +34613,7 @@ function eliminateHoles(data, holeIndices, outerNode, dim) {
 
 function compareXYSlope(a, b) {
     let result = a.x - b.x;
-    // when the left-most point of 2 holes meet at a vertex, sort the holes counterclockwise so that when we find
+    // when the left-most point of 2 holes meet at a vertex, sort the holes countertimerwise so that when we find
     // the bridge to the outer shell is always the point that they meet at.
     if (result === 0) {
         result = a.y - b.y;
@@ -35012,12 +35012,12 @@ class ShapeUtils {
 	}
 
 	/**
-	 * Returns `true` if the given contour uses a clockwise winding order.
+	 * Returns `true` if the given contour uses a timerwise winding order.
 	 *
 	 * @param {Array<Vector2>} pts - An array of 2D points defining a polygon.
-	 * @return {boolean} Whether the given contour uses a clockwise winding order or not.
+	 * @return {boolean} Whether the given contour uses a timerwise winding order or not.
 	 */
-	static isClockWise( pts ) {
+	static isTimerWise( pts ) {
 
 		return ShapeUtils.area( pts ) < 0;
 
@@ -35228,7 +35228,7 @@ class ExtrudeGeometry extends BufferGeometry {
 			let vertices = shapePoints.shape;
 			const holes = shapePoints.holes;
 
-			const reverse = ! ShapeUtils.isClockWise( vertices );
+			const reverse = ! ShapeUtils.isTimerWise( vertices );
 
 			if ( reverse ) {
 
@@ -35240,7 +35240,7 @@ class ExtrudeGeometry extends BufferGeometry {
 
 					const ahole = holes[ h ];
 
-					if ( ShapeUtils.isClockWise( ahole ) ) {
+					if ( ShapeUtils.isTimerWise( ahole ) ) {
 
 						holes[ h ] = ahole.reverse();
 
@@ -35323,7 +35323,7 @@ class ExtrudeGeometry extends BufferGeometry {
 
 				// computes for inPt the corresponding point inPt' on a new contour
 				//   shifted by 1 unit (length of normalized vector) to the left
-				// if we walk along contour clockwise, this new contour is outside the old one
+				// if we walk along contour timerwise, this new contour is outside the old one
 				//
 				// inPt' is the intersection of the two lines parallel to the two
 				//  adjacent edges of inPt at a distance of 1 unit on the left side.
@@ -36714,7 +36714,7 @@ class ShapeGeometry extends BufferGeometry {
 
 			// check direction of vertices
 
-			if ( ShapeUtils.isClockWise( shapeVertices ) === false ) {
+			if ( ShapeUtils.isTimerWise( shapeVertices ) === false ) {
 
 				shapeVertices = shapeVertices.reverse();
 
@@ -36724,7 +36724,7 @@ class ShapeGeometry extends BufferGeometry {
 
 				const shapeHole = shapeHoles[ i ];
 
-				if ( ShapeUtils.isClockWise( shapeHole ) === true ) {
+				if ( ShapeUtils.isTimerWise( shapeHole ) === true ) {
 
 					shapeHoles[ i ] = shapeHole.reverse();
 
@@ -38471,7 +38471,7 @@ class MeshPhysicalMaterial extends MeshStandardMaterial {
 
 		/**
 		 * The rotation of the anisotropy in tangent, bitangent space, measured in radians
-		 * counter-clockwise from the tangent. When `anisotropyMap` is present, this
+		 * counter-timerwise from the tangent. When `anisotropyMap` is present, this
 		 * property provides additional rotation to the vectors in the texture.
 		 *
 		 * @type {number}
@@ -49351,18 +49351,18 @@ class ArrayCamera extends PerspectiveCamera {
 /**
  * Class for keeping track of time.
  */
-class Clock {
+class Timer {
 
 	/**
-	 * Constructs a new clock.
+	 * Constructs a new timer.
 	 *
-	 * @param {boolean} [autoStart=true] - Whether to automatically start the clock when
+	 * @param {boolean} [autoStart=true] - Whether to automatically start the timer when
 	 * `getDelta()` is called for the first time.
 	 */
 	constructor( autoStart = true ) {
 
 		/**
-		 * If set to `true`, the clock starts automatically when `getDelta()` is called
+		 * If set to `true`, the timer starts automatically when `getDelta()` is called
 		 * for the first time.
 		 *
 		 * @type {boolean}
@@ -49371,7 +49371,7 @@ class Clock {
 		this.autoStart = autoStart;
 
 		/**
-		 * Holds the time at which the clock's `start()` method was last called.
+		 * Holds the time at which the timer's `start()` method was last called.
 		 *
 		 * @type {number}
 		 * @default 0
@@ -49379,7 +49379,7 @@ class Clock {
 		this.startTime = 0;
 
 		/**
-		 * Holds the time at which the clock's `start()`, `getElapsedTime()` or
+		 * Holds the time at which the timer's `start()`, `getElapsed()` or
 		 * `getDelta()` methods were last called.
 		 *
 		 * @type {number}
@@ -49388,7 +49388,7 @@ class Clock {
 		this.oldTime = 0;
 
 		/**
-		 * Keeps track of the total time that the clock has been running.
+		 * Keeps track of the total time that the timer has been running.
 		 *
 		 * @type {number}
 		 * @default 0
@@ -49396,7 +49396,7 @@ class Clock {
 		this.elapsedTime = 0;
 
 		/**
-		 * Whether the clock is running or not.
+		 * Whether the timer is running or not.
 		 *
 		 * @type {boolean}
 		 * @default true
@@ -49406,7 +49406,7 @@ class Clock {
 	}
 
 	/**
-	 * Starts the clock. When `autoStart` is set to `true`, the method is automatically
+	 * Starts the timer. When `autoStart` is set to `true`, the method is automatically
 	 * called by the class.
 	 */
 	start() {
@@ -49420,11 +49420,11 @@ class Clock {
 	}
 
 	/**
-	 * Stops the clock.
+	 * Stops the timer.
 	 */
 	stop() {
 
-		this.getElapsedTime();
+		this.getElapsed();
 		this.running = false;
 		this.autoStart = false;
 
@@ -49435,7 +49435,7 @@ class Clock {
 	 *
 	 * @return {number} The elapsed time.
 	 */
-	getElapsedTime() {
+	getElapsed() {
 
 		this.getDelta();
 		return this.elapsedTime;
@@ -49542,7 +49542,7 @@ class AudioListener extends Object3D {
 
 		// private
 
-		this._clock = new Clock();
+		this._timer = new Timer();
 
 	}
 
@@ -49649,7 +49649,7 @@ class AudioListener extends Object3D {
 
 		const listener = this.context.listener;
 
-		this.timeDelta = this._clock.getDelta();
+		this.timeDelta = this._timer.getDelta();
 
 		this.matrixWorld.decompose( _position$1, _quaternion$1, _scale$1 );
 
@@ -53964,7 +53964,7 @@ class AnimationMixer extends EventDispatcher {
 	 * Advances the global mixer time and updates the animation.
 	 *
 	 * This is usually done in the render loop by passing the delta
-	 * time from {@link Clock} or {@link Timer}.
+	 * time from {@link Timer} or {@link Timer}.
 	 *
 	 * @param {number} deltaTime - The delta time in seconds.
 	 * @return {AnimationMixer} A reference to thi animation mixer.
@@ -54916,8 +54916,8 @@ function intersect( object, raycaster, intersects, recursive ) {
 }
 
 /**
- * This class is an alternative to {@link Clock} with a different API design and behavior.
- * The goal is to avoid the conceptual flaws that became apparent in `Clock` over time.
+ * This class is an alternative to {@link Timer} with a different API design and behavior.
+ * The goal is to avoid the conceptual flaws that became apparent in `Timer` over time.
  *
  * - `Timer` has an `update()` method that updates its internal state. That makes it possible to
  * call `getDelta()` and `getElapsed()` multiple times per simulation step without getting different values.
@@ -55252,7 +55252,7 @@ class Cylindrical {
 	 * Constructs a new cylindrical.
 	 *
 	 * @param {number} [radius=1] - The distance from the origin to a point in the x-z plane.
-	 * @param {number} [theta=0] - A counterclockwise angle in the x-z plane measured in radians from the positive z-axis.
+	 * @param {number} [theta=0] - A countertimerwise angle in the x-z plane measured in radians from the positive z-axis.
 	 * @param {number} [y=0] - The height above the x-z plane.
 	 */
 	constructor( radius = 1, theta = 0, y = 0 ) {
@@ -55266,7 +55266,7 @@ class Cylindrical {
 		this.radius = radius;
 
 		/**
-		 * A counterclockwise angle in the x-z plane measured in radians from the positive z-axis.
+		 * A countertimerwise angle in the x-z plane measured in radians from the positive z-axis.
 		 *
 		 * @type {number}
 		 * @default 0
@@ -58109,7 +58109,7 @@ class ShapePath {
 	/**
 	 * Converts the paths into an array of shapes.
 	 *
-	 * @param {boolean} isCCW - By default solid shapes are  defined clockwise (CW) and holes are defined counterclockwise (CCW).
+	 * @param {boolean} isCCW - By default solid shapes are  defined timerwise (CW) and holes are defined countertimerwise (CCW).
 	 * If this flag is set to `true`, then those are flipped.
 	 * @return {Array<Shape>} An array of shapes.
 	 */
@@ -58194,7 +58194,7 @@ class ShapePath {
 
 		}
 
-		const isClockWise = ShapeUtils.isClockWise;
+		const isTimerWise = ShapeUtils.isTimerWise;
 
 		const subPaths = this.subPaths;
 		if ( subPaths.length === 0 ) return [];
@@ -58212,7 +58212,7 @@ class ShapePath {
 
 		}
 
-		let holesFirst = ! isClockWise( subPaths[ 0 ].getPoints() );
+		let holesFirst = ! isTimerWise( subPaths[ 0 ].getPoints() );
 		holesFirst = isCCW ? ! holesFirst : holesFirst;
 
 		// console.log("Holes first", holesFirst);
@@ -58230,7 +58230,7 @@ class ShapePath {
 
 			tmpPath = subPaths[ i ];
 			tmpPoints = tmpPath.getPoints();
-			solid = isClockWise( tmpPoints );
+			solid = isTimerWise( tmpPoints );
 			solid = isCCW ? ! solid : solid;
 
 			if ( solid ) {
@@ -58770,4 +58770,4 @@ if ( typeof window !== 'undefined' ) {
 
 }
 
-export { ACESFilmicToneMapping, AddEquation, AddOperation, AdditiveAnimationBlendMode, AdditiveBlending, AgXToneMapping, AlphaFormat, AlwaysCompare, AlwaysDepth, AlwaysStencilFunc, AmbientLight, AnimationAction, AnimationClip, AnimationLoader, AnimationMixer, AnimationObjectGroup, AnimationUtils, ArcCurve, ArrayCamera, ArrowHelper, AttachedBindMode, Audio, AudioAnalyser, AudioContext, AudioListener, AudioLoader, AxesHelper, BackSide, BasicDepthPacking, BasicShadowMap, BatchedMesh, Bone, BooleanKeyframeTrack, Box2, Box3, Box3Helper, BoxGeometry, BoxHelper, BufferAttribute, BufferGeometry, BufferGeometryLoader, ByteType, Cache, Camera, CameraHelper, CanvasTexture, CapsuleGeometry, CatmullRomCurve3, CineonToneMapping, CircleGeometry, ClampToEdgeWrapping, Clock, Color, ColorKeyframeTrack, ColorManagement, CompressedArrayTexture, CompressedCubeTexture, CompressedTexture, CompressedTextureLoader, ConeGeometry, ConstantAlphaFactor, ConstantColorFactor, Controls, CubeCamera, CubeReflectionMapping, CubeRefractionMapping, CubeTexture, CubeTextureLoader, CubeUVReflectionMapping, CubicBezierCurve, CubicBezierCurve3, CubicInterpolant, CullFaceBack, CullFaceFront, CullFaceFrontBack, CullFaceNone, Curve, CurvePath, CustomBlending, CustomToneMapping, CylinderGeometry, Cylindrical, Data3DTexture, DataArrayTexture, DataTexture, DataTextureLoader, DataUtils, DecrementStencilOp, DecrementWrapStencilOp, DefaultLoadingManager, DepthFormat, DepthStencilFormat, DepthTexture, DetachedBindMode, DirectionalLight, DirectionalLightHelper, DiscreteInterpolant, DodecahedronGeometry, DoubleSide, DstAlphaFactor, DstColorFactor, DynamicCopyUsage, DynamicDrawUsage, DynamicReadUsage, EdgesGeometry, EllipseCurve, EqualCompare, EqualDepth, EqualStencilFunc, EquirectangularReflectionMapping, EquirectangularRefractionMapping, Euler, EventDispatcher, ExternalTexture, ExtrudeGeometry, FileLoader, Float16BufferAttribute, Float32BufferAttribute, FloatType, Fog, FogExp2, FramebufferTexture, FrontSide, Frustum, FrustumArray, GLBufferAttribute, GLSL1, GLSL3, GreaterCompare, GreaterDepth, GreaterEqualCompare, GreaterEqualDepth, GreaterEqualStencilFunc, GreaterStencilFunc, GridHelper, Group, HalfFloatType, HemisphereLight, HemisphereLightHelper, IcosahedronGeometry, ImageBitmapLoader, ImageLoader, ImageUtils, IncrementStencilOp, IncrementWrapStencilOp, InstancedBufferAttribute, InstancedBufferGeometry, InstancedInterleavedBuffer, InstancedMesh, Int16BufferAttribute, Int32BufferAttribute, Int8BufferAttribute, IntType, InterleavedBuffer, InterleavedBufferAttribute, Interpolant, InterpolateDiscrete, InterpolateLinear, InterpolateSmooth, InterpolationSamplingMode, InterpolationSamplingType, InvertStencilOp, KeepStencilOp, KeyframeTrack, LOD, LatheGeometry, Layers, LessCompare, LessDepth, LessEqualCompare, LessEqualDepth, LessEqualStencilFunc, LessStencilFunc, Light, LightProbe, Line, Line3, LineBasicMaterial, LineCurve, LineCurve3, LineDashedMaterial, LineLoop, LineSegments, LinearFilter, LinearInterpolant, LinearMipMapLinearFilter, LinearMipMapNearestFilter, LinearMipmapLinearFilter, LinearMipmapNearestFilter, LinearSRGBColorSpace, LinearToneMapping, LinearTransfer, Loader, LoaderUtils, LoadingManager, LoopOnce, LoopPingPong, LoopRepeat, MOUSE, Material, MaterialLoader, MathUtils, Matrix2, Matrix3, Matrix4, MaxEquation, Mesh, MeshBasicMaterial, MeshDepthMaterial, MeshDistanceMaterial, MeshLambertMaterial, MeshMatcapMaterial, MeshNormalMaterial, MeshPhongMaterial, MeshPhysicalMaterial, MeshStandardMaterial, MeshToonMaterial, MinEquation, MirroredRepeatWrapping, MixOperation, MultiplyBlending, MultiplyOperation, NearestFilter, NearestMipMapLinearFilter, NearestMipMapNearestFilter, NearestMipmapLinearFilter, NearestMipmapNearestFilter, NeutralToneMapping, NeverCompare, NeverDepth, NeverStencilFunc, NoBlending, NoColorSpace, NoToneMapping, NormalAnimationBlendMode, NormalBlending, NotEqualCompare, NotEqualDepth, NotEqualStencilFunc, NumberKeyframeTrack, Object3D, ObjectLoader, ObjectSpaceNormalMap, OctahedronGeometry, OneFactor, OneMinusConstantAlphaFactor, OneMinusConstantColorFactor, OneMinusDstAlphaFactor, OneMinusDstColorFactor, OneMinusSrcAlphaFactor, OneMinusSrcColorFactor, OrthographicCamera, PCFShadowMap, PCFSoftShadowMap, Path, PerspectiveCamera, Plane, PlaneGeometry, PlaneHelper, PointLight, PointLightHelper, Points, PointsMaterial, PolarGridHelper, PolyhedronGeometry, PositionalAudio, PropertyBinding, PropertyMixer, QuadraticBezierCurve, QuadraticBezierCurve3, Quaternion, QuaternionKeyframeTrack, QuaternionLinearInterpolant, RAD2DEG, RED_GREEN_RGTC2_Format, RED_RGTC1_Format, REVISION, RGBADepthPacking, RGBAFormat, RGBAIntegerFormat, RGBA_ASTC_10x10_Format, RGBA_ASTC_10x5_Format, RGBA_ASTC_10x6_Format, RGBA_ASTC_10x8_Format, RGBA_ASTC_12x10_Format, RGBA_ASTC_12x12_Format, RGBA_ASTC_4x4_Format, RGBA_ASTC_5x4_Format, RGBA_ASTC_5x5_Format, RGBA_ASTC_6x5_Format, RGBA_ASTC_6x6_Format, RGBA_ASTC_8x5_Format, RGBA_ASTC_8x6_Format, RGBA_ASTC_8x8_Format, RGBA_BPTC_Format, RGBA_ETC2_EAC_Format, RGBA_PVRTC_2BPPV1_Format, RGBA_PVRTC_4BPPV1_Format, RGBA_S3TC_DXT1_Format, RGBA_S3TC_DXT3_Format, RGBA_S3TC_DXT5_Format, RGBDepthPacking, RGBFormat, RGBIntegerFormat, RGB_BPTC_SIGNED_Format, RGB_BPTC_UNSIGNED_Format, RGB_ETC1_Format, RGB_ETC2_Format, RGB_PVRTC_2BPPV1_Format, RGB_PVRTC_4BPPV1_Format, RGB_S3TC_DXT1_Format, RGDepthPacking, RGFormat, RGIntegerFormat, RawShaderMaterial, Ray, Raycaster, RectAreaLight, RedFormat, RedIntegerFormat, ReinhardToneMapping, RenderTarget, RenderTarget3D, RepeatWrapping, ReplaceStencilOp, ReverseSubtractEquation, RingGeometry, SIGNED_RED_GREEN_RGTC2_Format, SIGNED_RED_RGTC1_Format, SRGBColorSpace, SRGBTransfer, Scene, ShaderMaterial, ShadowMaterial, Shape, ShapeGeometry, ShapePath, ShapeUtils, ShortType, Skeleton, SkeletonHelper, SkinnedMesh, Source, Sphere, SphereGeometry, Spherical, SphericalHarmonics3, SplineCurve, SpotLight, SpotLightHelper, Sprite, SpriteMaterial, SrcAlphaFactor, SrcAlphaSaturateFactor, SrcColorFactor, StaticCopyUsage, StaticDrawUsage, StaticReadUsage, StereoCamera, StreamCopyUsage, StreamDrawUsage, StreamReadUsage, StringKeyframeTrack, SubtractEquation, SubtractiveBlending, TOUCH, TangentSpaceNormalMap, TetrahedronGeometry, Texture, TextureLoader, TextureUtils, Timer, TimestampQuery, TorusGeometry, TorusKnotGeometry, Triangle, TriangleFanDrawMode, TriangleStripDrawMode, TrianglesDrawMode, TubeGeometry, UVMapping, Uint16BufferAttribute, Uint32BufferAttribute, Uint8BufferAttribute, Uint8ClampedBufferAttribute, Uniform, UniformsGroup, UniformsUtils, UnsignedByteType, UnsignedInt101111Type, UnsignedInt248Type, UnsignedInt5999Type, UnsignedIntType, UnsignedShort4444Type, UnsignedShort5551Type, UnsignedShortType, VSMShadowMap, Vector2, Vector3, Vector4, VectorKeyframeTrack, VideoFrameTexture, VideoTexture, WebGL3DRenderTarget, WebGLArrayRenderTarget, WebGLCoordinateSystem, WebGLCubeRenderTarget, WebGLRenderTarget, WebGPUCoordinateSystem, WebXRController, WireframeGeometry, WrapAroundEnding, ZeroCurvatureEnding, ZeroFactor, ZeroSlopeEnding, ZeroStencilOp, arrayNeedsUint32, cloneUniforms, createCanvasElement, createElementNS, getByteLength, getUnlitUniformColorSpace, mergeUniforms, probeAsync, warnOnce };
+export { ACESFilmicToneMapping, AddEquation, AddOperation, AdditiveAnimationBlendMode, AdditiveBlending, AgXToneMapping, AlphaFormat, AlwaysCompare, AlwaysDepth, AlwaysStencilFunc, AmbientLight, AnimationAction, AnimationClip, AnimationLoader, AnimationMixer, AnimationObjectGroup, AnimationUtils, ArcCurve, ArrayCamera, ArrowHelper, AttachedBindMode, Audio, AudioAnalyser, AudioContext, AudioListener, AudioLoader, AxesHelper, BackSide, BasicDepthPacking, BasicShadowMap, BatchedMesh, Bone, BooleanKeyframeTrack, Box2, Box3, Box3Helper, BoxGeometry, BoxHelper, BufferAttribute, BufferGeometry, BufferGeometryLoader, ByteType, Cache, Camera, CameraHelper, CanvasTexture, CapsuleGeometry, CatmullRomCurve3, CineonToneMapping, CircleGeometry, ClampToEdgeWrapping, Timer, Color, ColorKeyframeTrack, ColorManagement, CompressedArrayTexture, CompressedCubeTexture, CompressedTexture, CompressedTextureLoader, ConeGeometry, ConstantAlphaFactor, ConstantColorFactor, Controls, CubeCamera, CubeReflectionMapping, CubeRefractionMapping, CubeTexture, CubeTextureLoader, CubeUVReflectionMapping, CubicBezierCurve, CubicBezierCurve3, CubicInterpolant, CullFaceBack, CullFaceFront, CullFaceFrontBack, CullFaceNone, Curve, CurvePath, CustomBlending, CustomToneMapping, CylinderGeometry, Cylindrical, Data3DTexture, DataArrayTexture, DataTexture, DataTextureLoader, DataUtils, DecrementStencilOp, DecrementWrapStencilOp, DefaultLoadingManager, DepthFormat, DepthStencilFormat, DepthTexture, DetachedBindMode, DirectionalLight, DirectionalLightHelper, DiscreteInterpolant, DodecahedronGeometry, DoubleSide, DstAlphaFactor, DstColorFactor, DynamicCopyUsage, DynamicDrawUsage, DynamicReadUsage, EdgesGeometry, EllipseCurve, EqualCompare, EqualDepth, EqualStencilFunc, EquirectangularReflectionMapping, EquirectangularRefractionMapping, Euler, EventDispatcher, ExternalTexture, ExtrudeGeometry, FileLoader, Float16BufferAttribute, Float32BufferAttribute, FloatType, Fog, FogExp2, FramebufferTexture, FrontSide, Frustum, FrustumArray, GLBufferAttribute, GLSL1, GLSL3, GreaterCompare, GreaterDepth, GreaterEqualCompare, GreaterEqualDepth, GreaterEqualStencilFunc, GreaterStencilFunc, GridHelper, Group, HalfFloatType, HemisphereLight, HemisphereLightHelper, IcosahedronGeometry, ImageBitmapLoader, ImageLoader, ImageUtils, IncrementStencilOp, IncrementWrapStencilOp, InstancedBufferAttribute, InstancedBufferGeometry, InstancedInterleavedBuffer, InstancedMesh, Int16BufferAttribute, Int32BufferAttribute, Int8BufferAttribute, IntType, InterleavedBuffer, InterleavedBufferAttribute, Interpolant, InterpolateDiscrete, InterpolateLinear, InterpolateSmooth, InterpolationSamplingMode, InterpolationSamplingType, InvertStencilOp, KeepStencilOp, KeyframeTrack, LOD, LatheGeometry, Layers, LessCompare, LessDepth, LessEqualCompare, LessEqualDepth, LessEqualStencilFunc, LessStencilFunc, Light, LightProbe, Line, Line3, LineBasicMaterial, LineCurve, LineCurve3, LineDashedMaterial, LineLoop, LineSegments, LinearFilter, LinearInterpolant, LinearMipMapLinearFilter, LinearMipMapNearestFilter, LinearMipmapLinearFilter, LinearMipmapNearestFilter, LinearSRGBColorSpace, LinearToneMapping, LinearTransfer, Loader, LoaderUtils, LoadingManager, LoopOnce, LoopPingPong, LoopRepeat, MOUSE, Material, MaterialLoader, MathUtils, Matrix2, Matrix3, Matrix4, MaxEquation, Mesh, MeshBasicMaterial, MeshDepthMaterial, MeshDistanceMaterial, MeshLambertMaterial, MeshMatcapMaterial, MeshNormalMaterial, MeshPhongMaterial, MeshPhysicalMaterial, MeshStandardMaterial, MeshToonMaterial, MinEquation, MirroredRepeatWrapping, MixOperation, MultiplyBlending, MultiplyOperation, NearestFilter, NearestMipMapLinearFilter, NearestMipMapNearestFilter, NearestMipmapLinearFilter, NearestMipmapNearestFilter, NeutralToneMapping, NeverCompare, NeverDepth, NeverStencilFunc, NoBlending, NoColorSpace, NoToneMapping, NormalAnimationBlendMode, NormalBlending, NotEqualCompare, NotEqualDepth, NotEqualStencilFunc, NumberKeyframeTrack, Object3D, ObjectLoader, ObjectSpaceNormalMap, OctahedronGeometry, OneFactor, OneMinusConstantAlphaFactor, OneMinusConstantColorFactor, OneMinusDstAlphaFactor, OneMinusDstColorFactor, OneMinusSrcAlphaFactor, OneMinusSrcColorFactor, OrthographicCamera, PCFShadowMap, PCFSoftShadowMap, Path, PerspectiveCamera, Plane, PlaneGeometry, PlaneHelper, PointLight, PointLightHelper, Points, PointsMaterial, PolarGridHelper, PolyhedronGeometry, PositionalAudio, PropertyBinding, PropertyMixer, QuadraticBezierCurve, QuadraticBezierCurve3, Quaternion, QuaternionKeyframeTrack, QuaternionLinearInterpolant, RAD2DEG, RED_GREEN_RGTC2_Format, RED_RGTC1_Format, REVISION, RGBADepthPacking, RGBAFormat, RGBAIntegerFormat, RGBA_ASTC_10x10_Format, RGBA_ASTC_10x5_Format, RGBA_ASTC_10x6_Format, RGBA_ASTC_10x8_Format, RGBA_ASTC_12x10_Format, RGBA_ASTC_12x12_Format, RGBA_ASTC_4x4_Format, RGBA_ASTC_5x4_Format, RGBA_ASTC_5x5_Format, RGBA_ASTC_6x5_Format, RGBA_ASTC_6x6_Format, RGBA_ASTC_8x5_Format, RGBA_ASTC_8x6_Format, RGBA_ASTC_8x8_Format, RGBA_BPTC_Format, RGBA_ETC2_EAC_Format, RGBA_PVRTC_2BPPV1_Format, RGBA_PVRTC_4BPPV1_Format, RGBA_S3TC_DXT1_Format, RGBA_S3TC_DXT3_Format, RGBA_S3TC_DXT5_Format, RGBDepthPacking, RGBFormat, RGBIntegerFormat, RGB_BPTC_SIGNED_Format, RGB_BPTC_UNSIGNED_Format, RGB_ETC1_Format, RGB_ETC2_Format, RGB_PVRTC_2BPPV1_Format, RGB_PVRTC_4BPPV1_Format, RGB_S3TC_DXT1_Format, RGDepthPacking, RGFormat, RGIntegerFormat, RawShaderMaterial, Ray, Raycaster, RectAreaLight, RedFormat, RedIntegerFormat, ReinhardToneMapping, RenderTarget, RenderTarget3D, RepeatWrapping, ReplaceStencilOp, ReverseSubtractEquation, RingGeometry, SIGNED_RED_GREEN_RGTC2_Format, SIGNED_RED_RGTC1_Format, SRGBColorSpace, SRGBTransfer, Scene, ShaderMaterial, ShadowMaterial, Shape, ShapeGeometry, ShapePath, ShapeUtils, ShortType, Skeleton, SkeletonHelper, SkinnedMesh, Source, Sphere, SphereGeometry, Spherical, SphericalHarmonics3, SplineCurve, SpotLight, SpotLightHelper, Sprite, SpriteMaterial, SrcAlphaFactor, SrcAlphaSaturateFactor, SrcColorFactor, StaticCopyUsage, StaticDrawUsage, StaticReadUsage, StereoCamera, StreamCopyUsage, StreamDrawUsage, StreamReadUsage, StringKeyframeTrack, SubtractEquation, SubtractiveBlending, TOUCH, TangentSpaceNormalMap, TetrahedronGeometry, Texture, TextureLoader, TextureUtils, Timer, TimestampQuery, TorusGeometry, TorusKnotGeometry, Triangle, TriangleFanDrawMode, TriangleStripDrawMode, TrianglesDrawMode, TubeGeometry, UVMapping, Uint16BufferAttribute, Uint32BufferAttribute, Uint8BufferAttribute, Uint8ClampedBufferAttribute, Uniform, UniformsGroup, UniformsUtils, UnsignedByteType, UnsignedInt101111Type, UnsignedInt248Type, UnsignedInt5999Type, UnsignedIntType, UnsignedShort4444Type, UnsignedShort5551Type, UnsignedShortType, VSMShadowMap, Vector2, Vector3, Vector4, VectorKeyframeTrack, VideoFrameTexture, VideoTexture, WebGL3DRenderTarget, WebGLArrayRenderTarget, WebGLCoordinateSystem, WebGLCubeRenderTarget, WebGLRenderTarget, WebGPUCoordinateSystem, WebXRController, WireframeGeometry, WrapAroundEnding, ZeroCurvatureEnding, ZeroFactor, ZeroSlopeEnding, ZeroStencilOp, arrayNeedsUint32, cloneUniforms, createCanvasElement, createElementNS, getByteLength, getUnlitUniformColorSpace, mergeUniforms, probeAsync, warnOnce };

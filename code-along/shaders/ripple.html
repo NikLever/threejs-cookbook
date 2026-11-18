@@ -50,7 +50,7 @@
     }
     `
 
-    let scene, camera, renderer, clock, uniforms;
+    let scene, camera, renderer, timer, uniforms;
 
     init();
 
@@ -62,7 +62,7 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
-        clock = new THREE.Clock();
+        timer = new THREE.Timer();
 
         const geometry = new THREE.PlaneGeometry(2, 1.5);
         uniforms = {
@@ -111,7 +111,8 @@
 
     function update() {
         requestAnimationFrame(update);
-        uniforms.u_time.value += clock.getDelta();
+        timer.update();
+        uniforms.u_time.value += timer.getDelta();
         renderer.render(scene, camera);
     }
   

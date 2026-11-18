@@ -23,11 +23,11 @@
     }
   }
 </script>
-<script  type="module"> 
-  import * as THREE from "three"
+<script  type="module">
+  import * as THREE from 'three';
   import noise from '../../libs/noise.glsl.js';
-  import { OrbitControls } from "three/addons/controls/OrbitControls.js";
- 
+  import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
   const vshader = `
 #include <noise>
 
@@ -52,7 +52,7 @@ void main() {
   vec3 newPosition = position + normal * displacement;
   gl_Position = projectionMatrix * modelViewMatrix * vec4( newPosition, 1.0 );
 }
-`
+`;
 const fshader = `
 uniform float u_time;
 uniform sampler2D u_tex;
@@ -81,62 +81,69 @@ void main() {
 
   gl_FragColor = vec4( color, 1.0 );
 }
-`
+`;
 
-let scene, camera, renderer, clock, uniforms;
+let scene, camera, renderer, timer, uniforms;
 
 init();
 
-function init(){
-    THREE.ShaderChunk.noise = noise;
+function init() {
 
-    scene = new THREE.Scene();
-    camera = new THREE.PerspectiveCamera(
-        45,
-        window.innerWidth / window.innerHeight,
-        1,
-        10000
-    );
-    camera.position.z = 100;
+  	THREE.ShaderChunk.noise = noise;
 
-    renderer = new THREE.WebGLRenderer();
-    renderer.setSize( window.innerWidth, window.innerHeight );
-    document.body.appendChild( renderer.domElement );
+  	scene = new THREE.Scene();
+  	camera = new THREE.PerspectiveCamera(
+  		45,
+  		window.innerWidth / window.innerHeight,
+  		1,
+  		10000
+  	);
+  	camera.position.z = 100;
 
-    clock = new THREE.Clock();
+  	renderer = new THREE.WebGLRenderer();
+  	renderer.setSize( window.innerWidth, window.innerHeight );
+  	document.body.appendChild( renderer.domElement );
 
-    const geometry = new THREE.IcosahedronGeometry( 20, 4 );
-    uniforms = {
-        u_time: { value: 0.0 },
-        u_tex: { value: new THREE.TextureLoader().setPath('../../assets/').load('explosion.png')}
-    }
+  	timer = new THREE.Timer();
 
-    const material = new THREE.ShaderMaterial( {
-        uniforms: uniforms,
-        vertexShader: vshader,
-        fragmentShader: fshader
-    } );
+  	const geometry = new THREE.IcosahedronGeometry( 20, 4 );
+  	uniforms = {
+  		u_time: { value: 0.0 },
+  		u_tex: { value: new THREE.TextureLoader().setPath( '../../assets/' ).load( 'explosion.png' ) }
+  	};
 
-    const ball = new THREE.Mesh( geometry, material );
-    scene.add( ball );
+  	const material = new THREE.ShaderMaterial( {
+  		uniforms: uniforms,
+  		vertexShader: vshader,
+  		fragmentShader: fshader
+  	} );
 
-    const controls = new OrbitControls(camera, renderer.domElement);
+  	const ball = new THREE.Mesh( geometry, material );
+  	scene.add( ball );
 
-    onWindowResize();
+  	const controls = new OrbitControls( camera, renderer.domElement );
 
-    update();
+  	onWindowResize();
+
+  	update();
+
 }
 
 function onWindowResize( event ) {
-  camera.aspect = window.innerWidth/window.innerHeight;
+
+  camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize( window.innerWidth, window.innerHeight );
+
 }
 
 function update() {
+
   requestAnimationFrame( update );
-  uniforms.u_time.value += clock.getDelta();
+  timer.update();
+  uniforms.u_time.value += timer.getDelta();
   renderer.render( scene, camera );
+
 }
 </script>
 

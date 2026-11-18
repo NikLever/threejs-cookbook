@@ -34,7 +34,7 @@ import {LoadingBar} from '../../libs/LoadingBar.js';
 import GUI from 'three/addons/libs/lil-gui.module.min.js';
 
 let camera, scene, renderer, envmap, options;
-let apples, apple, light, clock, loadingBar;
+let apples, apple, light, timer, loadingBar;
 
 init();
 
@@ -47,7 +47,7 @@ function init() {
   renderer.physicallyCorrectLights = true;
 
   //
-  clock = new THREE.Clock();
+  timer = new THREE.Timer();
   
   camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 0.1, 50 );
   camera.position.set( 0, 0, 0.7 );

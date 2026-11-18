@@ -37,7 +37,7 @@
 		const container = document.createElement( 'div' );
 		document.body.appendChild( container );
         
-        this.clock = new THREE.Clock();
+        this.timer = new THREE.Timer();
         
 		this.camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 0.1, 200 );
 		this.camera.position.set( 0, 1.6, 5 );
@@ -210,7 +210,7 @@
     }
     
 	render( ) {  
-        const dt = this.clock.getDelta();
+        const dt = this.timer.getDelta();
         this.stats.update();
         if (this.controllers ){
             this.controllers.forEach( controller => {

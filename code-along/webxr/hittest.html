@@ -38,7 +38,7 @@
 		const container = document.createElement( 'div' );
 		document.body.appendChild( container );
         
-        this.clock = new THREE.Clock();
+        this.timer = new THREE.Timer();
         
         this.loadingBar = new LoadingBar();
 
@@ -169,7 +169,7 @@
     }
 
     render( timestamp, frame ) {
-        const dt = this.clock.getDelta();
+        const dt = this.timer.getDelta();
         
         if ( frame ) {
 

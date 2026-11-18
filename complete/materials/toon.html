@@ -24,252 +24,277 @@
     }
   }
 </script>
-<script  type="module"> 
-    import * as THREE from "three";
-    import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+<script  type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
     import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
     import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
     import { HDRLoader } from 'three/addons/loaders/HDRLoader.js';
     import { OutlineEffect } from 'three/addons/effects/OutlineEffect.js';
-    import { LoadingBar } from "../../libs/LoadingBar.js";
+    import { LoadingBar } from '../../libs/LoadingBar.js';
 
-    class OutlineEffect2 extends OutlineEffect{
-        constructor( renderer, parameters = {}, outlineGroup ){
-            super( renderer, parameters );
+    class OutlineEffect2 extends OutlineEffect {
 
-            this.outlineGroup = outlineGroup | new THREE.Group();
+    	constructor( renderer, parameters = {}, outlineGroup ) {
 
-            this.render = function ( scene, camera ) {
+    		super( renderer, parameters );
 
-                if ( this.enabled === false ) {
+    		this.outlineGroup = outlineGroup | new THREE.Group();
 
-                    renderer.render( scene, camera );
-                    return;
+    		this.render = function ( scene, camera ) {
 
-                }
+    			if ( this.enabled === false ) {
 
-                const currentAutoClear = renderer.autoClear;
-                renderer.autoClear = this.autoClear;
+    				renderer.render( scene, camera );
+    				return;
 
-                renderer.render( scene, camera );
+    			}
 
-                renderer.autoClear = currentAutoClear;
+    			const currentAutoClear = renderer.autoClear;
+    			renderer.autoClear = this.autoClear;
 
-                this.renderOutline( outlineGroup, camera );
+    			renderer.render( scene, camera );
 
-            };
-        }
+    			renderer.autoClear = currentAutoClear;
+
+    			this.renderOutline( outlineGroup, camera );
+
+    		};
+    
+	}
     }
 
-    let camera, scene, renderer, clock, light, knight, mixer, outline, outlineGroup;
+    let camera, scene, renderer, timer, light, knight, mixer, outline, outlineGroup;
 
     init();
     
     function init() {
-        renderer = new THREE.WebGLRenderer({antialias: true, stencil: false});
-        renderer.setPixelRatio( Math.min(2, window.devicePixelRatio ));
-        renderer.setSize( window.innerWidth, window.innerHeight );
-        document.body.appendChild( renderer.domElement );
-        renderer.outputColorSpace = THREE.SRGBColorSpace;
-        
-        camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 0.1, 50 );
-        camera.position.set( 1, 0.8, 2.5 );
-        camera.lookAt(0,0.8,0);
-        
-        const col = 0x77AAFF;
-        scene = new THREE.Scene();
-        scene.background = new THREE.Color( col );
 
-        clock = new THREE.Clock();
+    	renderer = new THREE.WebGLRenderer( { antialias: true, stencil: false } );
+    	renderer.setPixelRatio( Math.min( 2, window.devicePixelRatio ) );
+    	renderer.setSize( window.innerWidth, window.innerHeight );
+    	document.body.appendChild( renderer.domElement );
+    	renderer.outputColorSpace = THREE.SRGBColorSpace;
+    
+    	camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 0.1, 50 );
+    	camera.position.set( 1, 0.8, 2.5 );
+    	camera.lookAt( 0, 0.8, 0 );
+    
+    	const col = 0x77AAFF;
+    	scene = new THREE.Scene();
+    	scene.background = new THREE.Color( col );
 
-        const ambient = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 0.2);
-		scene.add(ambient);
+    	timer = new THREE.Timer();
 
-        light = new THREE.DirectionalLight( 0xFFFFFF, 3 );
-        light.position.set( 4, 20, 20);
-        scene.add( light );
+    	const ambient = new THREE.HemisphereLight( 0xffffff, 0xbbbbff, 0.2 );
+	scene.add( ambient );
 
-        window.addEventListener( 'resize', onWindowResize, false );
-        
-        const controls = new OrbitControls( camera, renderer.domElement );
-        controls.target.set( 0, 0.8, 0 );
-        controls.update();
+    	light = new THREE.DirectionalLight( 0xFFFFFF, 3 );
+    	light.position.set( 4, 20, 20 );
+    	scene.add( light );
 
-        setEnvironment();
-        
-        loadCastle();
+    	window.addEventListener( 'resize', onWindowResize, false );
+    
+    	const controls = new OrbitControls( camera, renderer.domElement );
+    	controls.target.set( 0, 0.8, 0 );
+    	controls.update();
 
-        loadKnight();
+    	setEnvironment();
+    
+    	loadCastle();
+
+    	loadKnight();
     }
 
-    function setEnvironment(){
-        new HDRLoader()
-            .setPath( '../../assets/hdr/' )
-            .load( 'museum.hdr', texture => {
+    function setEnvironment() {
 
-                texture.mapping = THREE.EquirectangularReflectionMapping;
+    	new HDRLoader()
+    		.setPath( '../../assets/hdr/' )
+    		.load( 'museum.hdr', texture => {
 
-                scene.environment = texture;
+    			texture.mapping = THREE.EquirectangularReflectionMapping;
 
-                render();
-            });
+    			scene.environment = texture;
+
+    			render();
+    
+		} );
     }
 
-    function loadCastle(){
-        const loader = new GLTFLoader( ).setPath('../../assets/');
-        const dracoLoader = new DRACOLoader();
-        dracoLoader.setDecoderPath( '../../node_modules/three/examples/jsm/libs/draco/' );
-        loader.setDRACOLoader( dracoLoader );
-            
-        // Load a glTF resource
-        loader.load(
-            // resource URL
-            'castle.glb',
-            // called when the resource is loaded
-            gltf => {
-            
-                gltf.scene.position.set( -2, -0.1, -12 );
-                gltf.scene.rotateY( -Math.PI/2 );
+    function loadCastle() {
 
-                scene.add( gltf.scene );
+    	const loader = new GLTFLoader( ).setPath( '../../assets/' );
+    	const dracoLoader = new DRACOLoader();
+    	dracoLoader.setDecoderPath( '../../node_modules/three/examples/jsm/libs/draco/' );
+    	loader.setDRACOLoader( dracoLoader );
+    
+    	// Load a glTF resource
+    	loader.load(
+    		// resource URL
+    		'castle.glb',
+    		// called when the resource is loaded
+    		gltf => {
+    
+    			gltf.scene.position.set( - 2, - 0.1, - 12 );
+    			gltf.scene.rotateY( - Math.PI / 2 );
 
-            },
-            // called while loading is progressing
-            xhr => {
-                       
-            },
-            // called when loading has errors
-            err => {
+    			scene.add( gltf.scene );
 
-                console.error( err );
+    		},
+    		// called while loading is progressing
+    		xhr => {
+    
+    		},
+    		// called when loading has errors
+    		err => {
 
-            }
-        );
+    			console.error( err );
+
+    		}
+    	);
     }
 
-    function loadKnight(){
-        const loader = new GLTFLoader( ).setPath('../../assets/');
-        const dracoLoader = new DRACOLoader();
-        dracoLoader.setDecoderPath( '../../node_modules/three/examples/jsm/libs/draco/' );
-        loader.setDRACOLoader( dracoLoader );
-                
-        const loadingBar = new LoadingBar();
-        loadingBar.visible = true;
-            
-        // Load a glTF resource
-        loader.load(
-            // resource URL
-            'knight3.glb',
-            // called when the resource is loaded
-            gltf => {
-                let material;
+    function loadKnight() {
 
-                knight = gltf.scene;
-                knight.children[1].visible = false;
+    	const loader = new GLTFLoader( ).setPath( '../../assets/' );
+    	const dracoLoader = new DRACOLoader();
+    	dracoLoader.setDecoderPath( '../../node_modules/three/examples/jsm/libs/draco/' );
+    	loader.setDRACOLoader( dracoLoader );
+    
+    	const loadingBar = new LoadingBar();
+    	loadingBar.visible = true;
+    
+    	// Load a glTF resource
+    	loader.load(
+    		// resource URL
+    		'knight3.glb',
+    		// called when the resource is loaded
+    		gltf => {
 
-                mixer = new THREE.AnimationMixer( knight );
-                const action = mixer.clipAction( gltf.animations[0] );
-                if ( action ) action.play();
-            
-                knight.traverse( child => {
-                    if (child.isMesh){
-                        if (material == null && child.material.map != null){
-                            const threeTone = new THREE.TextureLoader().load( '../../assets/threeTone.jpg' );
+    			let material;
+
+    			knight = gltf.scene;
+    			knight.children[ 1 ].visible = false;
+
+    			mixer = new THREE.AnimationMixer( knight );
+    			const action = mixer.clipAction( gltf.animations[ 0 ] );
+    			if ( action ) action.play();
+    
+    			knight.traverse( child => {
+
+    				if ( child.isMesh ) {
+
+    					if ( material == null && child.material.map != null ) {
+
+    						const threeTone = new THREE.TextureLoader().load( '../../assets/threeTone.jpg' );
 				            threeTone.minFilter = THREE.NearestFilter;
 				            threeTone.magFilter = THREE.NearestFilter;
 
-                            const map = child.material.map;
+    						const map = child.material.map;
 
-                            material = new THREE.MeshToonMaterial( { map, gradientMap: threeTone } );
-                        }
-                        child.material = material;
-                    }
-                });
-            
-                loadingBar.visible = false;
+    						material = new THREE.MeshToonMaterial( { map, gradientMap: threeTone } );
+    
+					}
 
-                const params = {
-                    defaultColor: [0,0,0],
-                    defaultThickness: 0.003
-                }
+    					child.material = material;
+    
+				}
+    
+			} );
+    
+    			loadingBar.visible = false;
 
-                outline = new OutlineEffect2( renderer, params, knight );
-            
-                scene.add( knight );
-            
-                render(); 
-            },
-            // called while loading is progressing
-            xhr => {
-                loadingBar.update(name, xhr.loaded, xhr.total);        
-            },
-            // called when loading has errors
-            err => {
+    			const params = {
+    				defaultColor: [ 0, 0, 0 ],
+    				defaultThickness: 0.003
+    			};
 
-                console.error( err );
+    			outline = new OutlineEffect2( renderer, params, knight );
+    
+    			scene.add( knight );
+    
+    			render();
+    
+		},
+    		// called while loading is progressing
+    		xhr => {
 
-            }
-        );
+    			loadingBar.update( name, xhr.loaded, xhr.total );
+    
+		},
+    		// called when loading has errors
+    		err => {
+
+    			console.error( err );
+
+    		}
+    	);
     }
 
     function onWindowResize() {
 
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
+    	camera.aspect = window.innerWidth / window.innerHeight;
+    	camera.updateProjectionMatrix();
 
-        renderer.setSize( window.innerWidth, window.innerHeight );
+    	renderer.setSize( window.innerWidth, window.innerHeight );
 
     }
 
     function render() {
-        requestAnimationFrame( render );
-        const dt = clock.getDelta();
-        if (mixer) mixer.update(dt);
 
-        if ( outline ){
-            outline.render( scene, camera );
-        }else{
-            renderer.render( scene, camera );
-        }
-    } 
+    	requestAnimationFrame( render );
+    	timer.update();
+    	const dt = timer.getDelta();
+    	if ( mixer ) mixer.update( dt );
 
-    function selectedOutlineRender( outlineGroup ){
-        
-        if ( !outline || outline.enabled === false || !outlineGroup ) {
+    	if ( outline ) {
 
-            renderer.render( scene, camera );
-            return;
+    		outline.render( scene, camera );
+    
+	} else {
 
-        }
+    		renderer.render( scene, camera );
+    
+	}
+    }
 
-        const currentAutoClear = renderer.autoClear;
-        renderer.autoClear = this.autoClear;
+    function selectedOutlineRender( outlineGroup ) {
+    
+    	if ( ! outline || outline.enabled === false || ! outlineGroup ) {
 
-        renderer.render( scene, camera );
+    		renderer.render( scene, camera );
+    		return;
 
-        renderer.autoClear = currentAutoClear;
+    	}
 
-        const currentSceneAutoUpdate = scene.matrixWorldAutoUpdate;
-        const currentSceneBackground = scene.background;
-        const currentShadowMapEnabled = renderer.shadowMap.enabled;
+    	const currentAutoClear = renderer.autoClear;
+    	renderer.autoClear = this.autoClear;
 
-        scene.matrixWorldAutoUpdate = false;
-        scene.background = null;
-        renderer.autoClear = false;
-        renderer.shadowMap.enabled = false;
+    	renderer.render( scene, camera );
 
-        outlineGroup.traverse( setOutlineMaterial );
+    	renderer.autoClear = currentAutoClear;
 
-        renderer.render( scene, camera );
+    	const currentSceneAutoUpdate = scene.matrixWorldAutoUpdate;
+    	const currentSceneBackground = scene.background;
+    	const currentShadowMapEnabled = renderer.shadowMap.enabled;
 
-        outlineGroup.traverse( restoreOriginalMaterial );
+    	scene.matrixWorldAutoUpdate = false;
+    	scene.background = null;
+    	renderer.autoClear = false;
+    	renderer.shadowMap.enabled = false;
 
-        cleanupCache();
+    	outlineGroup.traverse( setOutlineMaterial );
 
-        scene.matrixWorldAutoUpdate = currentSceneAutoUpdate;
-        scene.background = currentSceneBackground;
-        renderer.autoClear = currentAutoClear;
-        renderer.shadowMap.enabled = currentShadowMapEnabled;
+    	renderer.render( scene, camera );
+
+    	outlineGroup.traverse( restoreOriginalMaterial );
+
+    	cleanupCache();
+
+    	scene.matrixWorldAutoUpdate = currentSceneAutoUpdate;
+    	scene.background = currentSceneBackground;
+    	renderer.autoClear = currentAutoClear;
+    	renderer.shadowMap.enabled = currentShadowMapEnabled;
 
     }
 </script>

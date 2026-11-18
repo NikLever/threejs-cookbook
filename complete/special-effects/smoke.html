@@ -23,60 +23,66 @@
     }
   }
 </script>
-<script  type="module"> 
-  import * as THREE from "three";
-  import { OrbitControls } from "three/addons/controls/OrbitControls.js";
- 
-  let camera, scene, renderer, sprites, control, clock, light;
+<script  type="module">
+  import * as THREE from 'three';
+  import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+  let camera, scene, renderer, sprites, control, timer, light;
   const assetPath = '../../assets/';
 
-init(); 
+init();
 
 function init() {
 
-    clock = new THREE.Clock();
+  	timer = new THREE.Timer();
 
-    renderer = new THREE.WebGLRenderer();
-    renderer.setSize( window.innerWidth, window.innerHeight );
-    document.body.appendChild( renderer.domElement );
- 
-    scene = new THREE.Scene();
- 
-    camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 1, 100 );
-    camera.position.z = 5;
-    scene.add( camera );
+  	renderer = new THREE.WebGLRenderer();
+  	renderer.setSize( window.innerWidth, window.innerHeight );
+  	document.body.appendChild( renderer.domElement );
+
+  	scene = new THREE.Scene();
+
+  	camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 1, 100 );
+  	camera.position.z = 5;
+  	scene.add( camera );
   
-    control = new OrbitControls( camera, renderer.domElement );
+  	control = new OrbitControls( camera, renderer.domElement );
   
-    const tex = new THREE.TextureLoader()
-      .setPath(assetPath)
-      .load('smoke_01.png');
-    
-    const material = new THREE.SpriteMaterial({ map: tex });
-
-    sprites = [];
-
-    const size = 5;
+  	const tex = new THREE.TextureLoader()
+  		.setPath( assetPath )
+  		.load( 'smoke_01.png' );
   
-    for (let i=0; i<40; i++) {
-        const sprite = new THREE.Sprite(material);
-        sprite.scale.set(size, size, size);
-        sprite.position.set(
-          ( Math.random()-0.5 ) * size, 
-          ( Math.random()-0.5 ) * size, 
-          ( Math.random()-0.5 ) * size);
-        scene.add(sprite);
-        sprites.push(sprite);
-    }
+  	const material = new THREE.SpriteMaterial( { map: tex } );
 
-    renderer.setAnimationLoop( update );
+  	sprites = [];
+
+  	const size = 5;
+  
+  	for ( let i = 0; i < 40; i ++ ) {
+
+  		const sprite = new THREE.Sprite( material );
+  		sprite.scale.set( size, size, size );
+  		sprite.position.set(
+  			( Math.random() - 0.5 ) * size,
+  			( Math.random() - 0.5 ) * size,
+  			( Math.random() - 0.5 ) * size );
+  		scene.add( sprite );
+  		sprites.push( sprite );
+  
+	}
+
+  	renderer.setAnimationLoop( update );
+
 }
- 
-function update() { 
-    const dt = clock.getDelta();
-    if (sprites) sprites[0].material.rotation += dt * 0.1;
-    renderer.render( scene, camera );
-} 
+
+function update() {
+
+  timer.update();
+  	const dt = timer.getDelta();
+  	if ( sprites ) sprites[ 0 ].material.rotation += dt * 0.1;
+  	renderer.render( scene, camera );
+
+}
   
 </script>
 

@@ -9,7 +9,7 @@ let container;
 let camera,
 	scene,
 	renderer,
-	clock,
+	timer,
 	material,
 	options,
 	u_reveal,
@@ -35,7 +35,7 @@ function init() {
 	);
 	camera.position.set( 0.0, 1, 4 );
 
-	clock = new THREE.Clock();
+	timer = new THREE.Timer();
 	//
 
 	scene = new THREE.Scene();
@@ -175,7 +175,8 @@ function onWindowResize() {
 
 function render() {
 
-	const dt = clock.getDelta();
+	timer.update();
+	const dt = timer.getDelta();
 	if ( u_reveal && u_reveal.value > 0 ) {
 
 		revealTime += dt;

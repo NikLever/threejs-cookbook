@@ -26,14 +26,14 @@
   import * as THREE from "three"
   import { OrbitControls } from "three/addons/controls/OrbitControls.js"
  
-  let camera, scene, renderer, sprites, control, clock, light;
+  let camera, scene, renderer, sprites, control, timer, light;
   const assetPath = '../../assets/';
 
 init(); 
 
 function init() {
 
-    clock = new THREE.Clock();
+    timer = new THREE.Timer();
 
     renderer = new THREE.WebGLRenderer();
     renderer.setSize( window.innerWidth, window.innerHeight );
@@ -57,7 +57,7 @@ function init() {
 }
  
 function update() { 
-    const dt = clock.getDelta();
+    const dt = timer.getDelta();
     if (sprites){
       //TO DO: 2
     }

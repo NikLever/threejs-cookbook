@@ -4,7 +4,7 @@ import { RectAreaLightHelper } from 'three/addons/helpers/RectAreaLightHelper.js
 import { RectAreaLightUniformsLib } from 'three/addons/lights/RectAreaLightUniformsLib.js';
 import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 
-let scene, camera, renderer, clock, params, lights;
+let scene, camera, renderer, timer, params, lights;
 
 init();
 
@@ -12,7 +12,7 @@ function init() {
 
 	const assetPath = '../../assets/';
 
-	clock = new THREE.Clock();
+	timer = new THREE.Timer();
 
 	scene = new THREE.Scene();
 	const envMap = new THREE.CubeTextureLoader()
@@ -275,7 +275,8 @@ function init() {
 function update() {
 
 	renderer.render( scene, camera );
-	const time = clock.getElapsedTime();
+	timer.update();
+	const time = timer.getElapsed();
 	const delta = Math.sin( time ) * 5;
 	if ( params.area.moving ) {
 

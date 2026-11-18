@@ -61,148 +61,162 @@
   }
 }
 </script>
-<script  type="module"> 
-  import * as THREE from "three"
-  import { OrbitControls } from "three/addons/controls/OrbitControls.js"
+<script  type="module">
+  import * as THREE from 'three';
+  import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
   import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
   import { PositionalAudioHelper } from 'three/addons/helpers/PositionalAudioHelper.js';
-  import { GUI } from "three/addons/libs/lil-gui.module.min.js";
+  import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
   import { CanvasText } from '../../libs/CanvasText.js';
 
-  let scene, camera, clock, renderer, controls, boomBox, listener, playPressed = false;
+  let scene, camera, timer, renderer, controls, boomBox, listener, playPressed = false;
 
   init();
 
-  function init(){
-    const startButton = document.getElementById( 'startButton' );
-    startButton.addEventListener( 'click', addSound );
+  function init() {
 
-    scene = new THREE.Scene();
-    scene.background = new THREE.Color( 0xaaaaaa );
-    scene.fog = new THREE.Fog( 0xAAAAAA, 5, 10);
-    
-    camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 0.1, 100 );
-    camera.position.set(0, 1, -2);
-    camera.lookAt(0,0.3,0);
+  	const startButton = document.getElementById( 'startButton' );
+  	startButton.addEventListener( 'click', addSound );
 
-    clock = new THREE.Clock(false);
- 
-    const ambient = new THREE.HemisphereLight(0xffffbb, 0x080820);
-    scene.add(ambient);
-    
-    const light = new THREE.DirectionalLight(0xFFFFFF, 3);
-    light.position.set( 1, 10, -6);
-    light.castShadow = true;
-    light.shadow.radius = 7;
-    light.shadow.blurSamples = 8;
-    const size = 4;
-    light.shadow.camera.top = size;
-    light.shadow.camera.bottom = -size;
-    light.shadow.camera.left = -size;
-    light.shadow.camera.right = size;
-    light.shadow.camera.near = 0.1;
-    light.shadow.camera.far = 20;
-    scene.add(light);
+  	scene = new THREE.Scene();
+  	scene.background = new THREE.Color( 0xaaaaaa );
+  	scene.fog = new THREE.Fog( 0xAAAAAA, 5, 10 );
+  
+  	camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 0.1, 100 );
+  	camera.position.set( 0, 1, - 2 );
+  	camera.lookAt( 0, 0.3, 0 );
 
-    const floorgeo = new THREE.PlaneGeometry( 25, 25 );
-    floorgeo.rotateX( -Math.PI/2  );
-    const floormat = new THREE.MeshStandardMaterial( { color: 0xFFFFFF } );
-    const floor = new THREE.Mesh( floorgeo, floormat );
-    floor.position.y = -0.01;
-    scene.add( floor );
-    floor.receiveShadow = true;
+  	timer = new THREE.Timer( false );
 
-    const gridHelper = new THREE.GridHelper( 25, 25 );
-    scene.add( gridHelper );
-    
-    renderer = new THREE.WebGLRenderer({antialias: true});
-    renderer.setSize( window.innerWidth, window.innerHeight );
-    document.body.appendChild( renderer.domElement );
-    renderer.outputColorSpace = THREE.SRGBColorSpace;
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.VSMShadowMap; 
-    
-    //controls = new OrbitControls(camera, renderer.domElement);
+  	const ambient = new THREE.HemisphereLight( 0xffffbb, 0x080820 );
+  	scene.add( ambient );
+  
+  	const light = new THREE.DirectionalLight( 0xFFFFFF, 3 );
+  	light.position.set( 1, 10, - 6 );
+  	light.castShadow = true;
+  	light.shadow.radius = 7;
+  	light.shadow.blurSamples = 8;
+  	const size = 4;
+  	light.shadow.camera.top = size;
+  	light.shadow.camera.bottom = - size;
+  	light.shadow.camera.left = - size;
+  	light.shadow.camera.right = size;
+  	light.shadow.camera.near = 0.1;
+  	light.shadow.camera.far = 20;
+  	scene.add( light );
 
-    setEnvironment();
-    loadModel();
+  	const floorgeo = new THREE.PlaneGeometry( 25, 25 );
+  	floorgeo.rotateX( - Math.PI / 2 );
+  	const floormat = new THREE.MeshStandardMaterial( { color: 0xFFFFFF } );
+  	const floor = new THREE.Mesh( floorgeo, floormat );
+  	floor.position.y = - 0.01;
+  	scene.add( floor );
+  	floor.receiveShadow = true;
 
-    window.addEventListener( 'resize', resize, false);
-    
-    update();
+  	const gridHelper = new THREE.GridHelper( 25, 25 );
+  	scene.add( gridHelper );
+  
+  	renderer = new THREE.WebGLRenderer( { antialias: true } );
+  	renderer.setSize( window.innerWidth, window.innerHeight );
+  	document.body.appendChild( renderer.domElement );
+  	renderer.outputColorSpace = THREE.SRGBColorSpace;
+  	renderer.shadowMap.enabled = true;
+  	renderer.shadowMap.type = THREE.VSMShadowMap;
+  
+  	//controls = new OrbitControls(camera, renderer.domElement);
+
+  	setEnvironment();
+  	loadModel();
+
+  	window.addEventListener( 'resize', resize, false );
+  
+  	update();
   }
 
-  function addSound(){
-    const overlay = document.getElementById( 'overlay' );
-    overlay.remove();
-    playPressed = true;
-    clock.start();
+  function addSound() {
 
-    listener = new THREE.AudioListener();
-    camera.add( listener );
+  	const overlay = document.getElementById( 'overlay' );
+  	overlay.remove();
+  	playPressed = true;
+  	timer.start();
 
-    const path = '../../assets/sfx/';
+  	listener = new THREE.AudioListener();
+  	camera.add( listener );
 
-    // create the Audio object (passing in the listener)
-    const sound = new THREE.Audio( listener );
+  	const path = '../../assets/sfx/';
 
-    // load a sound and set it as the PositionalAudio object's buffer
-    const audioLoader = new THREE.AudioLoader();
-    audioLoader.setPath( path )
-      .load( `hey-music.mp3`, buffer => {
-        sound.setBuffer( buffer );
-        sound.setLoop(true);
-        sound.play();
-      });
+  	// create the Audio object (passing in the listener)
+  	const sound = new THREE.Audio( listener );
+
+  	// load a sound and set it as the PositionalAudio object's buffer
+  	const audioLoader = new THREE.AudioLoader();
+  	audioLoader.setPath( path )
+  		.load( 'hey-music.mp3', buffer => {
+
+  			sound.setBuffer( buffer );
+  			sound.setLoop( true );
+  			sound.play();
+  
+		} );
   }
 
-  function setEnvironment(){
-    scene.environment = new THREE.CubeTextureLoader()
-      .setPath( '../../libs/three/examples/textures/cube/SwedishRoyalCastle/' )
-      .load( [ 'px.jpg', 'nx.jpg', 'py.jpg', 'ny.jpg', 'pz.jpg', 'nz.jpg' ] );
+  function setEnvironment() {
+
+  	scene.environment = new THREE.CubeTextureLoader()
+  		.setPath( '../../libs/three/examples/textures/cube/SwedishRoyalCastle/' )
+  		.load( [ 'px.jpg', 'nx.jpg', 'py.jpg', 'ny.jpg', 'pz.jpg', 'nz.jpg' ] );
   }
 
-  function random( min, max ){
-    if (min>max) [ max, min ] = [ min, max ];
-    const range = max - min;
-    return Math.random() * range + min;
+  function random( min, max ) {
+
+  	if ( min > max ) [ max, min ] = [ min, max ];
+  	const range = max - min;
+  	return Math.random() * range + min;
   }
 
-  function loadModel(){
-    const gltfLoader = new GLTFLoader();
+  function loadModel() {
 
-    gltfLoader.load( '../../libs/three/examples/models/gltf/BoomBox.glb',  gltf => {
+  	const gltfLoader = new GLTFLoader();
 
-      const boomBox = gltf.scene;
-      boomBox.position.set( 0, 0.3, 0 );
-      boomBox.scale.set( 30, 30, 30 );
-      boomBox.traverse( child => {
-        if (child.isMesh){
-          child.geometry.rotateY( - Math.PI );
-          child.castShadow = true;
-        }
-      })
-      boomBox.rotateY( Math.PI );
-      scene.add( boomBox );
+  	gltfLoader.load( '../../libs/three/examples/models/gltf/BoomBox.glb', gltf => {
 
-      update();
+  		const boomBox = gltf.scene;
+  		boomBox.position.set( 0, 0.3, 0 );
+  		boomBox.scale.set( 30, 30, 30 );
+  		boomBox.traverse( child => {
 
-    } );
+  			if ( child.isMesh ) {
+
+  				child.geometry.rotateY( - Math.PI );
+  				child.castShadow = true;
+  
+			}
+  
+		} );
+  		boomBox.rotateY( Math.PI );
+  		scene.add( boomBox );
+
+  		update();
+
+  	} );
   }
 
-  function update(){
-    const t = clock.getElapsedTime();
+  function update() {
 
-    if (playPressed) camera.position.x = Math.sin(t*0.2) * 3;
+  	timer.update();
+  	const t = timer.getElapsed();
 
-    requestAnimationFrame( update );
-    renderer.render( scene, camera ); 
+  	if ( playPressed ) camera.position.x = Math.sin( t * 0.2 ) * 3;
+
+  	requestAnimationFrame( update );
+  	renderer.render( scene, camera );
   }
 
-  function resize(){
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize( window.innerWidth, window.innerHeight );
+  function resize() {
+
+  	camera.aspect = window.innerWidth / window.innerHeight;
+  	camera.updateProjectionMatrix();
+  	renderer.setSize( window.innerWidth, window.innerHeight );
   }
 </script>
 </body>

@@ -32,7 +32,7 @@
   import { HDRLoader } from 'three/addons/loaders/HDRLoader.js';
   import { GUI } from "three/addons/libs/lil-gui.module.min.js"
 
-  let scene, camera, renderer, controls, mesh, clock, dummy;
+  let scene, camera, renderer, controls, mesh, timer, dummy;
 
   init();
 
@@ -40,7 +40,7 @@
     scene = new THREE.Scene();
     scene.background = new THREE.Color( 0x00aaff );
 
-    clock = new THREE.Clock(true);
+    timer = new THREE.Timer(true);
     dummy = new THREE.Object3D();
     
     camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 0.1, 1000 );

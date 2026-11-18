@@ -8,7 +8,7 @@ import { HDRLoader } from 'three/addons/loaders/HDRLoader.js';
 import { LoadingBar } from '../../libs/LoadingBar.js';
 
 // eslint-disable-next-line no-unused-vars
-let camera, scene, renderer, clock, light, knight, mixer, outline;
+let camera, scene, renderer, timer, light, knight, mixer, outline;
 
 init();
 
@@ -28,7 +28,7 @@ function init() {
 	scene = new THREE.Scene();
 	scene.background = new THREE.Color( col );
 
-	clock = new THREE.Clock();
+	timer = new THREE.Timer();
 
 	const ambient = new THREE.HemisphereLight( 0xffffff, 0xbbbbff, 0.2 );
 	scene.add( ambient );
@@ -166,7 +166,8 @@ function render() {
 
 	// eslint-disable-next-line compat/compat
 	requestAnimationFrame( render );
-	const dt = clock.getDelta();
+	timer.update();
+	const dt = timer.getDelta();
 	if ( mixer ) mixer.update( dt );
 
 	renderer.render( scene, camera );

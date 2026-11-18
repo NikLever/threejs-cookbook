@@ -11593,7 +11593,7 @@ class World extends EventTarget {
   // All the current contacts (instances of ContactEquation) in the world.
   // How often to normalize quaternions. Set to 0 for every step, 1 for every second etc.. A larger value increases performance. If bodies tend to explode, set to a smaller value (zero to be sure nothing can go wrong).
   // Set to true to use fast quaternion normalization. It is often enough accurate to use. If bodies tend to explode, set to false.
-  // The wall-clock time since simulation start.
+  // The wall-timer time since simulation start.
   // Number of timesteps taken since start.
   // Default and last timestep sizes.
   // The broadphase algorithm to use. Default is NaiveBroadphase.

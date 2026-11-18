@@ -23,8 +23,8 @@
     }
   }
 </script>
-<script  type="module"> 
-  import * as THREE from "three"
+<script  type="module">
+  import * as THREE from 'three';
   
   const vshader = `
     varying vec2 v_uv;
@@ -34,7 +34,7 @@
       v_position = position;
       gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
     }
-    `
+    `;
   const fshader = `
     #define PI2 6.28
 
@@ -54,70 +54,79 @@
       vec3 color = texture2D(u_tex, uv).rgb;
       gl_FragColor = vec4(color, 1.0); 
     }
-    `
+    `;
 
-    let scene, camera, renderer, clock, uniforms;
+  let scene, camera, renderer, timer, uniforms;
 
-    init();
+  init();
 
-    function init(){
-        scene = new THREE.Scene();
-        camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 10);
+  function init() {
 
-        renderer = new THREE.WebGLRenderer();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        document.body.appendChild(renderer.domElement);
+  	scene = new THREE.Scene();
+  	camera = new THREE.OrthographicCamera( - 1, 1, 1, - 1, 0.1, 10 );
 
-        clock = new THREE.Clock();
+  	renderer = new THREE.WebGLRenderer();
+  	renderer.setSize( window.innerWidth, window.innerHeight );
+  	document.body.appendChild( renderer.domElement );
 
-        const geometry = new THREE.PlaneGeometry(2, 1.5);
-        uniforms = {
-            u_tex: { value: new THREE.TextureLoader().setPath('../../assets/').load('sa1.jpg') },
-            u_duration: { value: 5.0 },
-            u_time: { value: 0.0 }
-        }
+  	timer = new THREE.Timer();
 
-        const material = new THREE.ShaderMaterial({
-            uniforms: uniforms,
-            vertexShader: vshader,
-            fragmentShader: fshader
-        });
+  	const geometry = new THREE.PlaneGeometry( 2, 1.5 );
+  	uniforms = {
+  		u_tex: { value: new THREE.TextureLoader().setPath( '../../assets/' ).load( 'sa1.jpg' ) },
+  		u_duration: { value: 5.0 },
+  		u_time: { value: 0.0 }
+  	};
 
-        const plane = new THREE.Mesh(geometry, material);
-        scene.add(plane);
+  	const material = new THREE.ShaderMaterial( {
+  		uniforms: uniforms,
+  		vertexShader: vshader,
+  		fragmentShader: fshader
+  	} );
 
-        camera.position.z = 1;
+  	const plane = new THREE.Mesh( geometry, material );
+  	scene.add( plane );
 
-        onWindowResize();
+  	camera.position.z = 1;
 
-        update();
-    }
+  	onWindowResize();
 
-    function onWindowResize(event) {
-        const aspectRatio = window.innerWidth / window.innerHeight;
-        let width, height;
-        if (aspectRatio >= (2 / 1.5)) {
-            console.log("resize: Use width");
-            width = 1;
-            height = (window.innerHeight / window.innerWidth) * width;
-        } else {
-            console.log("resize: Use height")
-            height = 1.5 / 2;
-            width = (window.innerWidth / window.innerHeight) * height;
-        }
-        camera.left = -width;
-        camera.right = width;
-        camera.top = height;
-        camera.bottom = -height;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-    }
+  	update();
+  }
 
-    function update() {
-        requestAnimationFrame(update);
-        uniforms.u_time.value += clock.getDelta();
-        renderer.render(scene, camera);
-    }
+  function onWindowResize( event ) {
+
+  	const aspectRatio = window.innerWidth / window.innerHeight;
+  	let width, height;
+  	if ( aspectRatio >= ( 2 / 1.5 ) ) {
+
+  		console.log( 'resize: Use width' );
+  		width = 1;
+  		height = ( window.innerHeight / window.innerWidth ) * width;
+  
+	} else {
+
+  		console.log( 'resize: Use height' );
+  		height = 1.5 / 2;
+  		width = ( window.innerWidth / window.innerHeight ) * height;
+  
+	}
+
+  	camera.left = - width;
+  	camera.right = width;
+  	camera.top = height;
+  	camera.bottom = - height;
+  	camera.updateProjectionMatrix();
+  	renderer.setSize( window.innerWidth, window.innerHeight );
+  }
+
+  function update() {
+
+  	requestAnimationFrame( update );
+  	timer.update();
+  	uniforms.u_time.value += timer.getDelta();
+  	renderer.render( scene, camera );
+  }
   
 </script>
 

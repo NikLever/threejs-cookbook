@@ -2,13 +2,13 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 // eslint-disable-next-line no-unused-vars
-let scene, camera, renderer, controls, object, clock;
+let scene, camera, renderer, controls, object, timer;
 
 init();
 
 function init() {
 
-	clock = new THREE.Clock();
+	timer = new THREE.Timer();
 
   	scene = new THREE.Scene();
   	scene.background = new THREE.Color( 0xaaaaaa );
@@ -73,7 +73,8 @@ function update() {
   	// eslint-disable-next-line compat/compat
   	requestAnimationFrame( update );
 
-	const delta = 1 + ( Math.sin( clock.getElapsedTime() * 2 ) + 1 ) / 5;
+	timer.update();
+	const delta = 1 + ( Math.sin( timer.getElapsed() * 2 ) + 1 ) / 5;
 	object.children.forEach( child => {
 
 		child.position[ child.userData.axis ] = child.userData.start * delta;

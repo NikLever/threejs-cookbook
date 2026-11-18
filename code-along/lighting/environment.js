@@ -5,7 +5,7 @@ import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js"
 import { HDRLoader } from "three/addons/loaders/HDRLoader.js"
 import { GUI } from "three/addons/libs/lil-gui.module.min.js"
 
-let scene, camera, renderer, clock, params, light;
+let scene, camera, renderer, timer, params, light;
 
 init();
 

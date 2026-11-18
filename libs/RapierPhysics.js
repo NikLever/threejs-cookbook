@@ -1,4 +1,4 @@
-import { Clock, Vector3, Quaternion, Matrix4, LineSegments, LineBasicMaterial, BufferGeometry, BufferAttribute } from 'three';
+import { Timer, Vector3, Quaternion, Matrix4, LineSegments, LineBasicMaterial, BufferGeometry, BufferAttribute } from 'three';
 
 const RAPIER_PATH = 'https://cdn.skypack.dev/@dimforge/rapier3d-compat@0.12.0';
 
@@ -199,11 +199,12 @@ async function RapierPhysics() {
 
 	//
 
-	const clock = new Clock();
+	const timer = new Timer();
 
 	function step() {
 
-		world.timestep = clock.getDelta();
+		timer.update();
+		world.timestep = timer.getDelta();
 		world.step();
 
 		//

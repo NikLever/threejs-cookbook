@@ -40,7 +40,7 @@
   import { LoadingBar } from 'libs/LoadingBar.js';
 
   // eslint-disable-next-line no-unused-vars
-  let scene, camera, renderer, loadingBar, controls, clock, wrench, mixer;
+  let scene, camera, renderer, loadingBar, controls, timer, wrench, mixer;
 
   init();
 
@@ -49,7 +49,7 @@
   	scene = new THREE.Scene();
   	scene.background = new THREE.Color( 0x111100 );
 
-  	clock = new THREE.Clock();
+  	timer = new THREE.Timer();
   
   	camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 0.1, 100 );
   	//camera.position.set(0, 0.05, 0.22);
@@ -162,7 +162,8 @@
   	// eslint-disable-next-line compat/compat
   	requestAnimationFrame( update );
   	//if (stove) stove.rotateY( 0.005 );
-  	const dt = clock.getDelta();
+	timer.update();
+  	const dt = timer.getDelta();
   	if ( mixer ) mixer.update( dt );
   	renderer.render( scene, camera );
 

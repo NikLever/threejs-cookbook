@@ -23,8 +23,8 @@
     }
   }
 </script>
-<script  type="module"> 
-  import * as THREE from "three"
+<script  type="module">
+  import * as THREE from 'three';
   
   const vshader = `
 varying vec2 v_uv;
@@ -33,7 +33,7 @@ void main() {
   v_uv = uv;
   gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
 }
-`
+`;
 const fshader = `
 uniform float u_time;
 uniform sampler2D u_tex;
@@ -109,7 +109,7 @@ void main() {
 
     gl_FragColor = vec4(vec3(n), 1.0);
 }
-`
+`;
 
 
 
@@ -117,19 +117,19 @@ void main() {
 
 
 const scene = new THREE.Scene();
-const camera = new THREE.OrthographicCamera( -1, 1, 1, -1, 0.1, 10 );
+const camera = new THREE.OrthographicCamera( - 1, 1, 1, - 1, 0.1, 10 );
 
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize( window.innerWidth, window.innerHeight );
 document.body.appendChild( renderer.domElement );
 
-const clock = new THREE.Clock();
+const timer = new THREE.Timer();
 
 const geometry = new THREE.PlaneGeometry( 2, 2 );
 const uniforms = {
   u_time: { value: 0.0 },
   u_tex: { value: null }
-}
+};
 
 const material = new THREE.ShaderMaterial( {
   uniforms: uniforms,
@@ -147,27 +147,35 @@ onWindowResize();
 animate();
 
 function onWindowResize( event ) {
-  const aspectRatio = window.innerWidth/window.innerHeight;
+
+  const aspectRatio = window.innerWidth / window.innerHeight;
   let width, height;
-  if (aspectRatio>=1){
-    width = 1;
-    height = (window.innerHeight/window.innerWidth) * width;
-  }else{
-    width = aspectRatio;
-    height = 1;
+  if ( aspectRatio >= 1 ) {
+
+  		width = 1;
+  		height = ( window.innerHeight / window.innerWidth ) * width;
+  } else {
+
+  		width = aspectRatio;
+  		height = 1;
   }
-  camera.left = -width;
+
+  camera.left = - width;
   camera.right = width;
   camera.top = height;
-  camera.bottom = -height;
+  camera.bottom = - height;
   camera.updateProjectionMatrix();
   renderer.setSize( window.innerWidth, window.innerHeight );
+
 }
 
 function animate() {
+
   requestAnimationFrame( animate );
-  uniforms.u_time.value += clock.getDelta();
+  timer.update();
+  uniforms.u_time.value += timer.getDelta();
   renderer.render( scene, camera );
+
 }
 </script>
 
